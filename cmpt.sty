@@ -1,0 +1,85 @@
+%% Copyright 2023 Lurgrid
+%
+% This document is licensed under the GNU General Public License (GPL), 
+% version 3.
+% The latest version of this license is in
+%   https://www.gnu.org/licenses/gpl-3.0.txt
+%
+% The Current Maintainer of this work is Lurgrid.
+% Date: November 12, 2023
+
+% Specify the required LaTeX2e format with a minimum version of 2020/10/01.
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+
+% Provide information about the package "cmpt," including its version (v0.1) 
+% and a brief description.
+\ProvidesPackage{cmpt}[2023/11/11 v0.1 Style by Lurgrid]
+
+% Provide additional class information for the "cmpt" package, stating the 
+% copyright notice.
+\ClassInfo{cmpt}{Copyright (c) 2023 Lurgrid}
+
+% Include the kvoptions package for handling key-value options.
+\RequirePackage{kvoptions}
+
+% Set up key-value options with the family name "mykeys" and a prefix "my@".
+\SetupKeyvalOptions{
+    family=mykeys,
+    prefix=my@
+}
+
+% Declare a string option "papersize" with a default value of "letterpaper".
+\DeclareStringOption[letterpaper]{papersize}
+
+% Declare a string option "margin" with a default value of "3cm".
+\DeclareStringOption[3cm]{margin}
+
+% Declare a string option "lang" with a default value of "french".
+\DeclareStringOption[french]{lang}
+
+% Process the package options
+\ProcessKeyvalOptions*
+
+% Set up the document layout using the geometry package.
+\RequirePackage[\my@papersize, margin=\my@margin]{geometry}
+
+% Set the document language using the babel package.
+\RequirePackage[\my@lang]{babel}
+
+% Include the tocloft package for customizing the table of contents.
+\RequirePackage{tocloft}
+
+% Include the hyperref package for creating hyperlinks within the document.
+\RequirePackage{hyperref}
+
+% Set the font encoding to T1.
+\RequirePackage[T1]{fontenc}
+
+% This code snippet redefines the format for section numbers to be in Roman
+% numerals.
+\renewcommand{\thesection}{\Roman{section}} 
+
+% Similarly, it changes the subsection numbers to be in Arabic numerals.
+\renewcommand\thesubsection{\arabic{subsection}}
+
+% Adjusts the width allocated for section numbers in the table of contents to 
+% accommodate Roman numerals.
+\setlength{\cftsecnumwidth}{3em} 
+
+% Sets the paragraph indentation to 1cm, providing a consistent layout.
+\setlength{\parindent}{1cm}
+
+% Improves line breaks in the document to prevent overflows beyond the page 
+% margins.
+\sloppy
+
+% Configures hyperlinks in the document with specific color settings.
+\hypersetup{
+    colorlinks,             % Hyperlinks will have color.
+    citecolor=black,        % Color for citations.
+    filecolor=black,        % Color for file links.
+    linkcolor=black,        % Color for regular links.
+    urlcolor=black          % Color for URLs.
+}
+
+\endinput
