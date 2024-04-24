@@ -1,178 +1,144 @@
-use dot::{Edges, GraphWalk, Id, LabelText, Labeller, Nodes};
-use std::borrow::Cow;
-use std::fmt::Debug;
+//! Sous module permettant la gestion d'automate
 
-use crate::regexp::RegExp;
+use petgraph::dot::Dot;
+use petgraph::graph::{Graph, NodeIndex};
+use std::collections::HashMap;
+use std::fmt::{self, Display, Formatter};
+use std::hash::Hash;
+pub mod glushkov;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Numbered(char, usize);
-
-#[derive(Debug)]
-struct State {
-    value: usize,
-    transition: Vec<Numbered>,
+struct State<T> {
+    next: HashMap<T, Vec<usize>>,
 }
 
-#[derive(Debug)]
-pub struct GlushAutomata {
-    states: Vec<State>,
+/// Structure regroupant les informations nécessaire à la gestion d'un automate
+/// finit.
+pub struct FinitAutomata<T> {
+    states: Vec<State<T>>,
+    initials: Vec<usize>,
     finals: Vec<usize>,
 }
 
-#[derive(Debug)]
-struct GlushInfo {
-    firsts: Vec<Numbered>,
-    lasts: Vec<Numbered>,
-    null: bool,
-    follows: Vec<(Numbered, Vec<Numbered>)>,
+/// Trait qui définie l'ensemble des méthodes disponnible sur un automate
+pub trait Automata<T> {
+    /// Crée un automate initialement vide.
+    fn new() -> Self;
+
+    /// Test si le mot passé en paramètre est reconnu par l'automate.
+    fn accept(&self, msg: &[T]) -> bool;
+
+    /// Renvoie le nombre d'état dans l'automate
+    fn get_nb_states(&self) -> usize;
+
+    /// Ajoute un état dans l'autome et retourne son numéro.
+    fn add_state(&mut self) -> usize;
+
+    /// Ajoute dans l'automate une transition de l'état de numéro "start" à
+    ///     l'état de numéro "end" par le symbole "sym".
+    ///     Renvoie vrai s'il y a reussi à ajouter la transition. Sinon renvoie
+    ///     faux si l'un des états n'est pas dans l'automate.
+    fn add_transition(&mut self, start: usize, end: usize, sym: T) -> bool;
+
+    /// Ajoute "state" à la liste des états initials de l'automate.
+    ///     Renvoie vrai si l'ajoute a été possible. Sinon renvoie faux si
+    ///     l'états n'est pas dans l'automate.
+    fn add_initial(&mut self, state: usize) -> bool;
+
+    /// Ajoute "state" à la liste des états finaux de l'automate.
+    ///     Renvoie vrai si l'ajoute a été possible. Sinon renvoie faux si
+    ///     l'états n'est pas dans l'automate.
+    fn add_final(&mut self, state: usize) -> bool;
 }
 
-fn numbered(reg: RegExp<char>, start: usize) -> (RegExp<Numbered>, usize) {
-    match reg {
-        RegExp::Concat(l, r) => {
-            let (nl, end) = numbered(*l, start);
-            let (nr, end) = numbered(*r, end);
-            (RegExp::Concat(Box::new(nl), Box::new(nr)), end)
-        }
-        RegExp::Or(l, r) => {
-            let (nl, end) = numbered(*l, start);
-            let (nr, end) = numbered(*r, end);
-            (RegExp::Or(Box::new(nl), Box::new(nr)), end)
-        }
-        RegExp::Epsilon => (RegExp::Epsilon, start),
-        RegExp::Symbol(v) => {
-            let r = RegExp::Symbol(Numbered(v, start));
-            let end = start + 1;
-            (r, end)
-        }
-        RegExp::Times(c) => {
-            let (nc, end) = numbered(*c, start);
-            (RegExp::Times(Box::new(nc)), end)
+impl<T: PartialEq + Eq + Hash> Automata<T> for FinitAutomata<T> {
+    fn new() -> Self {
+        FinitAutomata {
+            states: Vec::new(),
+            initials: Vec::new(),
+            finals: Vec::new(),
         }
     }
-}
 
-fn get_glush_info(r: RegExp<Numbered>) -> GlushInfo {
-    match r {
-        RegExp::Epsilon => GlushInfo {
-            firsts: vec![],
-            lasts: vec![],
-            null: true,
-            follows: vec![],
-        },
-        RegExp::Symbol(s) => GlushInfo {
-            firsts: vec![s],
-            lasts: vec![s],
-            null: false,
-            follows: vec![(s, vec![])],
-        },
-        RegExp::Times(c) => {
-            let mut gi = get_glush_info(*c);
-            gi.null = true;
-            for last in gi.lasts.iter() {
-                if let Some(f) = gi.follows.iter_mut().find(|f| f.0 == *last) {
-                    f.1.append(&mut gi.firsts.clone());
+    fn accept(&self, msg: &[T]) -> bool {
+        let mut cur: Vec<usize> = self.initials.clone();
+        for c in msg.iter() {
+            let mut next: Vec<usize> = Vec::new();
+            for s in cur.iter() {
+                if let Some(l) = self.states[*s].next.get(&c) {
+                    next.append(&mut l.clone())
                 }
             }
-            gi
+            if next.is_empty() {
+                return false;
+            }
+            cur = next;
         }
-        RegExp::Or(l, r) => {
-            let mut gil = get_glush_info(*l);
-            let mut gir = get_glush_info(*r);
-            gil.firsts.append(&mut gir.firsts);
-            gil.lasts.append(&mut gir.lasts);
-            gil.null = gil.null || gir.null;
-            gil.follows.append(&mut gir.follows);
-            gil
+        cur.into_iter().find(|s| self.finals.contains(s)).is_some()
+    }
+
+    fn get_nb_states(&self) -> usize {
+        self.states.len()
+    }
+
+    fn add_state(&mut self) -> usize {
+        self.states.push(State {
+            next: HashMap::new(),
+        });
+        self.states.len() - 1
+    }
+
+    fn add_transition(&mut self, start: usize, end: usize, sym: T) -> bool {
+        if start >= self.states.len() {
+            return false;
         }
-        RegExp::Concat(l, r) => {
-            let mut gil = get_glush_info(*l);
-            let mut gir = get_glush_info(*r);
-            for last in gil.lasts.iter() {
-                if let Some(f) = gil.follows.iter_mut().find(|f| f.0 == *last) {
-                    f.1.append(&mut gir.firsts.clone());
+        let s = &mut self.states[start];
+        match s.next.get_mut(&sym) {
+            Some(l) => {
+                if !l.contains(&end) {
+                    l.push(end)
                 }
             }
-            gil.follows.append(&mut gir.follows);
-            if gil.null {
-                gil.firsts.append(&mut gir.firsts);
+            None => {
+                s.next.insert(sym, vec![end]);
             }
-            if gir.null {
-                gil.lasts.append(&mut gir.lasts);
-            } else {
-                gil.lasts = gir.lasts;
-            }
-            gil.null = gil.null && gir.null;
-            gil
         }
+        true
+    }
+
+    fn add_initial(&mut self, state: usize) -> bool {
+        if state >= self.states.len() {
+            return false;
+        }
+        if !self.initials.contains(&state) {
+            self.initials.push(state);
+        }
+        return true;
+    }
+
+    fn add_final(&mut self, state: usize) -> bool {
+        if state >= self.states.len() {
+            return false;
+        }
+        if !self.finals.contains(&state) {
+            self.finals.push(state);
+        }
+        return true;
     }
 }
-impl From<RegExp<char>> for GlushAutomata {
-    fn from(reg: RegExp<char>) -> Self {
-        let (reg, end) = numbered(reg, 1);
-        let mut info = get_glush_info(reg);
-        let mut g = GlushAutomata {
-            states: vec![],
-            finals: vec![],
-        };
-        for i in 0..end {
-            g.states.push(State {
-                value: i,
-                transition: vec![],
-            });
+
+impl<T: PartialEq + Eq + Hash + Display> Display for FinitAutomata<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut graph = Graph::<usize, String>::new();
+        for i in 0..self.states.len() {
+            graph.add_node(i);
         }
-        for i in 1..end {
-            let s = &mut g.states[i as usize];
-            if let Some(&(_, ref l)) = info.follows.iter().find(|&&(ref s, _)| s.1 == i) {
-                for next in l.iter() {
-                    s.transition.push(*next);
+        for (i, s) in self.states.iter().enumerate() {
+            for k in s.next.keys() {
+                for v in s.next.get(k).unwrap() {
+                    graph.add_edge(NodeIndex::new(i), NodeIndex::new(*v), format!("{}{}", k, v));
                 }
             }
         }
-        g.finals = info.lasts.iter().map(|n| n.1).collect();
-        g.states[0].transition.append(&mut info.firsts);
-        g
-    }
-}
-
-impl<'a> Labeller<'a, usize, (usize, usize, char)> for GlushAutomata {
-    fn graph_id(&self) -> dot::Id {
-        Id::new("glushkovs_automata").unwrap()
-    }
-
-    fn node_id(&self, n: &usize) -> dot::Id {
-        Id::new(format!("N{}", *n)).unwrap()
-    }
-
-    fn node_label<'b>(&'b self, n: &usize) -> dot::LabelText<'b> {
-        dot::LabelText::LabelStr(n.to_string().into())
-    }
-
-    fn edge_label<'b>(&'b self, e: &(usize, usize, char)) -> dot::LabelText<'b> {
-        LabelText::LabelStr(format!("{}{}", e.2, e.1).into())
-    }
-}
-
-impl<'a> GraphWalk<'a, usize, (usize, usize, char)> for GlushAutomata {
-    fn nodes(&self) -> Nodes<'a, usize> {
-        Cow::Owned(self.states.iter().map(|s| s.value).collect())
-    }
-
-    fn edges(&self) -> Edges<'a, (usize, usize, char)> {
-        let mut edges: Vec<(usize, usize, char)> = vec![];
-        for state in self.states.iter() {
-            for neig in state.transition.iter() {
-                edges.push((state.value, neig.1, neig.0));
-            }
-        }
-        Cow::Owned(edges)
-    }
-
-    fn source(&self, e: &(usize, usize, char)) -> usize {
-        e.0
-    }
-
-    fn target(&self, e: &(usize, usize, char)) -> usize {
-        e.1
+        write!(f, "{:?}", Dot::with_config(&graph, &[]))
     }
 }
