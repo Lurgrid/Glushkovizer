@@ -1,9 +1,9 @@
 %start Expr
 %avoid_insert "SYM"
 %avoid_insert "EPSILON"
-%left '*'
 %left '+'
 %left '.'
+%left '*'
 %%
 Expr -> Result<RegExp<char>, ()>:
     Expr '*' { Ok(RegExp::Times(Box::new($1?))) }

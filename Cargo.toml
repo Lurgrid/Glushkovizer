@@ -1,7 +1,10 @@
 [package]
 name = "glushkovizer"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
+
+[lib]
+path = "./src/lib/lib.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,6 +13,7 @@ cfgrammar = "0.13.4"
 lrlex = "0.13.4"
 lrpar = "0.13.4"
 petgraph = "0.6.4"
+rand = "0.8.5"
 
 [build-dependencies]
 cfgrammar = "0.13.4"
