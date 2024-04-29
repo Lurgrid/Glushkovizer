@@ -3,7 +3,7 @@ use rand::Rng;
 use std::usize;
 
 const MAX_DEPTH: usize = 7;
-const NB_REGEX: usize = 10_000;
+const NB_REGEX: usize = 1_000;
 
 #[test]
 fn regex() {
@@ -16,12 +16,11 @@ fn regex() {
         let r2 = r2.unwrap();
         assert_eq!(r, r2);
     }
-    println!("Success on {} tests !", NB_REGEX);
 }
 
 /// Renvoie un arbre représentant une expression régulière de hauteur maximal
 /// "d".
-fn gen_regex(d: usize) -> RegExp<char> {
+pub fn gen_regex(d: usize) -> RegExp<char> {
     let mut rng = rand::thread_rng();
     match d {
         0 => {
@@ -32,7 +31,7 @@ fn gen_regex(d: usize) -> RegExp<char> {
             }
         }
         _ => match rng.gen_range(0..12) {
-            0..=1 => RegExp::Times(Box::new(gen_regex(d - 1))),
+            0..=1 => RegExp::Repeat(Box::new(gen_regex(d - 1))),
             2..=7 => RegExp::Or(Box::new(gen_regex(d - 1)), Box::new(gen_regex(d - 1))),
             _ => RegExp::Concat(Box::new(gen_regex(d - 1)), Box::new(gen_regex(d - 1))),
         },

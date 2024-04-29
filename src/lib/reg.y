@@ -6,7 +6,7 @@
 %left '*'
 %%
 Expr -> Result<RegExp<char>, ()>:
-    Expr '*' { Ok(RegExp::Times(Box::new($1?))) }
+    Expr '*' { Ok(RegExp::Repeat(Box::new($1?))) }
     | Expr '+' Expr { Ok(RegExp::Or(Box::new($1?), Box::new($3?))) }
     | Expr '.' Expr {  Ok(RegExp::Concat(Box::new($1?), Box::new($3?))) }
     | '(' Expr ')' { Ok($2?) } 

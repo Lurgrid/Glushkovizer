@@ -6,7 +6,7 @@
 //!
 //! Voici un exemple qui illustre bien l'utilisation qu'on pourrait en faire:
 //! ```rust
-//! use glushkovizer::automata::{Automata, FinitAutomata};
+//! use glushkovizer::automata::Automata;
 //! use glushkovizer::regexp::RegExp;
 //! use petgraph::dot::Dot;
 //!
@@ -17,7 +17,7 @@
 //!         return;
 //!     }
 //!     let a = a.unwrap();
-//!     let g = FinitAutomata::from(a);
+//!     let g = Automata::from(a);
 //!     println!("{}", Dot::with_config(&g.get_graph(), &[]));
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",

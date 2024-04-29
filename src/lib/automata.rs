@@ -7,21 +7,22 @@
 //!
 //! Voici un exemple de l'utilisation d'un automate crée "à la main":
 //! ```rust
-//! use glushkovizer::automata::{Automata, FinitAutomata};
+//! use glushkovizer::automata::{error::Result, Automata};
 //! use petgraph::dot::Dot;
 //!
-//! fn main() {
-//!     let mut g2: FinitAutomata<char> = FinitAutomata::new();
-//!     g2.add_state();
-//!     g2.add_state();
-//!     g2.add_initial(0);
-//!     g2.add_final(1);
-//!     g2.add_transition(0, 1, 'a');
+//! fn main() -> Result<()> {
+//!     let mut g2 = Automata::new();
+//!     g2.add_state(0);
+//!     g2.add_state(1);
+//!     g2.add_initial(0)?;
+//!     g2.add_final(1)?;
+//!     g2.add_transition(0, 1, 'a')?;
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",
 //!         g2.accept(&("a".chars().collect::<Vec<char>>()[..]))
 //!     );
 //!     println!("{}", Dot::with_config(&g2.get_graph(), &[]));
+//!     Ok(())
 //! }
 //! ```
 //!
@@ -29,7 +30,7 @@
 //! qu'on "parse" une expression regulière puis on la convertie en automate pour
 //! après reconnaitre des mots:
 //! ```rust
-//! use glushkovizer::automata::{Automata, FinitAutomata};
+//! use glushkovizer::automata::Automata;
 //! use glushkovizer::regexp::RegExp;
 //! use petgraph::dot::Dot;
 //!
@@ -40,7 +41,7 @@
 //!         return;
 //!     }
 //!     let a = a.unwrap();
-//!     let g = FinitAutomata::from(a);
+//!     let g = Automata::from(a);
 //!     println!("{:?}", Dot::with_config(&g.get_graph(), &[]));
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",
@@ -49,80 +50,126 @@
 //! }
 //! ```
 
+use crate::automata::error::Result;
 use petgraph::graph::{Graph, NodeIndex};
-use std::collections::HashMap;
-use std::fmt::Display;
-use std::hash::Hash;
+use std::borrow::Borrow;
+use std::cell::RefCell;
+use std::collections::{BTreeMap, BTreeSet};
+use std::rc::Rc;
+
+use self::error::AutomataError;
+
+pub mod error;
 pub mod glushkov;
 
 /// Structure regroupant les informations nécessaire à la gestion d'un état d'un
-/// autome.
-struct State<T> {
-    next: HashMap<T, Vec<usize>>,
+/// automate.
+pub struct State<T, V>
+where
+    V: Eq + Ord,
+    T: Eq + Ord,
+{
+    value: V,
+    next: BTreeMap<T, Vec<Rc<RefCell<State<T, V>>>>>,
+}
+
+impl<T, V> PartialOrd for State<T, V>
+where
+    V: Eq + Ord,
+    T: Eq + Ord,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.value.partial_cmp(&other.value)
+    }
+}
+
+impl<T, V> Ord for State<T, V>
+where
+    V: Eq + Ord,
+    T: Eq + Ord,
+{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.value.cmp(&other.value)
+    }
+}
+
+impl<T, V> PartialEq for State<T, V>
+where
+    V: Eq + Ord,
+    T: Eq + Ord,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+
+impl<T, V> Eq for State<T, V>
+where
+    V: Eq + Ord,
+    T: Eq + Ord,
+{
+}
+
+impl<T, V> State<T, V>
+where
+    V: Eq + Ord + Clone + Copy,
+    T: Eq + Ord,
+{
+    fn new(value: V) -> State<T, V> {
+        State {
+            value: value,
+            next: Default::default(),
+        }
+    }
 }
 
 /// Structure regroupant les informations nécessaire à la gestion d'un automate
 /// finit.
-pub struct FinitAutomata<T> {
-    states: Vec<State<T>>,
-    initials: Vec<usize>,
-    finals: Vec<usize>,
-}
-
-/// Trait qui définie l'ensemble des méthodes disponnible sur un automate. Les
-/// numéros d'états commence à 0 et s'incrémente à chaque ajout.
-pub trait Automata<T> {
-    /// Crée un automate initialement vide.
-    fn new() -> Self;
-
-    /// Test si le mot passé en paramètre est reconnu par l'automate.
-    fn accept(&self, msg: &[T]) -> bool;
-
-    /// Renvoie le nombre d'état dans l'automate
-    fn get_nb_states(&self) -> usize;
-
-    /// Renvoie la représentation de l'automate en graph.
-    fn get_graph(&self) -> Graph<String, T>;
-
-    /// Ajoute un état dans l'autome et retourne son numéro.
-    fn add_state(&mut self) -> usize;
-
-    /// Ajoute dans l'automate une transition de l'état de numéro "start" à
-    ///     l'état de numéro "end" par le symbole "sym".
-    ///     Renvoie vrai s'il y a reussi à ajouter la transition. Sinon renvoie
-    ///     faux si l'un des états n'est pas dans l'automate.
-    fn add_transition(&mut self, start: usize, end: usize, sym: T) -> bool;
-
-    /// Ajoute "state" à la liste des états initials de l'automate.
-    ///     Renvoie vrai si l'ajoute a été possible. Sinon renvoie faux si
-    ///     l'états n'est pas dans l'automate.
-    fn add_initial(&mut self, state: usize) -> bool;
-
-    /// Ajoute "state" à la liste des états finaux de l'automate.
-    ///     Renvoie vrai si l'ajoute a été possible. Sinon renvoie faux si
-    ///     l'états n'est pas dans l'automate.
-    fn add_final(&mut self, state: usize) -> bool;
-}
-
-impl<T> Automata<T> for FinitAutomata<T>
+pub struct Automata<T, V>
 where
-    T: PartialEq + Eq + Hash + Clone + Copy + Display,
+    V: Eq + Ord,
+    T: Eq + Ord,
 {
-    fn new() -> Self {
-        FinitAutomata {
-            states: Vec::new(),
-            initials: Vec::new(),
-            finals: Vec::new(),
+    states: BTreeSet<Rc<RefCell<State<T, V>>>>,
+    initials: BTreeSet<Rc<RefCell<State<T, V>>>>,
+    finals: BTreeSet<Rc<RefCell<State<T, V>>>>,
+}
+
+impl<T, V> Default for Automata<T, V>
+where
+    V: Eq + Ord + Clone + Copy,
+    T: Eq + Ord,
+{
+    fn default() -> Self {
+        Self {
+            states: Default::default(),
+            initials: Default::default(),
+            finals: Default::default(),
         }
     }
+}
 
-    fn accept(&self, msg: &[T]) -> bool {
-        let mut cur: Vec<usize> = self.initials.clone();
+impl<T, V> Automata<T, V>
+where
+    V: Eq + Ord + Clone + Copy,
+    T: Eq + Ord + Clone + Copy,
+{
+    /// Crée un automate initialement vide.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Test si le mot passé en paramètre est reconnu par l'automate.
+    pub fn accept(&self, msg: &[T]) -> bool {
+        let mut cur: Vec<Rc<RefCell<State<T, V>>>> = self.initials.clone().into_iter().collect();
         for c in msg.iter() {
-            let mut next: Vec<usize> = Vec::new();
+            let mut next: Vec<Rc<RefCell<State<T, V>>>> = Vec::new();
             for s in cur.iter() {
-                if let Some(l) = self.states[*s].next.get(&c) {
-                    next.append(&mut l.clone())
+                let s = s.as_ref();
+                if let Some(l) = s.borrow().next.get(&c) {
+                    for s in l.iter() {
+                        next.push(s.clone())
+                    }
                 }
             }
             if next.is_empty() {
@@ -133,94 +180,138 @@ where
         cur.into_iter().find(|s| self.finals.contains(s)).is_some()
     }
 
-    fn get_nb_states(&self) -> usize {
+    /// Renvoie le nombre d'état dans l'automate
+    pub fn get_nb_states(&self) -> usize {
         self.states.len()
     }
 
-    fn get_graph(&self) -> Graph<String, T> {
-        let mut graph = Graph::<String, T>::new();
-        for i in 0..self.states.len() {
-            let mut l = String::new();
-            if self.initials.contains(&i) {
-                l.push_str("i");
-            }
-            if self.finals.contains(&i) {
-                l.push_str("f");
-            }
-            l.push_str(i.to_string().as_str());
-            graph.add_node(l);
+    /// Renvoie la représentation de l'automate en [Graph]
+    pub fn get_graph(&self) -> Graph<V, T> {
+        let mut graph = Graph::new();
+        for s in self.states.iter() {
+            graph.add_node(s.as_ref().borrow().value.clone());
         }
         for (i, s) in self.states.iter().enumerate() {
+            let s: &RefCell<State<T, V>> = s.borrow();
+            let s = s.borrow();
             for k in s.next.keys() {
                 for v in s.next.get(k).unwrap() {
-                    graph.add_edge(NodeIndex::new(i), NodeIndex::new(*v), *k);
+                    graph.add_edge(
+                        NodeIndex::new(i),
+                        NodeIndex::new(self.states.iter().position(|x| x == v).unwrap()),
+                        *k,
+                    );
                 }
             }
         }
         graph
     }
 
-    fn add_state(&mut self) -> usize {
-        self.states.push(State {
-            next: HashMap::new(),
-        });
-        self.states.len() - 1
+    /// Renvoie la liste des états initiaux.
+    pub fn get_initials(&self) -> Vec<V> {
+        self.initials
+            .iter()
+            .map(|s| s.as_ref().borrow().value.clone())
+            .collect()
     }
 
-    fn add_transition(&mut self, start: usize, end: usize, sym: T) -> bool {
-        if start >= self.states.len() {
-            return false;
-        }
-        let s = &mut self.states[start];
-        match s.next.get_mut(&sym) {
-            Some(l) => {
-                if !l.contains(&end) {
-                    l.push(end)
-                }
-            }
+    /// Renvoie la liste des états finaux.
+    pub fn get_finals(&self) -> Vec<V> {
+        self.finals
+            .iter()
+            .map(|s| s.as_ref().borrow().value.clone())
+            .collect()
+    }
+
+    /// Renvoie la liste des états.
+    pub fn get_states(&self) -> Vec<V> {
+        self.states
+            .iter()
+            .map(|s| s.as_ref().borrow().value.clone())
+            .collect()
+    }
+
+    /// Ajoute une transition entre l'état de valeur "from" vers l'état de
+    /// valeur "to" avec comme transition "sym".
+    /// Renvoie une erreur en cas d'impossibilité d'ajout et sinon un type unit.
+    pub fn add_transition(&mut self, from: V, to: V, sym: T) -> Result<()> {
+        let to = Rc::clone(
+            self.states
+                .get(&RefCell::new(State::new(to)))
+                .ok_or(AutomataError::UnknowStateTo)?,
+        );
+        let from = self
+            .states
+            .get(&RefCell::new(State::new(from)))
+            .ok_or(AutomataError::UnknowStateFrom)?;
+
+        let f2 = from.as_ref().borrow();
+
+        match f2.next.get(&sym) {
             None => {
-                s.next.insert(sym, vec![end]);
+                drop(f2);
+                from.borrow_mut().next.insert(sym, vec![to]);
             }
-        }
-        true
+            Some(n) if !n.contains(&to) => {
+                drop(f2);
+                let mut from = from.borrow_mut();
+                let n = from.next.get_mut(&sym).unwrap();
+                n.push(to);
+            }
+            _ => {}
+        };
+        Ok(())
     }
 
-    fn add_initial(&mut self, state: usize) -> bool {
-        if state >= self.states.len() {
-            return false;
-        }
-        if !self.initials.contains(&state) {
-            self.initials.push(state);
-        }
-        return true;
+    /// Ajoute un état à l'automate de valeur "state".
+    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent.
+    pub fn add_state(&mut self, state: V) -> bool {
+        self.states.insert(Rc::new(RefCell::new(State::new(state))))
     }
 
-    fn add_final(&mut self, state: usize) -> bool {
-        if state >= self.states.len() {
-            return false;
-        }
-        if !self.finals.contains(&state) {
-            self.finals.push(state);
-        }
-        return true;
+    /// Ajoute à la liste des initaux de l'autome, l'état qui a pour valeur
+    /// "state".
+    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent. Et
+    /// renvoie une erreur si l'état n'existe pas.
+    pub fn add_initial(&mut self, state: V) -> Result<bool> {
+        let s = Rc::clone(
+            self.states
+                .get(&RefCell::new(State::new(state)))
+                .ok_or(AutomataError::UnknowState)?,
+        );
+        Ok(self.initials.insert(s))
+    }
+
+    /// Ajoute à la liste des finaux de l'autome, l'état qui a pour valeur
+    /// "state".
+    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent. Et
+    /// renvoie une erreur si l'état n'existe pas.
+    pub fn add_final(&mut self, state: V) -> Result<bool> {
+        let s = Rc::clone(
+            self.states
+                .get(&RefCell::new(State::new(state)))
+                .ok_or(AutomataError::UnknowState)?,
+        );
+        Ok(self.finals.insert(s))
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::automata::{Automata, FinitAutomata};
+    use crate::automata::{error::Result, Automata};
 
     #[test]
-    fn handmade() {
-        let mut g = FinitAutomata::new();
-        g.add_state();
-        g.add_state();
-        g.add_state();
-        g.add_initial(0);
-        g.add_final(2);
-        g.add_transition(0, 1, 'a');
-        g.add_transition(1, 2, 'a');
+    fn handmade() -> Result<()> {
+        let mut g = Automata::new();
+        g.add_state(1);
+        g.add_state(2);
+        g.add_state(3);
+        g.add_initial(1)?;
+        g.add_final(3)?;
+        g.add_transition(1, 2, 'a')?;
+        g.add_transition(2, 3, 'a')?;
         assert_eq!(g.get_nb_states(), 3);
         assert!(g.accept(&['a', 'a']));
+        Ok(())
     }
 }

@@ -33,7 +33,10 @@
 
 use lrlex::lrlex_mod;
 use lrpar::lrpar_mod;
-use std::fmt::{self, Debug, Display, Formatter};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fmt::{self, Debug, Display, Formatter},
+};
 
 lrlex_mod!("./lib/reg.l");
 lrpar_mod!("./lib/reg.y");
@@ -49,7 +52,7 @@ pub enum RegExp<T> {
     Symbol(T),
     /// Element de l'enum pour representer la répétition d'une expression
     ///     régulière. Cette répétition est infini et inclu le mot vide.
-    Times(Box<RegExp<T>>),
+    Repeat(Box<RegExp<T>>),
     /// Element de l'enum pour representer la concaténation de deux sous
     ///     expression régulière.
     Concat(Box<RegExp<T>>, Box<RegExp<T>>),
@@ -79,80 +82,118 @@ impl TryFrom<&str> for RegExp<char> {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 /// Structure ayant pour but de representer des symboles numérotés
-pub(crate) struct Numbered<T>(pub(crate) T, pub(crate) usize);
+pub struct Numbered<T>(pub T, pub usize);
 
 #[derive(PartialEq, Debug)]
 /// Structure regroupant toute les informations d'une expression régulière
-pub(crate) struct GlushInfo<T> {
-    pub(crate) firsts: Vec<Numbered<T>>,
-    pub(crate) lasts: Vec<Numbered<T>>,
-    pub(crate) null: bool,
-    pub(crate) follows: Vec<(Numbered<T>, Vec<Numbered<T>>)>,
+pub struct Info<T> {
+    /// Ensemble des premier d'une expression regulière
+    pub firsts: BTreeSet<T>,
+    /// Ensemble des dernier d'une expression regulière
+    pub lasts: BTreeSet<T>,
+    /// Est ce que le mot vide est reconnu
+    pub null: bool,
+    /// Tableau associatif représantant les suivants
+    pub follows: BTreeMap<T, BTreeSet<T>>,
 }
 
-impl<T: Clone + Copy + PartialEq> RegExp<T> {
+impl<T> RegExp<T>
+where
+    T: Eq + Ord + Clone + Copy,
+{
     /// Crée à partir d'une expression régulière une autre expression
     ///     régulière où chaque symbole sera numéroté en partant de "start" et
     ///     renvoie celle-ci dans un couple, accompagné de "start" + le nombre
-    ///     de symbole numéroté et renvoie les information de l'expression
-    ///     régulière.
-    pub(crate) fn linearization(&self, start: usize) -> (RegExp<Numbered<T>>, usize, GlushInfo<T>) {
+    ///     de symbole numéroté
+    pub fn linearization(&self, start: usize) -> (RegExp<Numbered<T>>, usize) {
         match self {
-            RegExp::Epsilon => (
-                RegExp::Epsilon,
-                start,
-                GlushInfo {
-                    firsts: vec![],
-                    lasts: vec![],
-                    null: true,
-                    follows: vec![],
-                },
-            ),
+            RegExp::Epsilon => (RegExp::Epsilon, start),
             RegExp::Symbol(v) => {
                 let s = Numbered(*v, start);
                 let r = RegExp::Symbol(s);
                 let end = start + 1;
-                (
-                    r,
-                    end,
-                    GlushInfo {
-                        firsts: vec![s],
-                        lasts: vec![s],
-                        null: false,
-                        follows: vec![(s, vec![])],
-                    },
-                )
+                (r, end)
             }
-            RegExp::Times(c) => {
-                let (nc, end, mut gi) = c.linearization(start);
-                gi.null = true;
-                for last in gi.lasts.iter() {
-                    if let Some(f) = gi.follows.iter_mut().find(|f| f.0 == *last) {
-                        f.1.append(&mut gi.firsts.clone());
-                    }
-                }
-                (RegExp::Times(Box::new(nc)), end, gi)
+            RegExp::Repeat(c) => {
+                let (nc, end) = c.linearization(start);
+                (RegExp::Repeat(Box::new(nc)), end)
             }
             RegExp::Or(l, r) => {
-                let (nl, end, mut gil) = l.linearization(start);
-                let (nr, end, mut gir) = r.linearization(end);
+                let (nl, end) = l.linearization(start);
+                let (nr, end) = r.linearization(end);
+                (RegExp::Or(Box::new(nl), Box::new(nr)), end)
+            }
+            RegExp::Concat(l, r) => {
+                let (nl, end) = l.linearization(start);
+                let (nr, end) = r.linearization(end);
+                (RegExp::Concat(Box::new(nl), Box::new(nr)), end)
+            }
+        }
+    }
+
+    /// Renvoie les informations de l'expression regulère.
+    pub fn get_info(&self) -> Info<T> {
+        match self {
+            RegExp::Epsilon => Info {
+                firsts: Default::default(),
+                lasts: Default::default(),
+                null: true,
+                follows: Default::default(),
+            },
+            RegExp::Symbol(v) => Info {
+                firsts: BTreeSet::from([*v]),
+                lasts: BTreeSet::from([*v]),
+                null: false,
+                follows: BTreeMap::from([(*v, BTreeSet::new())]),
+            },
+            RegExp::Repeat(c) => {
+                let mut gi = c.get_info();
+                gi.null = true;
+                for last in gi.lasts.iter() {
+                    if let Some(f) = gi.follows.get_mut(last) {
+                        f.append(&mut gi.firsts.clone());
+                    }
+                }
+                gi
+            }
+            RegExp::Or(l, r) => {
+                let mut gil = l.get_info();
+                let mut gir = r.get_info();
                 gil.firsts.append(&mut gir.firsts);
                 gil.lasts.append(&mut gir.lasts);
                 gil.null = gil.null || gir.null;
-                gil.follows.append(&mut gir.follows);
-                (RegExp::Or(Box::new(nl), Box::new(nr)), end, gil)
-            }
-            RegExp::Concat(l, r) => {
-                let (nl, end, mut gil) = l.linearization(start);
-                let (nr, end, mut gir) = r.linearization(end);
-                for last in gil.lasts.iter() {
-                    if let Some(f) = gil.follows.iter_mut().find(|f| f.0 == *last) {
-                        f.1.append(&mut gir.firsts.clone());
+                for (k, mut v) in gir.follows {
+                    match gil.follows.get_mut(&k) {
+                        None => {
+                            gil.follows.insert(k, v);
+                        }
+                        Some(l) => {
+                            l.append(&mut v);
+                        }
                     }
                 }
-                gil.follows.append(&mut gir.follows);
+                gil
+            }
+            RegExp::Concat(l, r) => {
+                let mut gil = l.get_info();
+                let mut gir = r.get_info();
+                for last in gil.lasts.iter() {
+                    if let Some(f) = gil.follows.get_mut(last) {
+                        f.append(&mut gir.firsts.clone());
+                    }
+                }
+                for (k, mut v) in gir.follows {
+                    match gil.follows.get_mut(&k) {
+                        None => {
+                            gil.follows.insert(k, v);
+                        }
+                        Some(l) => {
+                            l.append(&mut v);
+                        }
+                    }
+                }
                 if gil.null {
                     gil.firsts.append(&mut gir.firsts);
                 }
@@ -162,7 +203,7 @@ impl<T: Clone + Copy + PartialEq> RegExp<T> {
                     gil.lasts = gir.lasts;
                 }
                 gil.null = gil.null && gir.null;
-                (RegExp::Concat(Box::new(nl), Box::new(nr)), end, gil)
+                gil
             }
         }
     }
@@ -173,7 +214,7 @@ impl<T: Display> Display for RegExp<T> {
         match self {
             Self::Epsilon => write!(f, "$"),
             Self::Symbol(s) => write!(f, "{}", s),
-            Self::Times(r) => write!(f, "{}*", r),
+            Self::Repeat(r) => write!(f, "{}*", r),
             Self::Or(r, l) => write!(f, "({}+{})", r, l),
             Self::Concat(r, l) => write!(f, "({}.{})", r, l),
         }
@@ -182,7 +223,9 @@ impl<T: Display> Display for RegExp<T> {
 
 #[cfg(test)]
 mod test {
-    use crate::regexp::{GlushInfo, Numbered};
+    use std::collections::{BTreeMap, BTreeSet};
+
+    use crate::regexp::{Info, Numbered};
 
     use super::RegExp;
 
@@ -202,7 +245,7 @@ mod test {
     fn regex1() {
         let a = RegExp::try_from("(a+b)*.a.b+$");
         assert_eq!(
-            "Ok(Or(Concat(Concat(Times(Or(Symbol('a'), Symbol('b'))), \
+            "Ok(Or(Concat(Concat(Repeat(Or(Symbol('a'), Symbol('b'))), \
             Symbol('a')), Symbol('b')), Epsilon))",
             format!("{:?}", a)
         );
@@ -213,7 +256,7 @@ mod test {
         let a = RegExp::try_from("(a + b) . ( a* . b)");
         assert_eq!(
             "Ok(Concat(Or(Symbol('a'), Symbol('b')), \
-            Concat(Times(Symbol('a')), Symbol('b'))))",
+            Concat(Repeat(Symbol('a')), Symbol('b'))))",
             format!("{:?}", a)
         );
     }
@@ -234,24 +277,34 @@ mod test {
     fn numbered() {
         let a = RegExp::try_from("(a+b).(a*.b)");
         assert!(a.is_ok());
-        let (a, n, info) = a.unwrap().linearization(1);
+        let (a, n) = a.unwrap().linearization(1);
+        let info = a.get_info();
         assert_eq!(
             "Concat(Or(Symbol(Numbered('a', 1)), Symbol(Numbered('b', 2))), \
-            Concat(Times(Symbol(Numbered('a', 3))), Symbol(Numbered('b', 4))))",
+            Concat(Repeat(Symbol(Numbered('a', 3))), Symbol(Numbered('b', 4))))",
             format!("{:?}", a)
         );
         assert_eq!(5, n);
         assert_eq!(
-            GlushInfo {
-                firsts: vec![Numbered('a', 1), Numbered('b', 2)],
-                lasts: vec![Numbered('b', 4)],
+            Info {
+                firsts: BTreeSet::from([Numbered('a', 1), Numbered('b', 2)]),
+                lasts: BTreeSet::from([Numbered('b', 4)]),
                 null: false,
-                follows: vec![
-                    (Numbered('a', 1), vec![Numbered('a', 3), Numbered('b', 4)]),
-                    (Numbered('b', 2), vec![Numbered('a', 3), Numbered('b', 4)]),
-                    (Numbered('a', 3), vec![Numbered('a', 3), Numbered('b', 4)]),
-                    (Numbered('b', 4), vec![])
-                ]
+                follows: BTreeMap::from([
+                    (
+                        Numbered('a', 1),
+                        BTreeSet::from([Numbered('a', 3), Numbered('b', 4)])
+                    ),
+                    (
+                        Numbered('b', 2),
+                        BTreeSet::from([Numbered('a', 3), Numbered('b', 4)])
+                    ),
+                    (
+                        Numbered('a', 3),
+                        BTreeSet::from([Numbered('a', 3), Numbered('b', 4)])
+                    ),
+                    (Numbered('b', 4), BTreeSet::new())
+                ])
             },
             info
         );
