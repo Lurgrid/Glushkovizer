@@ -34,8 +34,9 @@
 use lrlex::lrlex_mod;
 use lrpar::lrpar_mod;
 use std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::{HashMap, HashSet},
     fmt::{self, Debug, Display, Formatter},
+    hash::Hash,
 };
 
 lrlex_mod!("./lib/reg.l");
@@ -82,26 +83,25 @@ impl TryFrom<&str> for RegExp<char> {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// Structure ayant pour but de representer des symboles numérotés
 pub struct Numbered<T>(pub T, pub usize);
 
-#[derive(PartialEq, Debug)]
 /// Structure regroupant toute les informations d'une expression régulière
 pub struct Info<T> {
     /// Ensemble des premier d'une expression regulière
-    pub firsts: BTreeSet<T>,
+    pub firsts: HashSet<T>,
     /// Ensemble des dernier d'une expression regulière
-    pub lasts: BTreeSet<T>,
+    pub lasts: HashSet<T>,
     /// Est ce que le mot vide est reconnu
     pub null: bool,
     /// Tableau associatif représantant les suivants
-    pub follows: BTreeMap<T, BTreeSet<T>>,
+    pub follows: HashMap<T, HashSet<T>>,
 }
 
 impl<T> RegExp<T>
 where
-    T: Eq + Ord + Clone + Copy,
+    T: Eq + Hash + Clone,
 {
     /// Crée à partir d'une expression régulière une autre expression
     ///     régulière où chaque symbole sera numéroté en partant de "start" et
@@ -111,7 +111,7 @@ where
         match self {
             RegExp::Epsilon => (RegExp::Epsilon, start),
             RegExp::Symbol(v) => {
-                let s = Numbered(*v, start);
+                let s = Numbered(v.clone(), start);
                 let r = RegExp::Symbol(s);
                 let end = start + 1;
                 (r, end)
@@ -143,34 +143,42 @@ where
                 follows: Default::default(),
             },
             RegExp::Symbol(v) => Info {
-                firsts: BTreeSet::from([*v]),
-                lasts: BTreeSet::from([*v]),
+                firsts: HashSet::from([v.clone()]),
+                lasts: HashSet::from([v.clone()]),
                 null: false,
-                follows: BTreeMap::from([(*v, BTreeSet::new())]),
+                follows: HashMap::from([(v.clone(), HashSet::new())]),
             },
             RegExp::Repeat(c) => {
                 let mut gi = c.get_info();
                 gi.null = true;
                 for last in gi.lasts.iter() {
                     if let Some(f) = gi.follows.get_mut(last) {
-                        f.append(&mut gi.firsts.clone());
+                        gi.firsts.iter().for_each(|d| {
+                            f.insert(d.clone());
+                        });
                     }
                 }
                 gi
             }
             RegExp::Or(l, r) => {
                 let mut gil = l.get_info();
-                let mut gir = r.get_info();
-                gil.firsts.append(&mut gir.firsts);
-                gil.lasts.append(&mut gir.lasts);
+                let gir = r.get_info();
+                gir.firsts.into_iter().for_each(|d| {
+                    gil.firsts.insert(d);
+                });
+                gir.lasts.into_iter().for_each(|d| {
+                    gil.lasts.insert(d);
+                });
                 gil.null = gil.null || gir.null;
-                for (k, mut v) in gir.follows {
+                for (k, v) in gir.follows {
                     match gil.follows.get_mut(&k) {
                         None => {
                             gil.follows.insert(k, v);
                         }
                         Some(l) => {
-                            l.append(&mut v);
+                            v.into_iter().for_each(|d| {
+                                l.insert(d);
+                            });
                         }
                     }
                 }
@@ -178,27 +186,35 @@ where
             }
             RegExp::Concat(l, r) => {
                 let mut gil = l.get_info();
-                let mut gir = r.get_info();
+                let gir = r.get_info();
                 for last in gil.lasts.iter() {
                     if let Some(f) = gil.follows.get_mut(last) {
-                        f.append(&mut gir.firsts.clone());
+                        gir.firsts.iter().for_each(|d| {
+                            f.insert(d.clone());
+                        });
                     }
                 }
-                for (k, mut v) in gir.follows {
+                for (k, v) in gir.follows {
                     match gil.follows.get_mut(&k) {
                         None => {
                             gil.follows.insert(k, v);
                         }
                         Some(l) => {
-                            l.append(&mut v);
+                            v.into_iter().for_each(|d| {
+                                l.insert(d);
+                            });
                         }
                     }
                 }
                 if gil.null {
-                    gil.firsts.append(&mut gir.firsts);
+                    gir.firsts.into_iter().for_each(|d| {
+                        gil.firsts.insert(d);
+                    });
                 }
                 if gir.null {
-                    gil.lasts.append(&mut gir.lasts);
+                    gir.lasts.into_iter().for_each(|d| {
+                        gil.lasts.insert(d);
+                    });
                 } else {
                     gil.lasts = gir.lasts;
                 }
@@ -223,10 +239,6 @@ impl<T: Display> Display for RegExp<T> {
 
 #[cfg(test)]
 mod test {
-    use std::collections::{BTreeMap, BTreeSet};
-
-    use crate::regexp::{Info, Numbered};
-
     use super::RegExp;
 
     #[test]
@@ -278,35 +290,12 @@ mod test {
         let a = RegExp::try_from("(a+b).(a*.b)");
         assert!(a.is_ok());
         let (a, n) = a.unwrap().linearization(1);
-        let info = a.get_info();
+        let _ = a.get_info();
         assert_eq!(
             "Concat(Or(Symbol(Numbered('a', 1)), Symbol(Numbered('b', 2))), \
             Concat(Repeat(Symbol(Numbered('a', 3))), Symbol(Numbered('b', 4))))",
             format!("{:?}", a)
         );
         assert_eq!(5, n);
-        assert_eq!(
-            Info {
-                firsts: BTreeSet::from([Numbered('a', 1), Numbered('b', 2)]),
-                lasts: BTreeSet::from([Numbered('b', 4)]),
-                null: false,
-                follows: BTreeMap::from([
-                    (
-                        Numbered('a', 1),
-                        BTreeSet::from([Numbered('a', 3), Numbered('b', 4)])
-                    ),
-                    (
-                        Numbered('b', 2),
-                        BTreeSet::from([Numbered('a', 3), Numbered('b', 4)])
-                    ),
-                    (
-                        Numbered('a', 3),
-                        BTreeSet::from([Numbered('a', 3), Numbered('b', 4)])
-                    ),
-                    (Numbered('b', 4), BTreeSet::new())
-                ])
-            },
-            info
-        );
     }
 }

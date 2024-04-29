@@ -2,13 +2,14 @@
 //! convertion de RegExp en automate de Glushkov
 
 use std::fmt::Display;
+use std::hash::Hash;
 
 use crate::automata::Automata;
 use crate::regexp::RegExp;
 
 impl<T> From<RegExp<T>> for Automata<T, usize>
 where
-    T: Eq + Ord + Clone + Copy + Display,
+    T: Eq + Hash + Clone + Display,
 {
     fn from(reg: RegExp<T>) -> Self {
         let (a, end) = reg.linearization(1);
@@ -20,7 +21,7 @@ where
         for i in 1..end {
             if let Some((_, l)) = info.follows.iter().find(|&(s, _)| s.1 == i) {
                 for next in l {
-                    let _ = g.add_transition(i, next.1, next.0);
+                    let _ = g.add_transition(i, next.1, next.0.clone());
                 }
             }
         }
