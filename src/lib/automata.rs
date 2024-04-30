@@ -57,9 +57,13 @@ use std::hash::Hash;
 
 use self::error::AutomataError;
 
+mod dfs;
+mod display;
 pub mod error;
-pub mod glushkov;
+mod glushkov;
+mod kosaraju;
 
+#[derive(Clone)]
 /// Structure regroupant les informations nécessaire à la gestion d'un état d'un
 /// automate.
 pub struct State<T, V>
@@ -178,6 +182,27 @@ where
         self.states.iter().map(|s| s.value.clone()).collect()
     }
 
+    /// Renvoie l'automate inverse, qui reconnait donc le miroir des mots.
+    pub fn get_inverse(&self) -> Self {
+        let mut g = Self {
+            states: Vec::new(),
+            initials: self.finals.clone(),
+            finals: self.initials.clone(),
+        };
+        for s in self.states.iter() {
+            g.states.push(State::new(s.value.clone()));
+        }
+        for s in self.states.iter() {
+            for k in s.next.keys() {
+                for l in s.next.get(k).unwrap() {
+                    let _ =
+                        g.add_transition(g.states[*l].value.clone(), s.value.clone(), k.clone());
+                }
+            }
+        }
+        g
+    }
+
     /// Ajoute une transition entre l'état de valeur "from" vers l'état de
     /// valeur "to" avec comme transition "sym".
     /// Renvoie une erreur en cas d'impossibilité d'ajout et sinon un type unit.
@@ -257,6 +282,22 @@ mod test {
         g.add_transition(2, 3, 'a')?;
         assert_eq!(g.get_nb_states(), 3);
         assert!(g.accept(&['a', 'a']));
+        Ok(())
+    }
+
+    #[test]
+    fn inverse() -> Result<()> {
+        let mut g = Automata::new();
+        g.add_state(1);
+        g.add_state(2);
+        g.add_state(3);
+        g.add_initial(1)?;
+        g.add_final(3)?;
+        g.add_transition(1, 2, 'a')?;
+        g.add_transition(2, 3, 'b')?;
+        let g = g.get_inverse();
+        assert_eq!(g.get_nb_states(), 3);
+        assert!(g.accept(&['b', 'a']));
         Ok(())
     }
 }

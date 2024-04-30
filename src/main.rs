@@ -1,9 +1,8 @@
 use glushkovizer::automata::Automata;
 use glushkovizer::regexp::RegExp;
-use petgraph::dot::Dot;
-use petgraph::Graph;
 use std::fmt::Display;
 use std::fs::File;
+use std::hash::Hash;
 use std::io::{stdin, Error, Result, Write};
 use std::path::Path;
 use std::process::{Command, ExitCode, Stdio};
@@ -36,25 +35,13 @@ fn main() -> ExitCode {
                 not save"
             );
             m.clear();
-            let graph = g.get_graph();
-            let node_attributs = |_: &Graph<_, _>, (_, v): (_, &_)| -> String {
-                let mut r = String::new();
-                if g.get_finals().contains(&v) {
-                    r.push_str("peripheries=2");
-                }
-                if g.get_initials().contains(&v) {
-                    r.push_str(" shape=diamond");
-                }
-                r
-            };
-            let d = Dot::with_attr_getters(&graph, &[], &|_, _| String::new(), &node_attributs);
             match stdin().read_line(&mut m) {
                 Err(s) => {
                     eprintln!("Error ! {}", s);
                     return ExitCode::FAILURE;
                 }
                 Ok(0) => {
-                    println!("{}", d);
+                    println!("{}", g);
                     continue 'main;
                 }
                 Ok(_) => {
@@ -63,7 +50,7 @@ fn main() -> ExitCode {
                         eprintln!("Error ! File already existing");
                         continue;
                     }
-                    let svg = get_svg(&d);
+                    let svg = get_svg(&g);
                     if let Err(s) = svg {
                         eprintln!("Error ! {}", s);
                         return ExitCode::FAILURE;
@@ -91,10 +78,10 @@ fn main() -> ExitCode {
 
 /// Renvoie la représentation de "g" en SVG en cas de succès, sinon en cas
 /// d'erreur renvoie cette erreur.
-fn get_svg<T, V>(g: &Dot<&Graph<V, T>>) -> Result<String>
+fn get_svg<T, V>(g: &Automata<T, V>) -> Result<String>
 where
-    T: Display,
-    V: Display,
+    T: Eq + Hash + Display + Clone,
+    V: Eq + Hash + Display + Clone,
 {
     use std::io::ErrorKind;
     let mut c = Command::new("dot")

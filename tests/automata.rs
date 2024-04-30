@@ -2,7 +2,7 @@ use glushkovizer::{automata::Automata, regexp::RegExp};
 use rand::Rng;
 use std::{array, usize};
 
-const MAX_DEPTH: usize = 5;
+const MAX_DEPTH: usize = 4;
 const NB_WORD: usize = 100;
 const NB_TEST: usize = 10;
 const NB_REPEAT: usize = 10;

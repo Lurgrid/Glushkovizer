@@ -12,6 +12,9 @@ pub enum AutomataError {
     UnknowStateTo,
     /// Erreur representant le fait que l'état chercher n'existe pas
     UnknowState,
+    /// Erreur representant le fait qu'il n'y à pas assez d'état donné en
+    /// parametre.
+    NotEnoughState,
 }
 
 /// Type alias des resultat des fonction de manipulation des automates
