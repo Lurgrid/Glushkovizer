@@ -2,7 +2,7 @@
 
 use crate::automata::dfs::DFSInfo;
 
-use super::Automata;
+use super::{in_out::DoorType, Automata};
 use std::hash::Hash;
 
 impl<T, V> Automata<T, V>
@@ -42,5 +42,32 @@ where
         }
         r.push(cur);
         r
+    }
+
+    /// Renvoie les sous automate des composantes fortement connexe, où les
+    /// initiaux sont les portes entrante et les finaux les portes sortante
+    pub fn extract_scc(&self) -> Vec<Self> {
+        let mut res = Vec::new();
+        let stype = self.get_states_type();
+        for scc in self.kosaraju() {
+            let mut g = self.get_subautomata(&scc).unwrap();
+            for s in scc {
+                match stype.get(&s).unwrap() {
+                    &DoorType::Both => {
+                        g.add_initial(s.clone()).unwrap();
+                        g.add_final(s).unwrap();
+                    }
+                    &DoorType::In => {
+                        g.add_initial(s).unwrap();
+                    }
+                    &DoorType::Out => {
+                        g.add_final(s).unwrap();
+                    }
+                    _ => {}
+                }
+            }
+            res.push(g);
+        }
+        res
     }
 }

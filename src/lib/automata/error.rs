@@ -15,6 +15,8 @@ pub enum AutomataError {
     /// Erreur representant le fait qu'il n'y à pas assez d'état donné en
     /// parametre.
     NotEnoughState,
+    /// Erreur representant le fait qu'un état à un doublon
+    DuplicateState,
 }
 
 /// Type alias des resultat des fonction de manipulation des automates

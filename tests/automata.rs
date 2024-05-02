@@ -15,7 +15,7 @@ fn automata() {
         let a = Automata::from(r);
         for word in w {
             if !a.accept(&(word.chars().collect::<Vec<char>>()[..])) {
-                panic!("Error on {}:\n{}\n{:?}", i, word, a.get_graph());
+                panic!("Error on {}:\n{}\n{}", i, word, a);
             }
         }
     }

@@ -8,7 +8,6 @@
 //! Voici un exemple de l'utilisation d'un automate crée "à la main":
 //! ```rust
 //! use glushkovizer::automata::{error::Result, Automata};
-//! use petgraph::dot::Dot;
 //!
 //! fn main() -> Result<()> {
 //!     let mut g2 = Automata::new();
@@ -21,7 +20,7 @@
 //!         "L'automate reconnais le mot ?: {}",
 //!         g2.accept(&("a".chars().collect::<Vec<char>>()[..]))
 //!     );
-//!     println!("{}", Dot::with_config(&g2.get_graph(), &[]));
+//!     println!("{}", g2);
 //!     Ok(())
 //! }
 //! ```
@@ -32,7 +31,6 @@
 //! ```rust
 //! use glushkovizer::automata::Automata;
 //! use glushkovizer::regexp::RegExp;
-//! use petgraph::dot::Dot;
 //!
 //! fn main() {
 //!     let a = RegExp::try_from("(a+b).(a*.b)");
@@ -42,7 +40,7 @@
 //!     }
 //!     let a = a.unwrap();
 //!     let g = Automata::from(a);
-//!     println!("{:?}", Dot::with_config(&g.get_graph(), &[]));
+//!     println!("{}", g);
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",
 //!         g.accept(&("ab".chars().collect::<Vec<char>>()[..]))
@@ -51,27 +49,29 @@
 //! ```
 
 use crate::automata::error::Result;
-use petgraph::graph::{Graph, NodeIndex};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 use self::error::AutomataError;
 
-mod dfs;
-mod display;
+pub mod dfs;
+pub mod display;
 pub mod error;
-mod glushkov;
-mod kosaraju;
+pub mod glushkov;
+pub mod in_out;
+pub mod prop;
+pub mod scc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 /// Structure regroupant les informations nécessaire à la gestion d'un état d'un
 /// automate.
-pub struct State<T, V>
+struct State<T, V>
 where
     T: Eq + Hash,
 {
     value: V,
     next: HashMap<T, HashSet<usize>>,
+    prev: HashMap<T, HashSet<usize>>,
 }
 
 impl<T, V> State<T, V>
@@ -82,10 +82,12 @@ where
         State {
             value: value,
             next: Default::default(),
+            prev: Default::default(),
         }
     }
 }
 
+#[derive(Debug)]
 /// Structure regroupant les informations nécessaire à la gestion d'un automate
 /// finit.
 pub struct Automata<T, V>
@@ -113,7 +115,7 @@ where
 impl<T, V> Automata<T, V>
 where
     T: Eq + Hash + Clone,
-    V: Eq + Clone,
+    V: Eq + Hash + Clone,
 {
     /// Crée un automate initialement vide.
     pub fn new() -> Self {
@@ -145,22 +147,6 @@ where
         self.states.len()
     }
 
-    /// Renvoie la représentation de l'automate en [Graph]
-    pub fn get_graph(&self) -> Graph<V, T> {
-        let mut graph = Graph::new();
-        for s in self.states.iter() {
-            graph.add_node(s.value.clone());
-        }
-        for (i, s) in self.states.iter().enumerate() {
-            for k in s.next.keys() {
-                for v in s.next.get(k).unwrap() {
-                    graph.add_edge(NodeIndex::new(i), NodeIndex::new(*v), k.clone());
-                }
-            }
-        }
-        graph
-    }
-
     /// Renvoie la liste des états initiaux.
     pub fn get_initials(&self) -> Vec<V> {
         self.initials
@@ -185,22 +171,76 @@ where
     /// Renvoie l'automate inverse, qui reconnait donc le miroir des mots.
     pub fn get_inverse(&self) -> Self {
         let mut g = Self {
-            states: Vec::new(),
+            states: self.states.clone(),
             initials: self.finals.clone(),
             finals: self.initials.clone(),
         };
-        for s in self.states.iter() {
-            g.states.push(State::new(s.value.clone()));
-        }
-        for s in self.states.iter() {
-            for k in s.next.keys() {
-                for l in s.next.get(k).unwrap() {
-                    let _ =
-                        g.add_transition(g.states[*l].value.clone(), s.value.clone(), k.clone());
-                }
-            }
+        for (ind, s) in self.states.iter().enumerate() {
+            g.states[ind].next = s.prev.clone();
+            g.states[ind].prev = s.next.clone();
         }
         g
+    }
+
+    /// Crée une copie du "sous automate", c'est à dire un automate composé
+    /// des états "states" et ayant gardé les transition entre ces états. Et
+    /// ayant aucun états initials et finaux
+    /// Renvoie une erreur si les valeurs de "states" contient des doublons ou
+    /// si "states" contient des valeurs ne décrivant aucun état de l'automate
+    /// courrant. Sinon renvoie cette copie du sous automate.
+    pub fn get_subautomata(&self, states: &Vec<V>) -> Result<Self> {
+        if has_dup(&states) {
+            return Err(AutomataError::DuplicateState);
+        }
+        if !states
+            .iter()
+            .all(|e| self.states.iter().find(|s| s.value.eq(e)).is_some())
+        {
+            return Err(AutomataError::UnknowState);
+        }
+        let mut a = Self::default();
+        let mut npos = HashMap::new();
+        for v in states {
+            let oldp = self
+                .states
+                .iter()
+                .position(|state| state.value.eq(v))
+                .unwrap();
+            npos.insert(oldp, a.states.len());
+            a.states.push(State::new(self.states[oldp].value.clone()));
+        }
+        for (old_from, new_from) in npos.iter() {
+            let state = &self.states[*old_from];
+            for key in state.next.keys() {
+                let old_set = state.next.get(key).unwrap();
+                old_set.iter().for_each(|v| match npos.get(v) {
+                    Some(new_to) => {
+                        match a.states[*new_from].next.get_mut(key) {
+                            None => {
+                                a.states[*new_from]
+                                    .next
+                                    .insert(key.clone(), HashSet::from([*new_to]));
+                            }
+                            Some(n) => {
+                                n.insert(*new_to);
+                            }
+                        };
+                        match a.states[*new_to].prev.get_mut(key) {
+                            None => {
+                                a.states[*new_to]
+                                    .prev
+                                    .insert(key.clone(), HashSet::from([*new_from]));
+                            }
+                            Some(n) => {
+                                n.insert(*new_from);
+                            }
+                        }
+                    }
+                    None => {}
+                });
+            }
+        }
+        Ok(a)
     }
 
     /// Ajoute une transition entre l'état de valeur "from" vers l'état de
@@ -214,18 +254,28 @@ where
             .ok_or(AutomataError::UnknowStateTo)?;
         let from = self
             .states
-            .iter_mut()
-            .find(|s| s.value == from)
+            .iter()
+            .position(|s| s.value == from)
             .ok_or(AutomataError::UnknowStateFrom)?;
 
-        match from.next.get_mut(&sym) {
+        match self.states[from].next.get_mut(&sym) {
             None => {
-                from.next.insert(sym, HashSet::from([to]));
+                self.states[from]
+                    .next
+                    .insert(sym.clone(), HashSet::from([to]));
             }
             Some(n) => {
                 n.insert(to);
             }
         };
+        match self.states[to].prev.get_mut(&sym) {
+            None => {
+                self.states[to].prev.insert(sym, HashSet::from([from]));
+            }
+            Some(n) => {
+                n.insert(from);
+            }
+        }
         Ok(())
     }
 
@@ -266,6 +316,17 @@ where
     }
 }
 
+fn has_dup<T: Eq + Hash + Clone>(vec: &Vec<T>) -> bool {
+    let mut set: HashSet<T> = HashSet::new();
+    for e in vec.iter() {
+        if !set.insert(e.clone()) {
+            println!("toto");
+            return true;
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod test {
     use crate::automata::{error::Result, Automata};
@@ -298,6 +359,26 @@ mod test {
         let g = g.get_inverse();
         assert_eq!(g.get_nb_states(), 3);
         assert!(g.accept(&['b', 'a']));
+        Ok(())
+    }
+
+    #[test]
+    fn subautomata() -> Result<()> {
+        let mut g = Automata::new();
+        g.add_state(1);
+        g.add_state(2);
+        g.add_state(3);
+        g.add_initial(1)?;
+        g.add_final(3)?;
+        g.add_transition(1, 2, 'a')?;
+        g.add_transition(2, 3, 'a')?;
+        let g2 = g.get_subautomata(&vec![1, 2]);
+        assert!(g2.is_ok());
+        let mut g2 = g2.unwrap();
+        g2.add_initial(1)?;
+        g2.add_final(2)?;
+        assert_eq!(g2.get_nb_states(), 2);
+        assert!(g2.accept(&['a']));
         Ok(())
     }
 }

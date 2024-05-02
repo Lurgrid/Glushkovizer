@@ -1,3 +1,8 @@
+//! Module regroupant les informations et implémentation nécéssaire à
+//! l'affichage d'un automate.
+
+use crate::automata::in_out::DoorType;
+
 use super::Automata;
 use std::{
     fmt::{Display, Formatter, Result},
@@ -14,6 +19,7 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "digraph {{\n")?;
         let mut attr: Vec<&str> = Vec::with_capacity(NB_ATTR);
+        let stype = self.get_states_type();
         for (ind, s) in self.states.iter().enumerate() {
             attr.clear();
             if self.finals.contains(&ind) {
@@ -22,11 +28,17 @@ where
             if self.initials.contains(&ind) {
                 attr.push("shape=diamond");
             }
+            match stype.get(&s.value).unwrap() {
+                &DoorType::Both => attr.push("color=purple"),
+                &DoorType::In => attr.push("color=red"),
+                &DoorType::Out => attr.push("color=blue"),
+                &DoorType::None => {}
+            }
             write!(
                 f,
                 "\t{} [label = \"{}\" {}]\n",
-                s.value,
                 ind,
+                s.value,
                 attr.join(" ")
             )?;
         }
@@ -46,22 +58,7 @@ where
         for (ind, s) in self.states.iter().enumerate() {
             for key in s.next.keys() {
                 for v in s.next.get(key).unwrap() {
-                    attr.clear();
-                    let pf = k.iter().position(|vec| vec.contains(&s.value));
-                    let pt = k
-                        .iter()
-                        .position(|vec| vec.contains(&self.states[*v].value));
-                    if pf != pt {
-                        attr.push("color=\"red;0.5:blue\"");
-                    }
-                    write!(
-                        f,
-                        "\t{} -> {} [label = \"{}\" {}]\n",
-                        ind,
-                        v,
-                        key,
-                        attr.join(" ")
-                    )?;
+                    write!(f, "\t{} -> {} [label = \"{}\"]\n", ind, v, key,)?;
                 }
             }
         }

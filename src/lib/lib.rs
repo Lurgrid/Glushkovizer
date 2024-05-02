@@ -8,7 +8,6 @@
 //! ```rust
 //! use glushkovizer::automata::Automata;
 //! use glushkovizer::regexp::RegExp;
-//! use petgraph::dot::Dot;
 //!
 //! fn main() {
 //!     let a = RegExp::try_from("a*.b*");
@@ -18,7 +17,7 @@
 //!     }
 //!     let a = a.unwrap();
 //!     let g = Automata::from(a);
-//!     println!("{}", Dot::with_config(&g.get_graph(), &[]));
+//!     println!("{}", g);
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",
 //!         g.accept(&("ab".chars().collect::<Vec<char>>()[..]))

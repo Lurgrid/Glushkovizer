@@ -44,13 +44,6 @@ pub struct DFSInfo<V> {
     pub predecessor: Vec<Option<V>>,
 }
 
-#[derive(Clone, PartialEq, Debug)]
-enum Color {
-    White,
-    Grey,
-    Black,
-}
-
 impl<T, V> Automata<T, V>
 where
     T: Eq + Hash + Clone,
@@ -71,11 +64,11 @@ where
             suffix: Vec::with_capacity(self.states.len()),
             predecessor: vec![None; self.states.len()],
         };
-        let mut color: Vec<Color> = vec![Color::White; self.states.len()];
+        let mut color: Vec<bool> = vec![true; self.states.len()];
         let mut state: Vec<usize> = (0..self.states.len()).collect();
         state.sort_by_key(|ind| order.iter().position(|x| x.eq(&self.states[*ind].value)));
         for u in state {
-            if color[u] == Color::White {
+            if color[u] {
                 self.visit_in_depth(&order, u, &mut color, &mut info);
             }
         }
@@ -86,10 +79,10 @@ where
         &self,
         order: &Vec<V>,
         u: usize,
-        color: &mut Vec<Color>,
+        color: &mut Vec<bool>,
         info: &mut DFSInfo<V>,
     ) {
-        color[u] = Color::Grey;
+        color[u] = false;
         info.prefix.push(self.states[u].value.clone());
         let mut p: HashSet<usize> = HashSet::new();
         for set in self.states[u].next.values() {
@@ -98,12 +91,11 @@ where
         let mut p: Vec<usize> = p.clone().into_iter().collect();
         p.sort_by_key(|ind| order.iter().position(|x| x.eq(&self.states[*ind].value)));
         for v in p {
-            if color[v] == Color::White {
+            if color[v] {
                 info.predecessor[v] = Some(self.states[u].value.clone());
                 self.visit_in_depth(order, v, color, info)
             }
         }
-        color[u] = Color::Black;
         info.suffix.push(self.states[u].value.clone());
     }
 }
