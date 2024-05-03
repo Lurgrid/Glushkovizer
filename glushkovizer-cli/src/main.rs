@@ -1,6 +1,6 @@
 use glushkovizer::automata::Automata;
 use glushkovizer::regexp::RegExp;
-use std::fmt::{Debug, Display};
+use std::fmt::Display;
 use std::fs::File;
 use std::hash::Hash;
 use std::io::{stdin, Error, Result, Write};
@@ -88,8 +88,8 @@ fn main() -> ExitCode {
 /// d'erreur renvoie cette erreur.
 fn get_svg<T, V>(g: &Automata<T, V>) -> Result<String>
 where
-    T: Eq + Hash + Display + Clone + Debug,
-    V: Eq + Hash + Display + Clone + Debug,
+    T: Eq + Hash + Display + Clone,
+    V: Eq + Hash + Display + Clone,
 {
     use std::io::ErrorKind;
     let mut c = Command::new("dot")

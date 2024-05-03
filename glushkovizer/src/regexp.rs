@@ -39,8 +39,8 @@ use std::{
     hash::Hash,
 };
 
-lrlex_mod!("./lib/reg.l");
-lrpar_mod!("./lib/reg.y");
+lrlex_mod!("reg.l");
+lrpar_mod!("reg.y");
 
 #[derive(Debug, PartialEq)]
 /// Nom d'un "enum" ayant pour but de représenter une expression régulière à

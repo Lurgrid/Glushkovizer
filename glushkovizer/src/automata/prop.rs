@@ -42,8 +42,8 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
 {
-    /// Renvoie vrai si l'automate est une orbite maximal
-    pub fn is_maximal_orbit(&self) -> bool {
+    /// Renvoie vrai si l'automate est une orbite
+    pub fn is_orbit(&self) -> bool {
         if !self.is_homogeneous() || self.kosaraju().len() > 1 {
             return false;
         }
@@ -71,8 +71,8 @@ mod test {
         let r = r.unwrap();
         let a = Automata::from(r);
         let scc = a.extract_scc();
-        assert!(scc[3].is_maximal_orbit());
-        assert!(scc[4].is_maximal_orbit());
-        assert!(scc[5].is_maximal_orbit());
+        assert!(scc[3].is_orbit());
+        assert!(scc[4].is_orbit());
+        assert!(scc[5].is_orbit());
     }
 }

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
+<cambalache-project version="0.17.3" target_tk="gtk-4.0">
+  <ui>
+	(1,None,"glushkovizer.ui","glushkovizer.ui",None,None,None,None,None,None,None)
+  </ui>
+  <object>
+	(1,1,"GtkWindow","glushkovizer",None,None,None,None,-1,None,None),
+	(1,2,"GtkBox",None,1,None,None,None,-1,None,None),
+	(1,4,"GtkImage","image",2,None,None,None,1,None,None),
+	(1,5,"GtkEntry","search",2,None,None,None,None,None,None)
+  </object>
+  <object_property>
+	(1,2,"GtkBox","baseline-child","0",None,None,None,None,None,None,None,None,None),
+	(1,2,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(1,4,"GtkImage","pixel-size","0",None,None,None,None,None,None,None,None,None),
+	(1,4,"GtkWidget","halign","baseline",None,None,None,None,None,None,None,None,None),
+	(1,4,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(1,5,"GtkEntry","placeholder-text","Enter a regular expression",None,None,None,None,None,None,None,None,None),
+	(1,5,"GtkEntry","primary-icon-name","edit-find-symbolic",None,None,None,None,None,None,None,None,None),
+	(1,5,"GtkWidget","margin-bottom","10",None,None,None,None,None,None,None,None,None),
+	(1,5,"GtkWidget","margin-end","10",None,None,None,None,None,None,None,None,None),
+	(1,5,"GtkWidget","margin-start","10",None,None,None,None,None,None,None,None,None),
+	(1,5,"GtkWidget","margin-top","10",None,None,None,None,None,None,None,None,None)
+  </object_property>
+  <object_data>
+	(1,4,"GtkWidget",1,1,None,None,None,None,None,None),
+	(1,4,"GtkWidget",2,2,None,1,None,None,None,None)
+  </object_data>
+</cambalache-project>

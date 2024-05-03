@@ -214,28 +214,7 @@ where
             for key in state.next.keys() {
                 let old_set = state.next.get(key).unwrap();
                 old_set.iter().for_each(|v| match npos.get(v) {
-                    Some(new_to) => {
-                        match a.states[*new_from].next.get_mut(key) {
-                            None => {
-                                a.states[*new_from]
-                                    .next
-                                    .insert(key.clone(), HashSet::from([*new_to]));
-                            }
-                            Some(n) => {
-                                n.insert(*new_to);
-                            }
-                        };
-                        match a.states[*new_to].prev.get_mut(key) {
-                            None => {
-                                a.states[*new_to]
-                                    .prev
-                                    .insert(key.clone(), HashSet::from([*new_from]));
-                            }
-                            Some(n) => {
-                                n.insert(*new_from);
-                            }
-                        }
-                    }
+                    Some(new_to) => a.add_transition_unchecked(*new_from, *new_to, key.clone()),
                     None => {}
                 });
             }
@@ -257,7 +236,14 @@ where
             .iter()
             .position(|s| s.value == from)
             .ok_or(AutomataError::UnknowStateFrom)?;
+        self.add_transition_unchecked(from, to, sym);
+        Ok(())
+    }
 
+    /// Ajoute une transition entre l'état d'indice "from" vers l'état d'indice
+    /// "to" avec comme transition "sym".
+    /// Aucun test n'est fait si "from" et "to" ne sont pas des indices valides
+    fn add_transition_unchecked(&mut self, from: usize, to: usize, sym: T) {
         match self.states[from].next.get_mut(&sym) {
             None => {
                 self.states[from]
@@ -276,7 +262,6 @@ where
                 n.insert(from);
             }
         }
-        Ok(())
     }
 
     /// Ajoute un état à l'automate de valeur "state".
