@@ -83,6 +83,27 @@ impl TryFrom<&str> for RegExp<char> {
     }
 }
 
+impl TryFrom<String> for RegExp<char> {
+    type Error = String;
+
+    fn try_from(regexp: String) -> Result<RegExp<char>, Self::Error> {
+        let lexerdef = reg_l::lexerdef();
+        let lexer = lexerdef.lexer(regexp.as_str());
+        let (res, errs) = reg_y::parse(&lexer);
+        let mut err = String::new();
+        for e in &errs {
+            err.push_str(&format!("{}\n", e.pp(&lexer, &reg_y::token_epp)));
+        }
+        match res {
+            Some(Ok(r)) if errs.is_empty() => Ok(r),
+            _ => {
+                err.push_str("Unable to evaluate expression.");
+                Err(err)
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// Structure ayant pour but de representer des symboles numérotés
 pub struct Numbered<T>(pub T, pub usize);
