@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/">
+  <gresource prefix="/com/sagbot/GlushkovApp">
     <file compressed="true" preprocess="xml-stripblanks">glushkovizer.ui</file>
+    <file compressed="true">style.css</file>
   </gresource>
 </gresources>

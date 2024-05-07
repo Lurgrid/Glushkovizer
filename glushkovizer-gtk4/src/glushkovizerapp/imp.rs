@@ -1,8 +1,8 @@
 use glib::subclass::InitializingObject;
 use glushkovizer::automata::Automata;
 use glushkovizer::regexp::RegExp;
+use gtk::gdk::Texture;
 use gtk::gdk_pixbuf::PixbufLoader;
-#[allow(unused_imports)]
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, template_callbacks, Button, CompositeTemplate, Entry, Image};
@@ -12,10 +12,12 @@ use std::io::{Error, Result, Write};
 use std::process::{Command, Stdio};
 
 #[derive(CompositeTemplate, Default)]
-#[template(resource = "/glushkovizer.ui")]
+#[template(resource = "/com/sagbot/GlushkovApp/glushkovizer.ui")]
 pub struct GlushkovizerApp {
     #[template_child]
     pub entry: TemplateChild<Entry>,
+    #[template_child]
+    pub list: TemplateChild<gtk::Box>,
     #[template_child]
     pub image: TemplateChild<Image>,
 }
@@ -60,6 +62,7 @@ impl GlushkovizerApp {
         let sr = self.entry.text().to_string();
         let r = RegExp::try_from(sr);
         if let Err(s) = r {
+            self.list.set_visible(false);
             self.entry.set_text(s.as_str());
             return;
         }
@@ -67,16 +70,20 @@ impl GlushkovizerApp {
         let a = Automata::from(r);
         let svg = get_svg(&a);
         if let Err(s) = svg {
+            self.list.set_visible(false);
             self.entry.set_text(s.to_string().as_str());
             return;
         }
         let svg = svg.unwrap();
         let loader = PixbufLoader::new();
+
+        loader.set_size(self.entry.width(), self.entry.width());
         loader.write(svg.as_bytes()).unwrap();
         loader.close().unwrap();
         let pixbuf = loader.pixbuf().unwrap();
-        self.image.set_visible(true);
-        self.image.set_from_pixbuf(Some(&pixbuf));
+        let texture = Texture::for_pixbuf(&pixbuf);
+        self.list.set_visible(true);
+        self.image.set_from_paintable(Some(&texture));
     }
 }
 

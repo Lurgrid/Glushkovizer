@@ -1,25 +1,20 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.90.2 -->
+<?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <!-- interface-name glushkovizer.ui -->
-  <requires lib="gtk" version="4.12"/>
+  <requires lib="gtk" version="4.0"/>
   <template class="GlushkovizerApp" parent="GtkApplicationWindow">
     <property name="default-height">720</property>
     <property name="default-width">1080</property>
-    <property name="hexpand">True</property>
-    <property name="hexpand-set">True</property>
-    <property name="maximized">True</property>
     <property name="title">Glushkovizer App</property>
-    <property name="vexpand">True</property>
-    <property name="vexpand-set">True</property>
     <child>
       <object class="GtkScrolledWindow">
-        <property name="hscrollbar-policy">never</property>
+        <property name="hscrollbar-policy">2</property>
         <child>
           <object class="GtkBox">
-            <property name="orientation">vertical</property>
+            <property name="orientation">1</property>
             <child>
               <object class="GtkBox">
+                <property name="hexpand">true</property>
+                <property name="hexpand-set">true</property>
                 <property name="margin-bottom">10</property>
                 <property name="margin-end">10</property>
                 <property name="margin-start">10</property>
@@ -28,23 +23,46 @@
                 <child>
                   <object class="GtkButton">
                     <property name="label">Parse</property>
-                    <signal name="clicked" handler="handle_parse_clicked" swapped="yes"/>
+                    <signal name="clicked" handler="handle_parse_clicked" swapped="True"/>
                   </object>
                 </child>
                 <child>
                   <object class="GtkEntry" id="entry">
-                    <property name="hexpand">True</property>
-                    <property name="hexpand-set">True</property>
+                    <property name="hexpand">true</property>
+                    <property name="hexpand-set">true</property>
                     <property name="placeholder-text">Enter a regular expresion</property>
-                    <signal name="activate" handler="handle_entry_activate" swapped="yes"/>
+                    <signal name="activate" handler="handle_entry_activate" swapped="True"/>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="GtkImage" id="image">
-                <property name="pixel-size">1000</property>
-                <property name="visible">False</property>
+              <object class="GtkBox" id="list">
+                <property name="hexpand">true</property>
+                <property name="hexpand-set">true</property>
+                <property name="orientation">1</property>
+                <property name="vexpand">true</property>
+                <property name="vexpand-set">true</property>
+                <property name="visible">false</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="ellipsize">2</property>
+                    <property name="justify">2</property>
+                    <property name="label" translatable="true">Glushkov's Automata</property>
+                    <property name="selectable">true</property>
+                    <style>
+                      <class name="glush_title"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImage" id="image">
+                    <property name="hexpand">true</property>
+                    <property name="hexpand-set">true</property>
+                    <property name="vexpand">true</property>
+                    <property name="vexpand-set">true</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
