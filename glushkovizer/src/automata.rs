@@ -18,7 +18,7 @@
 //!     g2.add_transition(0, 1, 'a')?;
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",
-//!         g2.accept(&("a".chars().collect::<Vec<char>>()[..]))
+//!         g2.accept("a".chars())
 //!     );
 //!     println!("{}", g2);
 //!     Ok(())
@@ -43,7 +43,7 @@
 //!     println!("{}", g);
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",
-//!         g.accept(&("ab".chars().collect::<Vec<char>>()[..]))
+//!         g.accept("ab".chars())
 //!     );
 //! }
 //! ```
@@ -65,27 +65,7 @@ pub mod scc;
 #[derive(Clone, Debug)]
 /// Structure regroupant les informations nécessaire à la gestion d'un état d'un
 /// automate.
-struct State<T, V>
-where
-    T: Eq + Hash,
-{
-    value: V,
-    next: HashMap<T, HashSet<usize>>,
-    prev: HashMap<T, HashSet<usize>>,
-}
-
-impl<T, V> State<T, V>
-where
-    T: Eq + Hash,
-{
-    fn new(value: V) -> State<T, V> {
-        State {
-            value: value,
-            next: Default::default(),
-            prev: Default::default(),
-        }
-    }
-}
+struct State<V>(V);
 
 #[derive(Debug)]
 /// Structure regroupant les informations nécessaire à la gestion d'un automate
@@ -94,9 +74,10 @@ pub struct Automata<T, V>
 where
     T: Eq + Hash,
 {
-    states: Vec<State<T, V>>,
+    states: Vec<State<V>>,
     initials: HashSet<usize>,
     finals: HashSet<usize>,
+    follow: Vec<HashMap<T, HashSet<usize>>>,
 }
 
 impl<T, V> Default for Automata<T, V>
@@ -108,7 +89,18 @@ where
             states: Default::default(),
             initials: Default::default(),
             finals: Default::default(),
+            follow: Default::default(),
         }
+    }
+}
+
+impl<T, V> Automata<T, V>
+where
+    T: Eq + Hash,
+{
+    /// Renvoie le nombre d'état dans l'automate
+    pub fn get_nb_states(&self) -> usize {
+        self.states.len()
     }
 }
 
@@ -123,12 +115,12 @@ where
     }
 
     /// Test si le mot passé en paramètre est reconnu par l'automate.
-    pub fn accept(&self, msg: &[T]) -> bool {
+    pub fn accept<'a>(&self, msg: impl IntoIterator<Item = T>) -> bool {
         let mut cur: Vec<usize> = self.initials.clone().into_iter().collect();
-        for c in msg.iter() {
+        for c in msg {
             let mut next: Vec<usize> = Vec::new();
             for s in cur.iter() {
-                if let Some(l) = self.states[*s].next.get(&c) {
+                if let Some(l) = self.follow[*s].get(&c) {
                     for s in l.iter() {
                         next.push(s.clone())
                     }
@@ -142,16 +134,11 @@ where
         cur.into_iter().find(|s| self.finals.contains(s)).is_some()
     }
 
-    /// Renvoie le nombre d'état dans l'automate
-    pub fn get_nb_states(&self) -> usize {
-        self.states.len()
-    }
-
     /// Renvoie la liste des états initiaux.
     pub fn get_initials(&self) -> Vec<V> {
         self.initials
             .iter()
-            .map(|s| self.states[*s].value.clone())
+            .map(|s| self.states[*s].0.clone())
             .collect()
     }
 
@@ -159,13 +146,22 @@ where
     pub fn get_finals(&self) -> Vec<V> {
         self.finals
             .iter()
-            .map(|s| self.states[*s].value.clone())
+            .map(|s| self.states[*s].0.clone())
             .collect()
     }
 
     /// Renvoie la liste des états.
     pub fn get_states(&self) -> Vec<V> {
-        self.states.iter().map(|s| s.value.clone()).collect()
+        self.states.iter().map(|s| s.0.clone()).collect()
+    }
+
+    /// Renvoie l'indice de l'état de valeur "state".
+    /// Aucun test n'est fait sur la présence ou non d'un état de cette valeur
+    unsafe fn get_ind_state(&self, state: &V) -> usize {
+        self.states
+            .iter()
+            .position(|s| s.0.eq(state))
+            .unwrap_unchecked()
     }
 
     /// Renvoie l'automate inverse, qui reconnait donc le miroir des mots.
@@ -174,10 +170,14 @@ where
             states: self.states.clone(),
             initials: self.finals.clone(),
             finals: self.initials.clone(),
+            follow: vec![HashMap::new(); self.get_nb_states()],
         };
-        for (ind, s) in self.states.iter().enumerate() {
-            g.states[ind].next = s.prev.clone();
-            g.states[ind].prev = s.next.clone();
+        for (from, follow) in self.follow.iter().enumerate() {
+            for (sym, set) in follow.iter() {
+                for to in set {
+                    unsafe { Automata::add_transition_unchecked(&mut g, *to, from, sym.clone()) }
+                }
+            }
         }
         g
     }
@@ -194,27 +194,25 @@ where
         }
         if !states
             .iter()
-            .all(|e| self.states.iter().find(|s| s.value.eq(e)).is_some())
+            .all(|e| self.states.iter().find(|s| s.0.eq(e)).is_some())
         {
             return Err(AutomataError::UnknowState);
         }
         let mut a = Self::default();
         let mut npos = HashMap::new();
         for v in states {
-            let oldp = self
-                .states
-                .iter()
-                .position(|state| state.value.eq(v))
-                .unwrap();
+            let oldp = unsafe { self.get_ind_state(v) };
             npos.insert(oldp, a.states.len());
-            a.states.push(State::new(self.states[oldp].value.clone()));
+            a.add_state(self.states[oldp].0.clone());
         }
         for (old_from, new_from) in npos.iter() {
-            let state = &self.states[*old_from];
-            for key in state.next.keys() {
-                let old_set = state.next.get(key).unwrap();
+            let follow = &self.follow[*old_from];
+            for key in follow.keys() {
+                let old_set = follow.get(key).unwrap();
                 old_set.iter().for_each(|v| match npos.get(v) {
-                    Some(new_to) => a.add_transition_unchecked(*new_from, *new_to, key.clone()),
+                    Some(new_to) => unsafe {
+                        a.add_transition_unchecked(*new_from, *new_to, key.clone())
+                    },
                     None => {}
                 });
             }
@@ -224,80 +222,149 @@ where
 
     /// Ajoute une transition entre l'état de valeur "from" vers l'état de
     /// valeur "to" avec comme transition "sym".
-    /// Renvoie une erreur en cas d'impossibilité d'ajout et sinon un type unit.
     pub fn add_transition(&mut self, from: V, to: V, sym: T) -> Result<()> {
         let to = self
             .states
             .iter()
-            .position(|s| s.value == to)
+            .position(|s| s.0 == to)
             .ok_or(AutomataError::UnknowStateTo)?;
         let from = self
             .states
             .iter()
-            .position(|s| s.value == from)
+            .position(|s| s.0 == from)
             .ok_or(AutomataError::UnknowStateFrom)?;
-        self.add_transition_unchecked(from, to, sym);
+        unsafe {
+            self.add_transition_unchecked(from, to, sym);
+        }
+        Ok(())
+    }
+
+    /// Supprime la transition entre l'état de valeur "from" vers l'état de
+    /// valeur "to" avec comme transition "sym".
+    pub fn remove_transition(&mut self, from: V, to: V, sym: T) -> Result<()> {
+        let to = self
+            .states
+            .iter()
+            .position(|s| s.0 == to)
+            .ok_or(AutomataError::UnknowStateTo)?;
+        let from = self
+            .states
+            .iter()
+            .position(|s| s.0 == from)
+            .ok_or(AutomataError::UnknowStateFrom)?;
+        unsafe {
+            self.remove_transition_unchecked(from, to, sym);
+        }
         Ok(())
     }
 
     /// Ajoute une transition entre l'état d'indice "from" vers l'état d'indice
     /// "to" avec comme transition "sym".
     /// Aucun test n'est fait si "from" et "to" ne sont pas des indices valides
-    fn add_transition_unchecked(&mut self, from: usize, to: usize, sym: T) {
-        match self.states[from].next.get_mut(&sym) {
+    unsafe fn add_transition_unchecked(&mut self, from: usize, to: usize, sym: T) {
+        match self.follow[from].get_mut(&sym) {
             None => {
-                self.states[from]
-                    .next
-                    .insert(sym.clone(), HashSet::from([to]));
+                self.follow[from].insert(sym, HashSet::from([to]));
             }
             Some(n) => {
                 n.insert(to);
             }
         };
-        match self.states[to].prev.get_mut(&sym) {
-            None => {
-                self.states[to].prev.insert(sym, HashSet::from([from]));
-            }
+    }
+
+    /// Supprime la transition entre l'état d'indice "from" vers l'état d'indice
+    /// "to" avec comme transition "sym".
+    /// Aucun test n'est fait si "from" et "to" ne sont pas des indices valides
+    unsafe fn remove_transition_unchecked(&mut self, from: usize, to: usize, sym: T) {
+        match self.follow[from].get_mut(&sym) {
             Some(n) => {
-                n.insert(from);
+                n.remove(&to);
             }
-        }
+            _ => (),
+        };
     }
 
     /// Ajoute un état à l'automate de valeur "state".
     /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent.
     pub fn add_state(&mut self, state: V) -> bool {
-        if self.states.iter().find(|s| s.value == state).is_some() {
+        if self.states.iter().find(|s| s.0 == state).is_some() {
             return false;
         }
-        self.states.push(State::new(state));
+        self.states.push(State(state));
+        self.follow.push(HashMap::new());
         return true;
     }
 
-    /// Ajoute à la liste des initaux de l'autome, l'état qui a pour valeur
+    /// Supprime le état à l'automate de valeur "state".
+    pub fn remove_state(&mut self, state: V) -> Result<()> {
+        let s = self
+            .states
+            .iter()
+            .position(|s| s.0 == state)
+            .ok_or(AutomataError::UnknowState)?;
+        self.states.remove(s);
+        self.follow.remove(s);
+        for f in self.follow.iter_mut() {
+            for set in f.values_mut() {
+                *set = set
+                    .iter()
+                    .filter_map(|ind| match *ind {
+                        ind if ind == s => None,
+                        ind if ind < s => Some(ind),
+                        ind => Some(ind - 1),
+                    })
+                    .collect();
+            }
+        }
+        Ok(())
+    }
+
+    /// Ajoute à la liste des initiaux de l'automate, l'état qui a pour valeur
     /// "state".
-    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent. Et
-    /// renvoie une erreur si l'état n'existe pas.
+    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent.
     pub fn add_initial(&mut self, state: V) -> Result<bool> {
         let s = self
             .states
             .iter()
-            .position(|s| s.value == state)
+            .position(|s| s.0 == state)
             .ok_or(AutomataError::UnknowState)?;
         Ok(self.initials.insert(s))
     }
 
-    /// Ajoute à la liste des finaux de l'autome, l'état qui a pour valeur
+    /// Supprime à la liste des initiaux de l'automate, l'état qui a pour valeur
     /// "state".
-    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent. Et
-    /// renvoie une erreur si l'état n'existe pas.
+    pub fn remove_initial(&mut self, state: V) -> Result<()> {
+        let s = self
+            .states
+            .iter()
+            .position(|s| s.0 == state)
+            .ok_or(AutomataError::UnknowState)?;
+        self.initials.remove(&s);
+        Ok(())
+    }
+
+    /// Ajoute à la liste des finaux de l'automate, l'état qui a pour valeur
+    /// "state".
+    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent.
     pub fn add_final(&mut self, state: V) -> Result<bool> {
         let s = self
             .states
             .iter()
-            .position(|s| s.value == state)
+            .position(|s| s.0 == state)
             .ok_or(AutomataError::UnknowState)?;
         Ok(self.finals.insert(s))
+    }
+
+    /// Supprime à la liste des finaux de l'automate, l'état qui a pour valeur
+    /// "state".
+    pub fn remove_final(&mut self, state: V) -> Result<()> {
+        let s = self
+            .states
+            .iter()
+            .position(|s| s.0 == state)
+            .ok_or(AutomataError::UnknowState)?;
+        self.finals.remove(&s);
+        Ok(())
     }
 }
 
@@ -322,12 +389,15 @@ mod test {
         g.add_state(1);
         g.add_state(2);
         g.add_state(3);
+        g.add_state(4);
         g.add_initial(1)?;
         g.add_final(3)?;
         g.add_transition(1, 2, 'a')?;
         g.add_transition(2, 3, 'a')?;
+        g.add_transition(3, 4, 'z')?;
+        g.remove_state(4)?;
         assert_eq!(g.get_nb_states(), 3);
-        assert!(g.accept(&['a', 'a']));
+        assert!(g.accept(['a', 'a'].into_iter()));
         Ok(())
     }
 
@@ -343,7 +413,7 @@ mod test {
         g.add_transition(2, 3, 'b')?;
         let g = g.get_inverse();
         assert_eq!(g.get_nb_states(), 3);
-        assert!(g.accept(&['b', 'a']));
+        assert!(g.accept(['b', 'a'].into_iter()));
         Ok(())
     }
 
@@ -363,7 +433,7 @@ mod test {
         g2.add_initial(1)?;
         g2.add_final(2)?;
         assert_eq!(g2.get_nb_states(), 2);
-        assert!(g2.accept(&['a']));
+        assert!(g2.accept(['a'].into_iter()));
         Ok(())
     }
 }

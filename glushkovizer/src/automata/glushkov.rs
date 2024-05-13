@@ -51,6 +51,6 @@ mod test {
         let r = r.unwrap();
         let g = Automata::from(r);
         assert_eq!(g.get_nb_states(), 3);
-        assert!(g.accept(&['a', 'a']));
+        assert!(g.accept(['a', 'a'].into_iter()));
     }
 }

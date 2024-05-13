@@ -54,19 +54,19 @@ where
     /// Renvoie [Err] si order ne contient par toute les valeurs possible des
     /// états.
     pub fn get_dfs(&self, order: Vec<V>) -> Result<DFSInfo<V>> {
-        if self.states.len() != order.len() || !self.states.iter().all(|d| order.contains(&d.value))
+        if self.get_nb_states() != order.len() || !self.states.iter().all(|d| order.contains(&d.0))
         {
             return Err(AutomataError::NotEnoughState);
         }
 
         let mut info = DFSInfo::<V> {
-            prefix: Vec::with_capacity(self.states.len()),
-            suffix: Vec::with_capacity(self.states.len()),
-            predecessor: vec![None; self.states.len()],
+            prefix: Vec::with_capacity(self.get_nb_states()),
+            suffix: Vec::with_capacity(self.get_nb_states()),
+            predecessor: vec![None; self.get_nb_states()],
         };
-        let mut color: Vec<bool> = vec![true; self.states.len()];
-        let mut state: Vec<usize> = (0..self.states.len()).collect();
-        state.sort_by_key(|ind| order.iter().position(|x| x.eq(&self.states[*ind].value)));
+        let mut color: Vec<bool> = vec![true; self.get_nb_states()];
+        let mut state: Vec<usize> = (0..self.get_nb_states()).collect();
+        state.sort_by_key(|ind| order.iter().position(|x| x.eq(&self.states[*ind].0)));
         for u in state {
             if color[u] {
                 self.visit_in_depth(&order, u, &mut color, &mut info);
@@ -83,20 +83,20 @@ where
         info: &mut DFSInfo<V>,
     ) {
         color[u] = false;
-        info.prefix.push(self.states[u].value.clone());
+        info.prefix.push(self.states[u].0.clone());
         let mut p: HashSet<usize> = HashSet::new();
-        for set in self.states[u].next.values() {
+        for set in self.follow[u].values() {
             p.extend(set);
         }
         let mut p: Vec<usize> = p.clone().into_iter().collect();
-        p.sort_by_key(|ind| order.iter().position(|x| x.eq(&self.states[*ind].value)));
+        p.sort_by_key(|ind| order.iter().position(|x| x.eq(&self.states[*ind].0)));
         for v in p {
             if color[v] {
-                info.predecessor[v] = Some(self.states[u].value.clone());
+                info.predecessor[v] = Some(self.states[u].0.clone());
                 self.visit_in_depth(order, v, color, info)
             }
         }
-        info.suffix.push(self.states[u].value.clone());
+        info.suffix.push(self.states[u].0.clone());
     }
 }
 

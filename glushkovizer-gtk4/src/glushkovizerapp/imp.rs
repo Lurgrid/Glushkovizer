@@ -77,7 +77,7 @@ impl GlushkovizerApp {
         let svg = svg.unwrap();
         let loader = PixbufLoader::new();
 
-        loader.set_size(self.entry.width(), self.entry.width());
+        loader.set_size(self.obj().width(), self.obj().height());
         loader.write(svg.as_bytes()).unwrap();
         loader.close().unwrap();
         let pixbuf = loader.pixbuf().unwrap();

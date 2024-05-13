@@ -41,24 +41,22 @@ where
         let k = self.kosaraju();
         let mut stype = HashMap::new();
         self.states.iter().for_each(|s| {
-            stype.insert(s.value.clone(), DoorType::None);
+            stype.insert(s.0.clone(), DoorType::None);
         });
         for (ind, s) in self.states.iter().enumerate() {
             if self.initials.contains(&ind) {
-                *stype.get_mut(&s.value).unwrap() += DoorType::In;
+                *stype.get_mut(&s.0).unwrap() += DoorType::In;
             }
             if self.finals.contains(&ind) {
-                *stype.get_mut(&s.value).unwrap() += DoorType::Out;
+                *stype.get_mut(&s.0).unwrap() += DoorType::Out;
             }
-            for key in s.next.keys() {
-                for v in s.next.get(key).unwrap() {
-                    let pf = k.iter().position(|vec| vec.contains(&s.value));
-                    let pt = k
-                        .iter()
-                        .position(|vec| vec.contains(&self.states[*v].value));
+            for set in self.follow[ind].values() {
+                for v in set {
+                    let pf = k.iter().position(|vec| vec.contains(&s.0));
+                    let pt = k.iter().position(|vec| vec.contains(&self.states[*v].0));
                     if pf != pt {
-                        *stype.get_mut(&s.value).unwrap() += DoorType::Out;
-                        *stype.get_mut(&self.states[*v].value).unwrap() += DoorType::In;
+                        *stype.get_mut(&s.0).unwrap() += DoorType::Out;
+                        *stype.get_mut(&self.states[*v].0).unwrap() += DoorType::In;
                     }
                 }
             }

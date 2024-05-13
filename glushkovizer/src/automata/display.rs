@@ -17,7 +17,7 @@ where
     V: Eq + Hash + Display + Clone,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "digraph {{\n")?;
+        write!(f, "digraph {{\n\trankdir=\"LR\"\n")?;
         let mut attr: Vec<&str> = Vec::with_capacity(NB_ATTR);
         let stype = self.get_states_type();
         for (ind, s) in self.states.iter().enumerate() {
@@ -28,36 +28,26 @@ where
             if self.initials.contains(&ind) {
                 attr.push("shape=diamond");
             }
-            match stype.get(&s.value).unwrap() {
+            match stype.get(&s.0).unwrap() {
                 &DoorType::Both => attr.push("color=purple"),
                 &DoorType::In => attr.push("color=red"),
                 &DoorType::Out => attr.push("color=blue"),
                 &DoorType::None => {}
             }
-            write!(
-                f,
-                "\t{} [label = \"{}\" {}]\n",
-                ind,
-                s.value,
-                attr.join(" ")
-            )?;
+            write!(f, "\t{} [label = \"{}\" {}]\n", ind, s.0, attr.join(" "))?;
         }
         let k = self.kosaraju();
         for (ind, sub) in k.iter().enumerate() {
             write!(f, "\tsubgraph cluster{} {{\n", ind)?;
             for s in sub {
-                let pos = self
-                    .states
-                    .iter()
-                    .position(|state| s.eq(&state.value))
-                    .unwrap();
+                let pos = unsafe { self.get_ind_state(s) };
                 write!(f, "\t\t{}\n", pos)?;
             }
             write!(f, "\t}}\n")?;
         }
-        for (ind, s) in self.states.iter().enumerate() {
-            for key in s.next.keys() {
-                for v in s.next.get(key).unwrap() {
+        for ind in 0..self.get_nb_states() {
+            for key in self.follow[ind].keys() {
+                for v in self.follow[ind].get(key).unwrap() {
                     write!(f, "\t{} -> {} [label = \"{}\"]\n", ind, v, key,)?;
                 }
             }

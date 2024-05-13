@@ -18,7 +18,7 @@ where
             suffix: mut order,
             predecessor: _,
         } = self
-            .get_dfs(self.states.iter().map(|s| s.value.clone()).collect())
+            .get_dfs(self.states.iter().map(|s| s.0.clone()).collect())
             .unwrap();
         let inverse = self.get_inverse();
         order.reverse();
@@ -30,7 +30,7 @@ where
         let mut r = Vec::new();
         let mut cur = Vec::new();
         for p in prefix {
-            let pos = inverse.states.iter().position(|s| s.value == p).unwrap();
+            let pos = unsafe { inverse.get_ind_state(&p) };
             if res[pos].is_none() {
                 if cur.len() != 0 {
                     r.push(cur);
