@@ -1,0 +1,537 @@
+\documentclass[12pt]{article}
+\usepackage[french]{babel}
+\usepackage{./cmpt/cmpt}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{float}
+\usetikzlibrary{positioning}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{automata, arrows}
+\usetikzlibrary{shapes.geometric}
+
+%--- begin document ------------------------------------------------------------
+
+\title{Définition Formelle --- Glushkovizer}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    Ce document constitue la définition formelle des différents types de donnée
+    utilisés tout au long de cette librairie. Dans un premier temps, nous nous
+    concentrerons sur les expressions régulières et les fonctions définies sur
+    celle-ci. Puis dans un second temps, nous nous intéresseront aux automates
+    et à leur divers fonctions définies sur eux. Enfin pour finir, nous
+    parlerons d'automates particuliers, ceux de Glushkov, nous aborderons leurs
+    constructions, ainsi que leurs propriétés.
+\end{abstract}
+
+\newpage
+
+\section{Les expressions régulières}
+
+Dans cette section, nous parlerons d'expressions régulières (\textit{ER}). Nous
+allons nous concentrer sur un type bien particulier d'expressions régulières
+qui ne seront pas les expressions régulières que nous pouvons voir plus
+quotidiennement dans le domaine de l'informatique, les expressions régulières
+\textit{UNIX}. Mais plutôt une version plus simple de celles-ci.
+
+\subsection{Définition}
+
+Nous allons noter une expression régulière \(E(\Sigma)\), c'est-à-dire une
+expression régulière où les symboles sont inclus dans l'ensemble \(\Sigma\).
+Cette expression reconnait un langage qu'on pourra appeler \(L(E(\Sigma))\).
+Nous pouvons définir une expression régulière récursivement de cette manière~:
+
+\begin{align}
+    E(\Sigma) & = \epsilon                            \\
+    E(\Sigma) & = a \quad \text{avec}~ a \in \Sigma   \\
+    E(\Sigma) & = F(\Sigma) + G(\Sigma)               \\
+    E(\Sigma) & = F(\Sigma) \cdot G(\Sigma)           \\
+    E(\Sigma) & = F(\Sigma)^*                         \\
+    E(\Sigma) & = (F(\Sigma))\label{align:parenthese}
+\end{align}
+
+On notera que \(*\) est prioritaire sur \(\cdot\) qui est lui-même prioritaire
+sur \(+\) et qu'ils sont tous deux associatif à gauche. On comprend donc
+pourquoi l'équation~(\ref{align:parenthese}) existe, elle est là pour des
+raisons de priorité. Il est alors évidant de calculer les diverses fonctions
+sur celle-ci, c'est pour cela qu'on ne précisera pas son
+calcul\label{text:parenthese}. On peut définir chaque équation comme ceci~:
+
+\vphantom{}
+
+\begin{itemize}
+    \item[\textbullet] \textbf{\(E(\Sigma) = \epsilon\) (epsilon)~:}
+        Représente le mot vide, de ce fait un mot de longueur zéro. Il en vient
+        que~:
+
+        \begin{align}
+            L(E(\Sigma)) & = \{\epsilon\}
+        \end{align}
+
+        Il peut être parfois représenté par `\$'.
+
+        \vphantom{}
+
+    \item[\textbullet] \textbf{\(E(\Sigma) = a\)~:} Représente un symbole
+        présent dans l'ensemble \(\Sigma\). Il en vient que~:
+
+        \begin{align}
+            L(E(\Sigma)) & = \{a\}
+        \end{align}
+
+        \vphantom{}
+
+    \item[\textbullet] \textbf{\(F(\Sigma) + G(\Sigma)\)~:} Représente l'union
+        des deux expressions régulières \(F(\Sigma)\) et \(G(\Sigma)\). Il en
+        vient que~:
+
+        \begin{align}
+            L(F(\Sigma) + G(\Sigma)) & = L(F(\Sigma)) \cup L(G(\Sigma))
+        \end{align}
+
+        Par abus de langage, on peut aussi dire \(F(\Sigma)\) `ou' \(G(\Sigma)\) pour
+        représenter cette union.
+
+        \vphantom{}
+
+    \item[\textbullet] \textbf{\(E(\Sigma) = F(\Sigma) \cdot G(\Sigma)\)~:}
+        Représente la concaténation deux deux des deux expressions régulières
+        \(F(\Sigma)\) et \(G(\Sigma)\). Il en vient que~:
+
+        \begin{align}
+            L(E(\Sigma)) & = \{u.v ~|~ u \in L(F(\Sigma)) \land v \in L(G(\Sigma)) \}
+        \end{align}
+
+        \vphantom{}
+
+    \item[\textbullet] \textbf{\(E(\Sigma) = F(\Sigma)^* \)~:} Représente la
+        répétition infinie de \(F(\Sigma)\), cette répétition incluant, aucune
+        répétition et donc le mot vide. Il en vient que~:
+
+        \begin{align}
+            L(E(\Sigma)) & = \{u^* ~|~ u \in L(F(\Sigma))\}
+        \end{align}
+\end{itemize}
+
+\subsubsection*{Exemple~:}
+
+On comprendra ainsi que l'expression \(E(\mathbb{A}) = a+c.d\) avec
+\(\mathbb{A} = \{a, b, c, d\}\), dénote le langage \(L(E(\mathbb{A})) = \{a,
+cd\}\). Car on peut représenter \(E(\mathbb{A})\) comme ceci~:
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+            mycircle/.style={
+                    draw,
+                    circle,
+                    minimum height=.75cm,
+                    minimum width=.75cm
+                },
+            mysquare/.style={
+                    draw,
+                    rectangle,
+                    minimum height=.5cm,
+                    minimum width=.5cm,
+                }
+        ]
+        \node[mysquare] (plus) {+}
+        child {node[mycircle] (a) {a}}
+        child {
+                node[mysquare] (point) {.}
+                child {node[mycircle] (c) {c}}
+                child {node[mycircle] (d) {d}}
+            };
+
+        \node[right=3mm of d] {\(\{d\}\)};
+        \node[left=3mm of c] {\(\{c\}\)};
+        \node[right=3mm of point] {\(\{cd\}\)};
+        \node[left=3mm of a] {\(\{a\}\)};
+        \node[above=3mm of plus] {\(\{a, cd\}\)};
+    \end{tikzpicture}
+    \caption{
+        Représentation de l'expression régulière à l'aide d'un arbre syntaxique
+    }\label{fig:arbre_syn}
+\end{figure}
+
+Comme on peut voir sur la figure~\ref{fig:arbre_syn} grâce à cette
+représentation, on peut calculer simplement le langage reconnu par l'expression
+régulière (ici représenter par les ensemble à côté de chaque arbre).
+
+\vphantom{}
+
+On comprendra aussi que l'expression \(E'(\mathbb{A}) = \epsilon + b^* \cdot
+a\), dénote le langage \(L(E'(\mathbb{A})) = \{\epsilon, b^* \cdot a\}
+\Leftrightarrow \{\epsilon, a, b^+\}\).
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+            mycircle/.style={
+                    draw,
+                    circle,
+                    minimum height=.75cm,
+                    minimum width=.75cm
+                },
+            mysquare/.style={
+                    draw,
+                    rectangle,
+                    minimum height=.5cm,
+                    minimum width=.5cm,
+                }
+        ]
+        \node[mysquare] (plus) {+}
+        child {node[mycircle] (epsilon) {\(\epsilon\)}}
+        child {
+                node[mysquare] (point) {\(\cdot \)}
+                child {
+                        node[mysquare] (etoile) {*}
+                        child {
+                                node[mycircle] (b) {b}
+                            }
+                    }
+                child {node[mycircle] (a) {a}}
+            };
+
+        \node[right=3mm of a] {\(\{a\}\)};
+        \node[left=3mm of b] {\(\{b\}\)};
+        \node[left=3mm of etoile] {\(\{b^*\}\)};
+        \node[right=3mm of point] {\(\{b^* \cdot a\}\)};
+        \node[left=3mm of epsilon] {\(\{\epsilon\}\)};
+        \node[above=3mm of plus] {\(\{\epsilon, b^* \cdot a\}\)};
+    \end{tikzpicture}
+    \caption{
+        Représentation de l'expression régulière à l'aide d'un arbre syntaxique
+    }
+\end{figure}
+
+\subsection{Fonction sur les \textit{ER}}
+
+La seule est unique fonction sur laquelle on va se concentrer est \(flnf\)
+permettant de calculer \(FLNF(E(\Sigma))\) qui est un tuple défini comme ceci~:
+
+\vphantom{}
+
+\begin{center}
+    \(FLNF(E(\Sigma)) = (F, L, \Theta, \delta)\)
+
+    \begin{itemize}
+        \item[\textbullet] \(F \subseteq \Sigma\)~: Ensemble des premiers
+            symboles de l'expression régulière
+
+            \vphantom{}
+
+        \item[\textbullet] \(L \subseteq \Sigma\)~: Ensemble des derniers
+            symboles de l'expression régulière
+
+            \vphantom{}
+
+        \item[\textbullet] \(\Theta\) =
+            \(
+            \begin{cases}
+                \epsilon,    & \text{si}~ \epsilon \in L(E(\Sigma)) \\
+                \varnothing, & \text{sinon}
+            \end{cases}
+            \)
+
+            \vphantom{}
+
+        \item[\textbullet] \(\delta\)~: \(\Sigma \to S\) avec \(S \subseteq
+            \Sigma\). \\
+            Fonction renvoyant les symboles suivant du symbole passer argument.
+    \end{itemize}
+\end{center}
+
+La fonction \(flnf\) a donc comme signature~:
+
+\begin{align}
+    flnf: E(\Sigma) \to FLNF(E(\Sigma))
+\end{align}
+
+Et peut-être calculée de cette manière~:
+
+\begin{align}
+    flnf(\epsilon) & = (\varnothing, \varnothing, \epsilon, \delta) ~|~ \delta(a) = \varnothing, a \in \Sigma \\
+    flnf(a)        & = (\{a\}, \{a\}, \varnothing, \delta) ~|~ \delta(a) = \varnothing, a
+    \in \Sigma
+\end{align}
+
+\begin{gather}
+    flnf(E(\Sigma) + G(\Sigma)) = (F \cup F', L \cup L', \Theta \cup \Theta', \delta'')~ \text{avec} \\
+    \delta''(a) = \delta(a) \cup \delta'(a) ~|~ \forall~a \in \Sigma \notag \\
+    (F, L, \Theta, \delta) = flnf(E(\Sigma)) \land (F', L', \Theta', \delta') = flnf(G(\Sigma)) \notag
+\end{gather}
+
+\begin{gather}
+    flnf(E(\Sigma) \cdot G(\Sigma)) = (F'', L'', \Theta \cap \Theta', \delta'')~ \text{avec} \\
+    F'' = F \cup F' \cdot \Theta \notag \\
+    L'' = L' \cup L \cdot \Theta' \notag \\
+    \delta''(a) = \begin{cases} \delta(a) \cup \delta'(a) \cup F', & \text{si}~ a \in L \\ \delta(a) \cup \delta'(a), & \text{sinon}\end{cases} ~|~ \forall~a \in \Sigma\notag \\
+    (F, L, \Theta, \delta) = flnf(E(\Sigma)) \land (F', L', \Theta', \delta') = flnf(G(\Sigma)) \notag
+\end{gather}
+
+\begin{gather}
+    flnf(E(\Sigma)^*) = (F, L, \epsilon, \delta')~ \text{avec} \\
+    \delta'(a) = \begin{cases} \delta(a) \cup F, & \text{si}~ a \in L \\ \delta(a), & \text{sinon}\end{cases} ~|~ \forall~a \in \Sigma\notag \\
+    (F, L, \Theta, \delta) = flnf(E(\Sigma)) \notag
+\end{gather}
+
+\subsubsection*{Exemple~:}
+
+Prenons par exemple l'expression régulière suivante \(E(\mathbb{A}) = a \cdot b
++ c \cdot d\), avec \(\mathbb{A} = \{a, b, c, d\}\). Toujours à l'aide d'un
+arbre syntaxique, on peut calculer ce que \(flnf(E(\mathbb{A}))\) donnerait.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+            level 1/.style={
+                    sibling distance=6cm
+                },
+            level 2/.style={
+                    sibling distance=3cm
+                },
+            mycircle/.style={
+                    draw,
+                    circle,
+                    minimum height=.75cm,
+                    minimum width=.75cm
+                },
+            mysquare/.style={
+                    draw,
+                    rectangle,
+                    minimum height=.5cm,
+                    minimum width=.5cm,
+                }
+        ]
+        \node[mycircle] (plus) {+}
+        child {
+                node[mysquare] (point) {\(\cdot\)}
+                child {node[mycircle] (a) {a} }
+                child {node[mycircle] (b) {b} }
+            }
+        child {
+                node[mysquare] (point2) {\(\cdot\)}
+                child {node[mycircle] (c) {c} }
+                child {node[mycircle] (d) {d}}
+            };
+
+        \node[below=3mm of a] {\((\{a\}, \{a\}, \varnothing, \varnothing)\)};
+        \node[below=3mm of b] {\((\{b\}, \{b\}, \varnothing, \varnothing)\)};
+        \node[below=3mm of c] {\((\{c\}, \{c\}, \varnothing, \varnothing)\)};
+        \node[below=3mm of d] {\((\{d\}, \{d\}, \varnothing, \varnothing)\)};
+
+        \node[left=3mm of point] {\((\{a\}, \{b\}, \varnothing, \{(a, b)\})\)};
+        \node[right=3mm of point2] {\((\{c\}, \{d\}, \varnothing, \{(c, d)\})\)};
+
+        \node[above=3mm of plus] {\((\{a, c\}, \{b, d\}, \varnothing, \{(a, b),(c, d)\})\)};
+    \end{tikzpicture}
+    \caption{
+        Représentation de l'expression régulière à l'aide d'un arbre syntaxique.
+        Pour des raisons de compréhension \(\delta\) est représenté à l'aide
+        d'un ensemble de couple.
+    }
+\end{figure}
+
+Il advient que \(flnf(E(\mathbb{A})) = \{\{a, c\}, \{b, d\}, \varnothing,
+\delta\}\) avec \(\delta\) qui est défini comme ceci~:
+
+\begin{align*}
+    \delta(a) & = \{b\}       \\
+    \delta(b) & = \varnothing \\
+    \delta(c) & = \{d\}       \\
+    \delta(d) & = \varnothing
+\end{align*}
+
+Un autre exemple pourrait être \(E'(\mathbb{A}) = (a + b) \cdot c^*\), avec cet
+exemple, on voit l'utilité de la parenthèse, car sans elle la concaténation
+aurait été sur \(b \cdot c^*\) et comme dit précédemment
+(\ref{text:parenthese}) son calcul reste le même que si c'était une union.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+            level 1/.style={
+                    sibling distance=6cm
+                },
+            level 2/.style={
+                    sibling distance=3cm
+                },
+            mycircle/.style={
+                    draw,
+                    circle,
+                    minimum height=.75cm,
+                    minimum width=.75cm
+                },
+            mysquare/.style={
+                    draw,
+                    rectangle,
+                    minimum height=.5cm,
+                    minimum width=.5cm,
+                }
+        ]
+        \node[mycircle] (point) {\(\cdot\)}
+        child {
+                node[mysquare] (plus) {\(+\)}
+                child {node[mycircle] (a) {a} }
+                child {node[mycircle] (b) {b} }
+            }
+        child {
+                node[mysquare] (etoile) {\(*\)}
+                child {node[mycircle] (c) {c} }
+            };
+
+        \node[below=3mm of a] {\((\{a\}, \{a\}, \varnothing, \varnothing)\)};
+        \node[below=3mm of b] {\((\{b\}, \{b\}, \varnothing, \varnothing)\)};
+        \node[below=3mm of c] {\((\{c\}, \{c\}, \varnothing, \varnothing)\)};
+
+        \node[left=3mm of plus] {\((\{a, b\}, \{a, b\}, \varnothing, \varnothing)\)};
+        \node[right=3mm of etoile] {\((\{c\}, \{c\}, \epsilon, \{(c, c)\})\)};
+
+        \node[above=3mm of point] {\((\{a, b\}, \{a, b, c\}, \varnothing, \{(a, c), (b, c), (c, c)\})\)};
+    \end{tikzpicture}
+    \caption{
+        Représentation de l'expression régulière à l'aide d'un arbre syntaxique.
+        Pour des raisons de compréhension \(\delta\) est représenté à l'aide
+        d'un ensemble de couple.
+    }
+\end{figure}
+
+Ce qui fait que \(flnf(E'(\mathbb{A})) = (\{a, b\}, \{a, b, c\}, \varnothing,
+\delta')\) avec \(\delta'\) qui est défini comme décrit après~:
+
+\begin{align*}
+    \delta(a) & = \{c\}       \\
+    \delta(b) & = \{c\}       \\
+    \delta(c) & = \{c\}       \\
+    \delta(d) & = \varnothing
+\end{align*}
+
+\subsection{Conclusion}
+
+On saisit aisément que ces expressions ont beau être simple (peu d'opération
+comparé aux expressions régulières d'\textit{UNIX}). Elles n'en sont rien pas
+complètes, on peut voir qu'elles permettent de décrire des langages très
+complexes et en quantité infinie. Malheureusement, il est difficile de savoir
+si un mot est reconnu par une expression régulière simplement. Par exemple
+est-ce-que le mot \(eipipipipipip\) est reconnu par cette expression \(((((o
+\cdot \epsilon)+(\epsilon \cdot e))+((g\cdot \epsilon) \cdot \epsilon^*)) \cdot
+((\epsilon \cdot i)\cdot (p+\epsilon))^*)\)~? La réponse est oui. C'est pour
+cela qu'il serait peut-être intéressant d'utiliser une autre structure de
+donnée pour reconnaitre des mots, comme les automates que nous allons voir
+maintenant.
+
+\section{Les automates}
+
+Dans cette partie, nous parlerons des automates et plus particulièrement, nous
+allons parler des automates sans \(\epsilon\) transition. Pour autant les
+automates que nous verrons sont tout aussi bons que ceux avec \(\epsilon\)
+transition.
+
+\subsection{Définition}
+
+Comme dit précédemment un automate est un objet mathématique reconnaissant un
+langage, on notera \(M(\Sigma, \eta)\) l'automate qui a pour transition des
+valeurs dans \(\Sigma\) et des valeurs `d'état' dans \(\eta\). On écrira donc
+\(L(M(\Sigma, \eta))\) pour désigner le langage qu'il reconnait. Un automate
+est tuple qu'on peut écrire de cette forme \(M(\Sigma, \eta) = (Q, I, F,
+\delta)\) avec~:
+
+\begin{align}
+    Q        & \subseteq \eta \quad \text{L'ensemble des états qui constitue l'automate}                \\
+    I        & \subseteq Q \quad \text{L'ensemble des états initiaux}                                   \\
+    F        & \subseteq Q \quad \text{L'ensemble des états finaux}                                     \\
+    \delta:~ & Q \times \Sigma \to V ~\text{avec}~ V \subseteq Q \quad \text{La fonction de transition}
+\end{align}
+
+Un automate peut se représenter à l'aide d'un graphe particulier, Par exemple
+si on veut représenter \(M(\Sigma, \eta) = (\{q_1, q_2, q_3, q_4, q_5\},
+\{q_1\},\{q_2, q_3\}, \delta)\) avec \(\Sigma = \{0, 1\}\), \(\eta = \{q_1,
+q_2, q_3, q4_, q_5\}\) et \(\delta\) défini comme ceci~:
+
+\begin{align*}
+    \delta(q_1, 0) & = \{q_2\}     \\
+    \delta(q_1, 1) & = \{q_4\}     \\
+    \delta(q_2, 0) & = \varnothing \\
+    \delta(q_2, 1) & = \varnothing \\
+    \delta(q_3, 0) & = \{q_3\}     \\
+    \delta(q_3, 1) & = \{q_4\}     \\
+    \delta(q_4, 0) & = \{q_5\}     \\
+    \delta(q_4, 1) & = \varnothing \\
+    \delta(q_5, 0) & = \{q_4\}     \\
+    \delta(q_5, 0) & = \{q_5\}     \\
+\end{align*}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \tikzset{
+            ->,
+            >=stealth',
+            node distance=3cm,
+            every state/.style={thick},
+            initial text=$ $,
+        }
+        \node[state, initial] (q1) {$q_1$};
+        \node[state, accepting, right of=q1] (q2) {$q_2$};
+        \node[state, above of=q2] (q4) {$q_4$};
+        \node[state, accepting, right of=q2] (q3) {$q_3$};
+        \node[state, right of=q4] (q5) {$q_5$};
+
+        \draw   (q1) edge[above] node{1} (q4)
+        (q1) edge[below] node{0} (q2)
+        (q4) edge[bend right, below] node{1} (q3)
+        (q4) edge[above] node{0} (q5)
+        (q3) edge[above] node{1} (q4)
+        (q3) edge[loop right] node{0} (q3)
+        (q5) edge[bend right, above] node{0} (q4)
+        (q5) edge[loop right] node{1} (q5);
+    \end{tikzpicture}
+    \caption{
+        Exemple de représentation graphique d'un automate.
+    }\label{fig:automata}
+\end{figure}
+
+Dans la figure~\ref{fig:automata}, on peut voir que les états initiaux (ici que
+\(q_1\)) ont une petite flèche qui pointe sur lui et que les états finaux ont
+un double contour. Et que les transitions sont symbolisées par des flèches
+entre les états et que ces flèches sont labellisées.
+
+\vphantom{}
+
+On peut étendre la fonction \(\delta\) de sorte qu'elle ait comme signature~:
+
+\[
+    \delta: Q \times W \to V \quad \text{avec}~ (\forall~a \in W ~|~ a \in \Sigma) \land (V \subseteq Q)
+\]
+
+En la définissant récursivement de telle manière~:
+
+\begin{align}
+    \delta(q, \epsilon) & = \{q\}                                                                     \\
+    \delta(q, a.w)      & = \bigcup_{q'}^{\delta(q, a)} \delta(q', w) \quad \text{avec}~ a \in \Sigma
+\end{align}
+
+\subsection{Fonction sur les automates}
+
+Une des fonctions la plus importante sur les automates est \(accept\) qui a
+pour signature~:
+
+\[
+    accept: M(\Sigma, \eta) \times W \to \mathbb{B} \quad \text{avec}~ \forall~a \in W ~|~ a \in \Sigma
+\]
+
+Elle peut être définie récursivement comme ceci~:
+
+\begin{align}
+    accept(M(\Sigma, \eta), \varnothing) = \exists~q \in I \land q\in F \\
+    accept(M(\Sigma, \eta), a.w) = \bigvee_{q}^{} P_i
+\end{align}
+
+\end{document}

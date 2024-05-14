@@ -13,7 +13,7 @@ where
 {
     fn from(reg: RegExp<T>) -> Self {
         let (a, end) = reg.linearization(1);
-        let info = a.get_info();
+        let info = a.get_flnf();
         let mut g = Automata::new();
         for i in 0..end {
             g.add_state(i);

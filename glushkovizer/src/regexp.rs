@@ -109,7 +109,7 @@ impl TryFrom<String> for RegExp<char> {
 pub struct Numbered<T>(pub T, pub usize);
 
 /// Structure regroupant toute les informations d'une expression régulière
-pub struct Info<T> {
+pub struct FLNF<T> {
     /// Ensemble des premier d'une expression regulière
     pub firsts: HashSet<T>,
     /// Ensemble des dernier d'une expression regulière
@@ -155,22 +155,22 @@ where
     }
 
     /// Renvoie les informations de l'expression regulère.
-    pub fn get_info(&self) -> Info<T> {
+    pub fn get_flnf(&self) -> FLNF<T> {
         match self {
-            RegExp::Epsilon => Info {
+            RegExp::Epsilon => FLNF {
                 firsts: Default::default(),
                 lasts: Default::default(),
                 null: true,
                 follows: Default::default(),
             },
-            RegExp::Symbol(v) => Info {
+            RegExp::Symbol(v) => FLNF {
                 firsts: HashSet::from([v.clone()]),
                 lasts: HashSet::from([v.clone()]),
                 null: false,
                 follows: HashMap::from([(v.clone(), HashSet::new())]),
             },
             RegExp::Repeat(c) => {
-                let mut gi = c.get_info();
+                let mut gi = c.get_flnf();
                 gi.null = true;
                 for last in gi.lasts.iter() {
                     if let Some(f) = gi.follows.get_mut(last) {
@@ -182,8 +182,8 @@ where
                 gi
             }
             RegExp::Or(l, r) => {
-                let mut gil = l.get_info();
-                let gir = r.get_info();
+                let mut gil = l.get_flnf();
+                let gir = r.get_flnf();
                 gir.firsts.into_iter().for_each(|d| {
                     gil.firsts.insert(d);
                 });
@@ -206,8 +206,8 @@ where
                 gil
             }
             RegExp::Concat(l, r) => {
-                let mut gil = l.get_info();
-                let gir = r.get_info();
+                let mut gil = l.get_flnf();
+                let gir = r.get_flnf();
                 for last in gil.lasts.iter() {
                     if let Some(f) = gil.follows.get_mut(last) {
                         gir.firsts.iter().for_each(|d| {
@@ -311,7 +311,7 @@ mod test {
         let a = RegExp::try_from("(a+b).(a*.b)");
         assert!(a.is_ok());
         let (a, n) = a.unwrap().linearization(1);
-        let _ = a.get_info();
+        let _ = a.get_flnf();
         assert_eq!(
             "Concat(Or(Symbol(Numbered('a', 1)), Symbol(Numbered('b', 2))), \
             Concat(Repeat(Symbol(Numbered('a', 3))), Symbol(Numbered('b', 4))))",
