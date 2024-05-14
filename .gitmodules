@@ -1,0 +1,4 @@
+[submodule "glushkovizer/doc/cmpt"]
+	path = glushkovizer/doc/cmpt
+	url = git@github.com:Lurgrid/CMPT.git
+	branch = main
