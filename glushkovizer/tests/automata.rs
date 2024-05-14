@@ -12,7 +12,6 @@ fn automata() {
     for i in 0..NB_TEST {
         let r = gen_regex(MAX_DEPTH);
         let w: [String; NB_WORD] = gen_words(&r);
-        panic!("{} {:?}", r, w);
         let a = Automata::from(r);
         for word in w {
             if !a.accept(word.chars()) {
