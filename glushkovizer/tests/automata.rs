@@ -14,7 +14,7 @@ fn automata() {
         let w: [String; NB_WORD] = gen_words(&r);
         let a = Automata::from(r);
         for word in w {
-            if !a.accept(word.chars()) {
+            if !a.accept(word.chars().collect::<Vec<char>>().iter()) {
                 panic!("Error on {}:\n{}\n{}", i, word, a);
             }
         }

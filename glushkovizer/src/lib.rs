@@ -20,7 +20,7 @@
 //!     println!("{}", g);
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",
-//!         g.accept("ab".chars())
+//!         g.accept("ab".chars().collect::<Vec<char>>().iter())
 //!     );
 //! }
 //! ```

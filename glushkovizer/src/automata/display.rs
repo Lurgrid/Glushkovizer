@@ -46,9 +46,9 @@ where
             write!(f, "\t}}\n")?;
         }
         for ind in 0..self.get_nb_states() {
-            for key in self.follow[ind].keys() {
-                for v in self.follow[ind].get(key).unwrap() {
-                    write!(f, "\t{} -> {} [label = \"{}\"]\n", ind, v, key,)?;
+            for (key, set) in self.follow[ind].iter() {
+                for v in set {
+                    write!(f, "\t{} -> {} [label = \"{}\"]\n", ind, v, key)?;
                 }
             }
         }

@@ -1,6 +1,6 @@
 //! Module de tests des propriétées d'un automates
 
-use super::{in_out::DoorType, Automata};
+use super::Automata;
 use std::{collections::HashSet, hash::Hash};
 
 impl<T, V> Automata<T, V>
@@ -55,39 +55,12 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
 {
-    /// Renvoie si l'automate est une orbite
-    pub fn is_orbit(&self) -> bool {
-        if !self.is_homogeneous() || self.kosaraju().len() > 1 {
-            return false;
-        }
-        (0..self.get_nb_states()).all(|i| {
-            for set in self.follow[i].values() {
-                for next in set {
-                    if self.initials.contains(next) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        })
-    }
-
     /// Renvoie si l'automate est une orbite maximal
     pub fn is_maximal_orbit(&self) -> bool {
-        if !self.is_homogeneous() {
+        if self.kosaraju().len() > 1 {
             return false;
         }
-        let scc = self.extract_scc();
-        if scc.len() != 1 {
-            return false;
-        }
-        self.get_states_type()
-            .into_iter()
-            .filter_map(|(k, v)| match v {
-                DoorType::Out => Some(unsafe { self.get_ind_state(&k) }),
-                _ => None,
-            })
-            .all(|ind| self.follow[ind].is_empty())
+        self.get_nb_states() != 1 || self.follow[0].values().any(|set| set.len() > 0)
     }
 }
 
@@ -96,26 +69,14 @@ mod test {
     use crate::{automata::Automata, regexp::RegExp};
 
     #[test]
-    fn orbit() {
-        let r = RegExp::try_from("(a+b).a*.b*.(a+b)*");
-        assert!(r.is_ok());
-        let r = r.unwrap();
-        let a = Automata::from(r);
-        let scc = a.extract_scc();
-        assert!(scc[3].is_orbit());
-        assert!(scc[4].is_orbit());
-        assert!(scc[5].is_orbit());
-    }
-
-    #[test]
     fn maximal_orbit() {
         let r = RegExp::try_from("(a+b).a*.b*.(a+b)*");
         assert!(r.is_ok());
         let r = r.unwrap();
         let a = Automata::from(r);
         let scc = a.extract_scc();
-        assert!(scc[3].is_orbit());
-        assert!(scc[4].is_orbit());
-        assert!(scc[5].is_orbit());
+        assert!(scc[3].is_maximal_orbit());
+        assert!(scc[4].is_maximal_orbit());
+        assert!(scc[5].is_maximal_orbit());
     }
 }

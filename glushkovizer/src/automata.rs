@@ -18,7 +18,7 @@
 //!     g2.add_transition(0, 1, 'a')?;
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",
-//!         g2.accept("a".chars())
+//!         g2.accept("a".chars().collect::<Vec<char>>().iter())
 //!     );
 //!     println!("{}", g2);
 //!     Ok(())
@@ -43,7 +43,7 @@
 //!     println!("{}", g);
 //!     println!(
 //!         "L'automate reconnais le mot ?: {}",
-//!         g.accept("ab".chars())
+//!         g.accept("ab".chars().collect::<Vec<char>>().iter())
 //!     );
 //! }
 //! ```
@@ -114,24 +114,84 @@ where
         Self::default()
     }
 
-    /// Test si le mot passé en paramètre est reconnu par l'automate.
-    pub fn accept<'a>(&self, msg: impl IntoIterator<Item = T>) -> bool {
-        let mut cur: Vec<usize> = self.initials.clone().into_iter().collect();
-        for c in msg {
-            let mut next: Vec<usize> = Vec::new();
-            for s in cur.iter() {
-                if let Some(l) = self.follow[*s].get(&c) {
-                    for s in l.iter() {
-                        next.push(s.clone())
-                    }
-                }
-            }
-            if next.is_empty() {
-                return false;
-            }
-            cur = next;
+    /// Renvoie les suivants de l'état d'indice "state" avec pour transition
+    /// "sym".
+    /// Aucun test n'est fait sur la validiter de "state"
+    unsafe fn follow_unchecked(&self, state: usize, sym: &T) -> Option<&HashSet<usize>> {
+        self.follow[state].get(sym)
+    }
+
+    /// Renvoie les états suivant de l'état qui a pour valeur "state" avec pour
+    /// transition "sym".
+    /// Renvoie une erreur si "state" n'est pas valide.
+    pub fn follow(&self, state: &V, sym: &T) -> Result<Vec<V>> {
+        let to = self
+            .states
+            .iter()
+            .position(|s| s.0.eq(state))
+            .ok_or(AutomataError::UnknowState)?;
+        match unsafe { self.follow_unchecked(to, sym) } {
+            None => Ok(vec![]),
+            Some(set) => Ok(set.iter().map(|ind| self.states[*ind].0.clone()).collect()),
         }
-        cur.into_iter().find(|s| self.finals.contains(s)).is_some()
+    }
+
+    /// Renvoie les suivants de l'état d'indice "state" avec pour chemain de
+    /// transition "word".
+    /// Aucun test n'est fait sur la validiter de "state"
+    unsafe fn follow_word_unchecked<'a>(
+        &self,
+        state: usize,
+        word: impl Iterator<Item = &'a T>,
+    ) -> HashSet<usize>
+    where
+        T: 'a,
+    {
+        word.fold(HashSet::from([state]), |cur, sym| {
+            cur.into_iter()
+                .filter_map(|ind| match self.follow_unchecked(ind, sym) {
+                    None => None,
+                    Some(set) => Some(set.clone()),
+                })
+                .fold(HashSet::new(), |mut acc, set| {
+                    acc.extend(set);
+                    acc
+                })
+        })
+    }
+
+    /// Renvoie les suivants de l'état qui à pour valeur "state" avec pour
+    /// chemain de transition "word".
+    /// Renvoie une erreur si "state" n'est pas valide.
+    pub fn follow_word<'a>(&self, state: &V, word: impl Iterator<Item = &'a T>) -> Result<Vec<V>>
+    where
+        T: 'a,
+    {
+        let to = self
+            .states
+            .iter()
+            .position(|s| s.0.eq(state))
+            .ok_or(AutomataError::UnknowState)?;
+        Ok(unsafe { self.follow_word_unchecked(to, word) }
+            .into_iter()
+            .map(|ind| self.states[ind].0.clone())
+            .collect())
+    }
+
+    /// Test si le mot passé en paramètre est reconnu par l'automate.
+    pub fn accept<'a>(&self, word: impl Iterator<Item = &'a T> + Clone) -> bool
+    where
+        T: 'a,
+    {
+        self.initials
+            .iter()
+            .fold(HashSet::new(), |mut acc, &ind| {
+                acc.extend(unsafe { self.follow_word_unchecked(ind, word.clone()) });
+                acc
+            })
+            .into_iter()
+            .find(|s| self.finals.contains(s))
+            .is_some()
     }
 
     /// Renvoie la liste des états initiaux.
@@ -172,13 +232,13 @@ where
             finals: self.initials.clone(),
             follow: vec![HashMap::new(); self.get_nb_states()],
         };
-        for (from, follow) in self.follow.iter().enumerate() {
-            for (sym, set) in follow.iter() {
-                for to in set {
-                    unsafe { Automata::add_transition_unchecked(&mut g, *to, from, sym.clone()) }
-                }
-            }
-        }
+        self.follow.iter().enumerate().for_each(|(from, follow)| {
+            follow.iter().for_each(|(sym, set)| {
+                set.into_iter().for_each(|to| unsafe {
+                    Automata::add_transition_unchecked(&mut g, *to, from, sym.clone())
+                });
+            });
+        });
         g
     }
 
@@ -200,14 +260,14 @@ where
         }
         let mut a = Self::default();
         let mut npos = HashMap::new();
-        for v in states {
+        states.into_iter().for_each(|v| {
             let oldp = unsafe { self.get_ind_state(v) };
             npos.insert(oldp, a.states.len());
             a.add_state(self.states[oldp].0.clone());
-        }
-        for (old_from, new_from) in npos.iter() {
+        });
+        npos.iter().for_each(|(old_from, new_from)| {
             let follow = &self.follow[*old_from];
-            for key in follow.keys() {
+            follow.keys().for_each(|key| {
                 let old_set = follow.get(key).unwrap();
                 old_set.iter().for_each(|v| match npos.get(v) {
                     Some(new_to) => unsafe {
@@ -215,8 +275,8 @@ where
                     },
                     None => {}
                 });
-            }
-        }
+            });
+        });
         Ok(a)
     }
 
@@ -304,8 +364,8 @@ where
             .ok_or(AutomataError::UnknowState)?;
         self.states.remove(s);
         self.follow.remove(s);
-        for f in self.follow.iter_mut() {
-            for set in f.values_mut() {
+        self.follow.iter_mut().for_each(|f| {
+            f.values_mut().for_each(|set| {
                 *set = set
                     .iter()
                     .filter_map(|ind| match *ind {
@@ -314,8 +374,8 @@ where
                         ind => Some(ind - 1),
                     })
                     .collect();
-            }
-        }
+            });
+        });
         Ok(())
     }
 
@@ -370,13 +430,7 @@ where
 
 fn has_dup<T: Eq + Hash + Clone>(vec: &Vec<T>) -> bool {
     let mut set: HashSet<T> = HashSet::new();
-    for e in vec.iter() {
-        if !set.insert(e.clone()) {
-            println!("toto");
-            return true;
-        }
-    }
-    false
+    !vec.iter().all(|e| set.insert(e.clone()))
 }
 
 #[cfg(test)]
@@ -397,7 +451,9 @@ mod test {
         g.add_transition(3, 4, 'z')?;
         g.remove_state(4)?;
         assert_eq!(g.get_nb_states(), 3);
-        assert!(g.accept(['a', 'a'].into_iter()));
+        assert!(g.accept(['a', 'a'].iter()));
+        assert_eq!(g.follow_word(&1, ['a', 'z'].iter()).unwrap(), vec![]);
+        assert!(!g.accept(['a', 'z'].iter()));
         Ok(())
     }
 
@@ -413,7 +469,7 @@ mod test {
         g.add_transition(2, 3, 'b')?;
         let g = g.get_inverse();
         assert_eq!(g.get_nb_states(), 3);
-        assert!(g.accept(['b', 'a'].into_iter()));
+        assert!(g.accept(['b', 'a'].iter()));
         Ok(())
     }
 
@@ -433,7 +489,7 @@ mod test {
         g2.add_initial(1)?;
         g2.add_final(2)?;
         assert_eq!(g2.get_nb_states(), 2);
-        assert!(g2.accept(['a'].into_iter()));
+        assert!(g2.accept(['a'].iter()));
         Ok(())
     }
 }

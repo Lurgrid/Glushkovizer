@@ -9,6 +9,7 @@
 \usetikzlibrary{arrows.meta}
 \usetikzlibrary{automata, arrows}
 \usetikzlibrary{shapes.geometric}
+\usetikzlibrary{calc}
 
 %--- begin document ------------------------------------------------------------
 
@@ -213,8 +214,9 @@ a\), dénote le langage \(L(E'(\mathbb{A})) = \{\epsilon, b^* \cdot a\}
 
 \subsection{Fonction sur les \textit{ER}}
 
-La seule est unique fonction sur laquelle on va se concentrer est \(flnf\)
-permettant de calculer \(FLNF(E(\Sigma))\) qui est un tuple défini comme ceci~:
+\textbullet~Une des fonctions les plus importantes sur les expressions régulières
+est \(flnf\) permettant de calculer \(FLNF(E(\Sigma))\) qui est un tuple défini
+comme ceci~:
 
 \vphantom{}
 
@@ -235,8 +237,8 @@ permettant de calculer \(FLNF(E(\Sigma))\) qui est un tuple défini comme ceci~:
         \item[\textbullet] \(\Theta\) =
             \(
             \begin{cases}
-                \epsilon,    & \text{si}~ \epsilon \in L(E(\Sigma)) \\
-                \varnothing, & \text{sinon}
+                \epsilon,   & \text{si}~ \epsilon \in L(E(\Sigma)) \\
+                \varnothing & \text{sinon}
             \end{cases}
             \)
 
@@ -264,7 +266,7 @@ Et peut-être calculée de cette manière~:
 
 \begin{gather}
     flnf(E(\Sigma) + G(\Sigma)) = (F \cup F', L \cup L', \Theta \cup \Theta', \delta'')~ \text{avec} \\
-    \delta''(a) = \delta(a) \cup \delta'(a) ~|~ \forall~a \in \Sigma \notag \\
+    \delta''(a) = \delta(a) \cup \delta'(a) ~|~ \forall a \in \Sigma \notag \\
     (F, L, \Theta, \delta) = flnf(E(\Sigma)) \land (F', L', \Theta', \delta') = flnf(G(\Sigma)) \notag
 \end{gather}
 
@@ -272,13 +274,13 @@ Et peut-être calculée de cette manière~:
     flnf(E(\Sigma) \cdot G(\Sigma)) = (F'', L'', \Theta \cap \Theta', \delta'')~ \text{avec} \\
     F'' = F \cup F' \cdot \Theta \notag \\
     L'' = L' \cup L \cdot \Theta' \notag \\
-    \delta''(a) = \begin{cases} \delta(a) \cup \delta'(a) \cup F', & \text{si}~ a \in L \\ \delta(a) \cup \delta'(a), & \text{sinon}\end{cases} ~|~ \forall~a \in \Sigma\notag \\
+    \delta''(a) = \begin{cases} \delta(a) \cup \delta'(a) \cup F', & \text{si}~ a \in L \\ \delta(a) \cup \delta'(a) & \text{sinon}\end{cases} ~|~ \forall a \in \Sigma\notag \\
     (F, L, \Theta, \delta) = flnf(E(\Sigma)) \land (F', L', \Theta', \delta') = flnf(G(\Sigma)) \notag
 \end{gather}
 
 \begin{gather}
     flnf(E(\Sigma)^*) = (F, L, \epsilon, \delta')~ \text{avec} \\
-    \delta'(a) = \begin{cases} \delta(a) \cup F, & \text{si}~ a \in L \\ \delta(a), & \text{sinon}\end{cases} ~|~ \forall~a \in \Sigma\notag \\
+    \delta'(a) = \begin{cases} \delta(a) \cup F, & \text{si}~ a \in L \\ \delta(a) & \text{sinon}\end{cases} ~|~ \forall a \in \Sigma\notag \\
     (F, L, \Theta, \delta) = flnf(E(\Sigma)) \notag
 \end{gather}
 
@@ -413,6 +415,90 @@ Ce qui fait que \(flnf(E'(\mathbb{A})) = (\{a, b\}, \{a, b, c\}, \varnothing,
     \delta(d) & = \varnothing
 \end{align*}
 
+\textbullet~Une autre fonction qui s'applique sur les expressions régulières
+est \(linearization\), elle peut paraitre inutile, mais elle nous servira dans
+la Section~\ref{sec:glushkov}. Sa signature est~:
+
+\begin{gather*}
+    linearization: E(\Sigma) \times \mathbb{N} \to (E(\Sigma^{\mathbb{N}}), \mathbb{N}) \\
+    \text{avec } \Sigma^{\mathbb{N}} = (\Sigma, \mathbb{N}) \land \forall ((a, b), (c, d)) \in (\Sigma^{\mathbb{N}})^2 ~|~ b = d \Rightarrow a = c \Rightarrow (a, b) = (c, d)
+\end{gather*}
+
+Elle peut être définie récursivement de cette manière~:
+
+\begin{gather}
+    linearization(\epsilon, n) = (\epsilon, n) \\
+    linearization(a, n) = ((a, n), n + 1) \\
+    linearization(E(\Sigma) + F(\Sigma), n) = (E' + F', n'') \quad \text{avec } \\
+    (E', n') \leftarrow linearization(E(\Sigma), n) \notag \\
+    (F', n'') \leftarrow linearization(F(\Sigma), n') \notag \\
+    linearization(E(\Sigma) \cdot F(\Sigma), n) = (E' \cdot F', n'') \quad
+    \text{avec } \\
+    (E', n') \leftarrow linearization(E(\Sigma), n) \notag \\
+    (F', n'') \leftarrow linearization(F(\Sigma), n') \notag \\
+    linearization(E(\Sigma)^*, n) = (E'^*, n') \quad \text{avec} \\
+    (E', n') \leftarrow linearization(E(\Sigma), n) \notag
+\end{gather}
+
+Avec cette définition, on peut voir que tous les deuxièmes éléments du couple
+des symboles du résultat \(E'\) avec \(linearization(E(\Sigma), n) = (E', m)\),
+seront supérieurs ou égaux à \(n\) et inférieur strict à \(m\).
+
+\subsubsection*{Exemple~:}
+
+Si on reprend cette expression régulière \(E(\mathbb{A}) = \epsilon + b^* \cdot
+a\), avec \(\mathbb{A} = \{a, b, c, d\}\).
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+            mycircle/.style={
+                    draw,
+                    rectangle,
+                    rounded corners=.375cm,
+                    minimum height=.75cm,
+                    minimum width=.75cm
+                },
+            mysquare/.style={
+                    draw,
+                    rectangle,
+                    minimum height=.5cm,
+                    minimum width=.5cm,
+                }
+        ]
+        \node[mysquare] (1) {+}
+        child {node[mycircle] {\(\epsilon\)}}
+        child {
+                node[mysquare] {\(\cdot \)}
+                child {
+                        node[mysquare] {*}
+                        child {
+                                node[mycircle] {b}
+                            }
+                    }
+                child {node[mycircle] {a}}
+            };
+        \node[mysquare, right=7cm of 1] (2) {+}
+        child {node[mycircle] {\(\epsilon\)}}
+        child {
+                node[mysquare] {\(\cdot \)}
+                child {
+                        node[mysquare] {*}
+                        child {
+                                node[mycircle] {(b, 1)}
+                            }
+                    }
+                child {node[mycircle] {(a, 2)}}
+            };
+
+        \draw[line width=.5mm, -{Stealth[length=5mm, open]}] ($(1.east) + (1.5cm, -2cm)$) -- node[midway, above=2mm] {\(linearization\)} ($(2.west) + (-1.5cm, -2cm)$);
+    \end{tikzpicture}
+    \caption{
+        Représentation à l'aide d'un arbre syntaxique de l'expression régulière
+        une fois après avoir fait appel à \(linearization\) sur elle.
+    }
+\end{figure}
+
 \subsection{Conclusion}
 
 On saisit aisément que ces expressions ont beau être simple (peu d'opération
@@ -508,30 +594,182 @@ entre les états et que ces flèches sont labellisées.
 On peut étendre la fonction \(\delta\) de sorte qu'elle ait comme signature~:
 
 \[
-    \delta: Q \times W \to V \quad \text{avec}~ (\forall~a \in W ~|~ a \in \Sigma) \land (V \subseteq Q)
+    \delta_w: Q \times \Sigma^* \to V \quad \text{avec}~ V \subseteq Q
 \]
 
 En la définissant récursivement de telle manière~:
 
 \begin{align}
-    \delta(q, \epsilon) & = \{q\}                                                                     \\
-    \delta(q, a.w)      & = \bigcup_{q'}^{\delta(q, a)} \delta(q', w) \quad \text{avec}~ a \in \Sigma
+    \delta_w(q, \epsilon) & = \{q\}                                                                       \\
+    \delta_w(q, a.w)      & = \bigcup_{q'}^{\delta(q, a)} \delta_w(q', w) \quad \text{avec}~ a \in \Sigma
 \end{align}
+
+\subsubsection*{Exemple~:}
+
+Voici donc quelques exemples de ce que ça nous donnerait si on reprend
+l'automate utilisé pour la représentation graphique~:
+
+\begin{gather}
+    \delta_w(q_1, 00) = \varnothing \\
+    \delta_w(q_1, 11) = \{q_3\} \\
+    \delta_w(q_1, \varnothing) = \{q_1\} \\
+    \delta_w(q_1, 10111\dots) = \{q_5\}
+\end{gather}
+
+\subsubsection*{Propriétés~:}
+
+Un automate est dit \textit{standard} quand, il ne possède qu'un seul état
+initial non ré-entrant, aussi défini comme ceci~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, \{i\}, F, \delta) \quad \text{avec} \\
+    \forall p \in Q, \forall a \in \Sigma ~|~ i \notin \delta(p, a) \notag
+\end{gather}
+
+Un automate est dit \textit{homogène} quand pour tous les états les transition
+allant vers cet état ont même valeur. En d'autre terme quand il respecte cette
+propriété~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
+    \forall (p, q) \in Q^2, \exists! a \in \Sigma ~|~ q \in \delta(p, a) \notag
+\end{gather}
+
+Donc l'automate représenté sur la figure~\ref{fig:automata} est standard et non
+homogène. Car il possède bien un unique état initial (\(q_1\)), mais
+malheureusement \(q_3\), \(q_4\) et \(q_5\) ne respecte pas la propriété pour
+être homogène, parce qu'ils ont des transitions allant vers eux avec des
+valeurs différentes.
+
+\vphantom{}
+
+Les automates pouvant être représentés à l'aide de graphe, on peut étendre les
+propriétés sur les graphes aux automates. Par exemple, on pourra parler des
+composantes fortement connexes d'un automate. Autrement dit en partant de
+n'importe quel état, on peut arriver à tous les autres états. Ainsi ça veut
+dire que l'automate vérifierait ceci~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
+    \forall (p, q) \in Q^2, \exists w \in \Sigma^* ~|~ q \in \delta_w(p, w) \notag
+\end{gather}
 
 \subsection{Fonction sur les automates}
 
-Une des fonctions la plus importante sur les automates est \(accept\) qui a
+Une des fonctions la plus importante sur les automates est \(accept\) qui test
+si le mot est reconnu par l'automate. C'est-à-dire que si on prend le chemin
+décrit par le mot donner en argument, on arrive sur un ou plusieurs états
+finaux. Elle a alors pour signature~:
+
+\[
+    accept: M(\Sigma, \eta) \times \Sigma^* \to \mathbb{B}
+\]
+
+Elle peut être définie simplement comme ceci~:
+
+\begin{align}
+    accept(M(\Sigma, \eta), w) = \exists q \in \bigcup_{p}^I \delta_w(p, w) ~|~ q \in F
+\end{align}
+
+\subsection{Conclusion}
+
+Comme nous venons de voir les automates sont des outils puissants pour
+reconnaitre des mots d'un langage. L'un de leur plus grande force est leur
+simplicité, toutes les opérations sur les automates peuvent donc être
+automatisé. Ce qui fait que cet objet est très intéressant dans le monde de
+l'\textit{informatique}. En revanche l'un de ses points faibles est sa
+représentation, il est difficile de représenter des très gros automates
+contrairement aux expressions régulières. Il serait alors intéressant de
+pouvoir convertir une expression régulière en automate. C'est ce que nous
+allons voir dans la prochaine section.
+
+\section{Les automates de Glushkov}\label{sec:glushkov}
+
+Le terme `automates de Glushkov' est un abus de langage, faisant référence aux
+automates que l'algorithme de transformation d'expression régulière en
+automate, appelé algorithme de Glushkov produit. Son nom vient de
+l'informaticien soviétique \textit{Victor Glushkov} qui est son créateur.
+
+\subsection{Définition}
+
+Nous appliquerons cet algorithme à l'aide la fonction \(glushkov\) qui a donc
 pour signature~:
 
 \[
-    accept: M(\Sigma, \eta) \times W \to \mathbb{B} \quad \text{avec}~ \forall~a \in W ~|~ a \in \Sigma
+    glushkov: E(\Sigma) \to M(\Sigma, \mathbb{N})
 \]
 
-Elle peut être définie récursivement comme ceci~:
+Et a ainsi, on peut définir cette fonction de cette façon~:
 
-\begin{align}
-    accept(M(\Sigma, \eta), \varnothing) = \exists~q \in I \land q\in F \\
-    accept(M(\Sigma, \eta), a.w) = \bigvee_{q}^{} P_i
-\end{align}
+\begin{gather}
+    glushkov     (E(\Sigma)) = (Q, \{0\}, F, \delta) \quad \text{avec} \\
+    \begin{align*}
+        Q                                             & \leftarrow \{n ~|~ n \in \mathbb{N} \land 0 \leq n < m\}                                                                                            \\
+        F                                             & \leftarrow \begin{cases} \{n ~|~ (a, n) \in Last\} \cup \{0\}, & \text{si } Null = \epsilon \\ \{n ~|~ (a, n) \in Last\} & \text{sinon} \end{cases} \\
+        \forall q                    \in \delta(p, a) & ~|~ \begin{cases} (a, q) \in First, & \text{si } p = 0 \\ (a, q) \in Follow((b, p)) & \text{sinon} \end{cases}                                      \\
+        (E', m)                                       & \leftarrow linearization(E(\Sigma), 1)                                                                                                              \\
+        (First, Last, Null, Follow)                   & \leftarrow flnl(E')
+    \end{align*}
+\end{gather}
+
+\subsubsection*{Exemple~:}
+
+Vu qu'un dessin vaut toujours mieux que mile mots, voici un exemple de
+l'automate résultant de la transformation de cette expression \(E(\mathbb{A}) =
+(a+b) \cdot a^* \cdot b^* \cdot (a+b)^*\).
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \tikzset{
+            ->,
+            >=stealth',
+            node distance=2.5cm,
+            every state/.style={thick},
+            initial text=\( \),
+        }
+        \node[state, initial] (0) {\(0\)};
+        \node[state, accepting, right of=0, below of=0] (1) {\(1\)};
+        \node[state, accepting, right of=0, above of=0] (2) {\(2\)};
+        \node[state, accepting, right of=2, below of=2] (3) {\(3\)};
+        \node[state, accepting, right of=3] (4) {\(4\)};
+        \node[state, accepting, right of=4, above of=4] (5) {\(5\)};
+        \node[state, accepting, right of=5] (6) {\(6\)};
+
+        \draw   (0) edge[below] node{a} (1)
+        (0) edge[above] node{b} (2)
+        (1) edge[below] node{a} (3)
+        (2) edge[above] node{a} (3)
+        (1) edge[bend right=1.5cm, below] node{b} (6)
+        (2) edge[bend left=1.5cm, above] node{b} (6)
+        (1) edge[bend right, below] node{a} (5)
+        (2) edge[bend left, above] node{a} (5)
+        (1) edge[bend left=2mm, below] node{b} (4)
+        (2) edge[bend right=2mm, above] node{b} (4)
+        (3) edge[above] node{b} (4)
+        (3) edge[loop left] node{a} (3)
+        (3) edge[bend left, above] node{a} (5)
+        (3) edge[bend right=1.75cm, below] node{b} (6)
+        (4) edge[above] node{a} (5)
+        (4) edge[bend right, below] node{b} (6)
+        (4) edge[loop above] node{b} (4)
+        (5) edge[bend right, below] node{b} (6)
+        (5) edge[loop above] node{a} (5)
+        (6) edge[bend right, above] node{a} (5)
+        (6) edge[loop right] node{b} (6);
+    \end{tikzpicture}
+    \caption{
+        Exemple de représentation graphique de l'automate résultant de
+        \(glushkov(E(\mathbb{A}))\).
+    }\label{fig:automata_glushkov}
+\end{figure}
+
+Comme on peut voir sur la figure~\ref{fig:automata_glushkov} les automates
+produits sont bien souvent gros et peuvent être dur à comprendre, mais une
+machine peut gérer ça très simplement. Outre sa taille, on peut remarquer qu'il
+y a des propriétés intéressant sur cette automate. C'est ce que l'on va étudier
+maintenant.
+
+\subsubsection*{Propriétés~:}
 
 \end{document}
