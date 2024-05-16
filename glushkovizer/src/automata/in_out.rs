@@ -44,9 +44,12 @@ where
             stype.insert(s.0.clone(), DoorType::None);
         });
         for (ind, s) in self.states.iter().enumerate() {
+            /*
+            À débat, est-ce-que les initiaux sont des portes d'entrée
             if self.initials.contains(&ind) {
                 *stype.get_mut(&s.0).unwrap() += DoorType::In;
             }
+            */
             if self.finals.contains(&ind) {
                 *stype.get_mut(&s.0).unwrap() += DoorType::Out;
             }

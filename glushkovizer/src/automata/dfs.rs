@@ -58,45 +58,69 @@ where
         {
             return Err(AutomataError::NotEnoughState);
         }
+        let info = unsafe {
+            self.get_dfs_unchecked(order.iter().map(|i| self.get_ind_state(i)).collect())
+        };
 
-        let mut info = DFSInfo::<V> {
+        Ok(DFSInfo::<V> {
+            prefix: info
+                .prefix
+                .into_iter()
+                .map(|i| self.states[i].0.clone())
+                .collect(),
+            suffix: info
+                .suffix
+                .into_iter()
+                .map(|i| self.states[i].0.clone())
+                .collect(),
+            predecessor: info
+                .predecessor
+                .into_iter()
+                .map(|opt_i| opt_i.map(|i| self.states[i].0.clone()))
+                .collect(),
+        })
+    }
+
+    /// Renvoie les informations du parcours en profondeur selon l'ordre "order"
+    /// qui est un vecteur des indices des états
+    /// Aucun test n'est fait sur la validité de order
+    pub(crate) unsafe fn get_dfs_unchecked(&self, order: Vec<usize>) -> DFSInfo<usize> {
+        let mut info = DFSInfo::<usize> {
             prefix: Vec::with_capacity(self.get_nb_states()),
             suffix: Vec::with_capacity(self.get_nb_states()),
             predecessor: vec![None; self.get_nb_states()],
         };
         let mut color: Vec<bool> = vec![true; self.get_nb_states()];
-        let mut state: Vec<usize> = (0..self.get_nb_states()).collect();
-        state.sort_by_key(|ind| order.iter().position(|x| x.eq(&self.states[*ind].0)));
-        for u in state {
-            if color[u] {
-                self.visit_in_depth(&order, u, &mut color, &mut info);
+        for u in order.iter() {
+            if color[*u] {
+                self.visit_in_depth(&order, *u, &mut color, &mut info)
             }
         }
-        Ok(info)
+        info
     }
 
     fn visit_in_depth(
         &self,
-        order: &Vec<V>,
+        order: &Vec<usize>,
         u: usize,
         color: &mut Vec<bool>,
-        info: &mut DFSInfo<V>,
+        info: &mut DFSInfo<usize>,
     ) {
         color[u] = false;
-        info.prefix.push(self.states[u].0.clone());
+        info.prefix.push(u);
         let mut p: HashSet<usize> = HashSet::new();
         for set in self.follow[u].values() {
             p.extend(set);
         }
         let mut p: Vec<usize> = p.clone().into_iter().collect();
-        p.sort_by_key(|ind| order.iter().position(|x| x.eq(&self.states[*ind].0)));
+        p.sort_by_key(|ind| order.iter().position(|x| x == ind));
         for v in p {
             if color[v] {
-                info.predecessor[v] = Some(self.states[u].0.clone());
+                info.predecessor[v] = Some(u);
                 self.visit_in_depth(order, v, color, info)
             }
         }
-        info.suffix.push(self.states[u].0.clone());
+        info.suffix.push(u)
     }
 }
 

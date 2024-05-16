@@ -1,5 +1,5 @@
 %start Expr
-%avoid_insert "SYM"
+%avoid_insert "SYMBOL"
 %avoid_insert "EPSILON"
 %left '+'
 %left '.'
@@ -11,7 +11,7 @@ Expr -> Result<RegExp<char>, ()>:
     | Expr '.' Expr {  Ok(RegExp::Concat(Box::new($1?), Box::new($3?))) }
     | '(' Expr ')' { Ok($2?) } 
     | 'EPSILON' { Ok(RegExp::Epsilon) }
-    | 'SYM' { 
+    | 'SYMBOL' { 
         let v = $1.map_err(|_| ())?;
         Ok(RegExp::Symbol($lexer.span_str(v.span()).chars().next().ok_or(())?))       
     } 

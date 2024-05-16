@@ -17,20 +17,18 @@ where
             prefix: _,
             suffix: mut order,
             predecessor: _,
-        } = self
-            .get_dfs(self.states.iter().map(|s| s.0.clone()).collect())
-            .unwrap();
+        } = unsafe { self.get_dfs_unchecked((0..self.get_nb_states()).collect()) };
         let inverse = self.get_inverse();
         order.reverse();
         let DFSInfo {
             prefix,
             suffix: _,
             predecessor: res,
-        } = inverse.get_dfs(order).unwrap();
+        } = unsafe { inverse.get_dfs_unchecked(order) };
         let mut r = Vec::new();
         let mut cur = Vec::new();
-        for p in prefix {
-            let pos = unsafe { inverse.get_ind_state(&p) };
+        for pos in prefix {
+            let p = self.states[pos].0.clone();
             if res[pos].is_none() {
                 if cur.len() != 0 {
                     r.push(cur);

@@ -28,7 +28,7 @@ where
                 }
             }
         }
-        return true;
+        true
     }
 
     /// Renvoie si l'automate est homogène
@@ -46,7 +46,7 @@ where
                 }
             }
         }
-        return true;
+        true
     }
 }
 
@@ -55,12 +55,19 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
 {
+    /// Renvoie si l'automate est fortement connecté
+    pub fn is_strongly_connected(&self) -> bool {
+        unsafe { self.get_dfs_unchecked((0..self.get_nb_states()).collect()) }
+            .predecessor
+            .into_iter()
+            .fold(0, |acc, opt| if opt.is_none() { acc + 1 } else { acc })
+            <= 0
+    }
+
     /// Renvoie si l'automate est une orbite maximal
     pub fn is_maximal_orbit(&self) -> bool {
-        if self.kosaraju().len() > 1 {
-            return false;
-        }
-        self.get_nb_states() != 1 || self.follow[0].values().any(|set| set.len() > 0)
+        self.is_strongly_connected()
+            && (self.get_nb_states() != 1 || self.follow[0].values().any(|set| set.len() > 0))
     }
 }
 

@@ -5,6 +5,8 @@
 \usepackage{amssymb}
 \usepackage{tikz}
 \usepackage{float}
+\usepackage{enumitem}
+\usepackage{caption}
 \usetikzlibrary{positioning}
 \usetikzlibrary{arrows.meta}
 \usetikzlibrary{automata, arrows}
@@ -106,7 +108,7 @@ calcul\label{text:parenthese}. On peut définir chaque équation comme ceci~:
         \(F(\Sigma)\) et \(G(\Sigma)\). Il en vient que~:
 
         \begin{align}
-            L(E(\Sigma)) & = \{u.v ~|~ u \in L(F(\Sigma)) \land v \in L(G(\Sigma)) \}
+            L(E(\Sigma)) & = \{u \cdot v ~|~ u \in L(F(\Sigma)) \land v \in L(G(\Sigma)) \}
         \end{align}
 
         \vphantom{}
@@ -122,12 +124,13 @@ calcul\label{text:parenthese}. On peut définir chaque équation comme ceci~:
 
 \subsubsection*{Exemple~:}
 
-On comprendra ainsi que l'expression \(E(\mathbb{A}) = a+c.d\) avec
+On comprendra ainsi que l'expression \(E(\mathbb{A}) = a+c \cdot d\) avec
 \(\mathbb{A} = \{a, b, c, d\}\), dénote le langage \(L(E(\mathbb{A})) = \{a,
 cd\}\). Car on peut représenter \(E(\mathbb{A})\) comme ceci~:
 
 \begin{figure}[H]
     \centering
+    \captionsetup{type=figure,justification=centering}
     \begin{tikzpicture}[
             mycircle/.style={
                     draw,
@@ -173,6 +176,7 @@ a\), dénote le langage \(L(E'(\mathbb{A})) = \{\epsilon, b^* \cdot a\}
 
 \begin{figure}[H]
     \centering
+    \captionsetup{type=figure,justification=centering}
     \begin{tikzpicture}[
             mycircle/.style={
                     draw,
@@ -260,6 +264,7 @@ Et peut-être calculée de cette manière~:
 
 \begin{align}
     flnf(\epsilon) & = (\varnothing, \varnothing, \epsilon, \delta) ~|~ \delta(a) = \varnothing, a \in \Sigma \\
+    \vphantom{} \notag                                                                                        \\
     flnf(a)        & = (\{a\}, \{a\}, \varnothing, \delta) ~|~ \delta(a) = \varnothing, a
     \in \Sigma
 \end{align}
@@ -292,6 +297,7 @@ arbre syntaxique, on peut calculer ce que \(flnf(E(\mathbb{A}))\) donnerait.
 
 \begin{figure}[H]
     \centering
+    \captionsetup{type=figure,justification=centering}
     \begin{tikzpicture}[
             level 1/.style={
                     sibling distance=6cm
@@ -358,6 +364,7 @@ aurait été sur \(b \cdot c^*\) et comme dit précédemment
 
 \begin{figure}[H]
     \centering
+    \captionsetup{type=figure,justification=centering}
     \begin{tikzpicture}[
             level 1/.style={
                     sibling distance=6cm
@@ -451,6 +458,7 @@ a\), avec \(\mathbb{A} = \{a, b, c, d\}\).
 
 \begin{figure}[H]
     \centering
+    \captionsetup{type=figure,justification=centering}
     \begin{tikzpicture}[
             mycircle/.style={
                     draw,
@@ -530,10 +538,10 @@ est tuple qu'on peut écrire de cette forme \(M(\Sigma, \eta) = (Q, I, F,
 \delta)\) avec~:
 
 \begin{align}
-    Q        & \subseteq \eta \quad \text{L'ensemble des états qui constitue l'automate}                \\
-    I        & \subseteq Q \quad \text{L'ensemble des états initiaux}                                   \\
-    F        & \subseteq Q \quad \text{L'ensemble des états finaux}                                     \\
-    \delta:~ & Q \times \Sigma \to V ~\text{avec}~ V \subseteq Q \quad \text{La fonction de transition}
+    Q        & \subseteq \eta \quad \text{L'ensemble des états qui constitue l'automate} \\
+    I        & \subseteq Q \quad \text{L'ensemble des états initiaux}                    \\
+    F        & \subseteq Q \quad \text{L'ensemble des états finaux}                      \\
+    \delta:~ & Q \times \Sigma \to 2^Q \quad \text{La fonction de transition}
 \end{align}
 
 Un automate peut se représenter à l'aide d'un graphe particulier, Par exemple
@@ -556,6 +564,7 @@ q_2, q_3, q4_, q_5\}\) et \(\delta\) défini comme ceci~:
 
 \begin{figure}[H]
     \centering
+    \captionsetup{type=figure,justification=centering}
     \begin{tikzpicture}
         \tikzset{
             ->,
@@ -591,13 +600,63 @@ entre les états et que ces flèches sont labellisées.
 
 \vphantom{}
 
-On peut étendre la fonction \(\delta\) de sorte qu'elle ait comme signature~:
+On parlera de l'inverse de l'automate \(M(\Sigma, \eta)\) noté
+\(\overline{M(\Sigma, \eta)}\) qui peut être défini de cette façon~:
+
+\begin{gather}
+    \overline{M(\Sigma, \eta)} = (Q, F, I, \delta') \quad \text{avec} \\
+    M(\Sigma, \eta) = (Q, I, F, \delta) \notag \\
+    \forall (p, q) \in Q^2 ~|~ q \in \delta(p, a) \Rightarrow p \in \delta'(q, a) \notag
+\end{gather}
+
+Donc si on veut représenter l'inverse de l'automate représenté dans la
+figure~\ref{fig:automata}, ça nous donnerait ceci~:
+
+\begin{figure}[H]
+    \centering
+    \captionsetup{type=figure,justification=centering}
+    \begin{tikzpicture}
+        \tikzset{
+            ->,
+            >=stealth',
+            node distance=3cm,
+            every state/.style={thick},
+            initial text=$ $,
+        }
+        \node[state, accepting] (q1) {$q_1$};
+        \node[state, initial below, right of=q1] (q2) {$q_2$};
+        \node[state, above of=q2] (q4) {$q_4$};
+        \node[state, initial below, right of=q2] (q3) {$q_3$};
+        \node[state, right of=q4] (q5) {$q_5$};
+
+        \draw   (q4) edge[above] node{1} (q1)
+        (q2) edge[below] node{0} (q1)
+        (q3) edge[bend left, below] node{1} (q4)
+        (q5) edge[above] node{0} (q4)
+        (q4) edge[above] node{1} (q3)
+        (q3) edge[loop right] node{0} (q3)
+        (q4) edge[bend left, above] node{0} (q5)
+        (q5) edge[loop right] node{1} (q5);
+    \end{tikzpicture}
+    \caption{
+        Exemple de représentation graphique de l'inverse de l'automate de la
+        figure~\ref{fig:automata}.
+    }\label{fig:automata_invserse}
+\end{figure}
+
+On voit bien que l'apparence de l'automate ne change pas les transitions sont
+juste inversées et les états initiaux sont devenus finaux et inversement.
+
+\vphantom{}
+
+On peut aussi étendre la fonction de transition \(\delta\) de manière qu'elle
+ait comme signature~:
 
 \[
-    \delta_w: Q \times \Sigma^* \to V \quad \text{avec}~ V \subseteq Q
+    \delta_w: Q \times \Sigma^* \to 2^Q
 \]
 
-En la définissant récursivement de telle manière~:
+En la définissant récursivement de telle sorte~:
 
 \begin{align}
     \delta_w(q, \epsilon) & = \{q\}                                                                       \\
@@ -607,7 +666,8 @@ En la définissant récursivement de telle manière~:
 \subsubsection*{Exemple~:}
 
 Voici donc quelques exemples de ce que ça nous donnerait si on reprend
-l'automate utilisé pour la représentation graphique~:
+l'automate utilisé pour la représentation graphique
+(figure~\ref{fig:automata})~:
 
 \begin{gather}
     \delta_w(q_1, 00) = \varnothing \\
@@ -618,28 +678,48 @@ l'automate utilisé pour la représentation graphique~:
 
 \subsubsection*{Propriétés~:}
 
-Un automate est dit \textit{standard} quand, il ne possède qu'un seul état
-initial non ré-entrant, aussi défini comme ceci~:
+Un automate est dit \textit{standard} à l'instant où il ne possède qu'un seul
+état initial non ré-entrant, aussi défini comme ceci~:
 
 \begin{gather}
     M(\Sigma, \eta) = (Q, \{i\}, F, \delta) \quad \text{avec} \\
     \forall p \in Q, \forall a \in \Sigma ~|~ i \notin \delta(p, a) \notag
 \end{gather}
 
-Un automate est dit \textit{homogène} quand pour tous les états les transition
-allant vers cet état ont même valeur. En d'autre terme quand il respecte cette
-propriété~:
+Un automate est identifié \textit{homogène} quand pour tous les états les
+transition allant vers cet état ont même valeur. En d'autre terme quand il
+respecte cette propriété~:
 
 \begin{gather}
     M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
-    \forall (p, q) \in Q^2, \exists! a \in \Sigma ~|~ q \in \delta(p, a) \notag
+    \forall q \in Q, \exists! a \in \Sigma ~|~ q \in \delta(p, a) \notag
 \end{gather}
 
-Donc l'automate représenté sur la figure~\ref{fig:automata} est standard et non
-homogène. Car il possède bien un unique état initial (\(q_1\)), mais
-malheureusement \(q_3\), \(q_4\) et \(q_5\) ne respecte pas la propriété pour
-être homogène, parce qu'ils ont des transitions allant vers eux avec des
-valeurs différentes.
+Un automate est qualifié d'\textit{accessible} lorsqu'en partant des initiaux,
+on peut arriver sur tous les états qui le composent. C'est-à-dire qu'il valide
+cette condition~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
+    \forall p \in Q, \exists w \in \Sigma^* ~|~ p \in \bigcup_{i}^{I} \delta_w(i, w) \notag
+\end{gather}
+
+Un automate est considéré comme \textit{coaccessible} au moment où l'inverse de
+cette automate est accessible. Ceci veut dire qu'il atteste de cette
+particularité~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
+    accessible(\overline{M(\Sigma, \eta)}) \notag
+\end{gather}
+
+Donc l'automate représenté sur la figure~\ref{fig:automata} est standard, non
+homogène, accessible et coaccessible. Car il possède bien un unique état
+initial (\(q_1\)), mais malheureusement \(q_3\), \(q_4\) et \(q_5\) ne respecte
+pas la propriété pour être homogène, parce qu'ils ont des transitions allant
+vers eux avec des valeurs différentes. De plus tous ses états sont par
+accessible depuis l'état initial et son inverse est, lui-même aussi,
+accessible.
 
 \vphantom{}
 
@@ -647,7 +727,7 @@ Les automates pouvant être représentés à l'aide de graphe, on peut étendre 
 propriétés sur les graphes aux automates. Par exemple, on pourra parler des
 composantes fortement connexes d'un automate. Autrement dit en partant de
 n'importe quel état, on peut arriver à tous les autres états. Ainsi ça veut
-dire que l'automate vérifierait ceci~:
+dire qu'un automate fortement connexe vérifierait ceci~:
 
 \begin{gather}
     M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
@@ -720,11 +800,12 @@ l'automate résultant de la transformation de cette expression \(E(\mathbb{A}) =
 
 \begin{figure}[H]
     \centering
+    \captionsetup{type=figure,justification=centering}
     \begin{tikzpicture}
         \tikzset{
             ->,
             >=stealth',
-            node distance=2.5cm,
+            node distance=2.25cm,
             every state/.style={thick},
             initial text=\( \),
         }
@@ -771,5 +852,51 @@ y a des propriétés intéressant sur cette automate. C'est ce que l'on va étud
 maintenant.
 
 \subsubsection*{Propriétés~:}
+
+Nous verrons ici plusieurs propriétés sur les automates de Glushkov, mais nous
+n'en ferons pas la preuve, nous en donnerons une justification, mais pas une
+réelle preuve.
+
+\vphantom{}
+
+\begin{itemize}[label=\textbullet]
+    \item La première propriété plutôt évidente, est que les automates de Glushkov sont
+          \textit{standards}, car par constructions, il ne peut avoir qu'un seul état
+          initial (0).
+
+          \vphantom{}
+
+    \item La deuxième est que l'automate à \(n + 1\) avec \(n\) le nombre de symboles de
+          l'expression régulière. Le \(+ 1\) vient dû fait que nous ajoutons un état
+          \(0\) qui a des transitions vers les \(First\).
+
+          \vphantom{}
+
+    \item La troisième propriété un peu moins flagrante est que les automates de Glushkov
+          sont accessibles et coaccessibles. C'est dû au fait que chaque symbole dans
+          l'expression régulière est accessible et coaccessible et que cette propriété ne
+          se perd pas lors de la transformation.
+
+          \vphantom{}
+
+    \item La dernière propriété est que l'automate de Glushkov est homogène. Cela résulte
+          de sa construction, car pour qu'un état aille sur un autre état, il faut qu'il
+          ait dans ses \textit{Follow} \((a, n)\) avec \(a\) le symbole de la transition
+          et \(n\) la valeur de l'état. Et étant donné que pour chaque couple \((b, m)\)
+          il ne peut n'avoir que ce couple avec comme seconde valeur \(m\) alors la
+          transition vers cet état sera toujours la même.
+\end{itemize}
+
+\subsection{Conclusion}
+
+L'algorithme de Glushkov est très puissants, car permet de convertir une
+expression régulière en automate ce qui fait qu'on gagne les avantages des deux
+structures. Avec les expressions régulières, on peut simplement décrire un
+langage et avec les automates, on peut simplement savoir si un mot est reconnu.
+Il est très utilisé en \textit{informatique}, parce que pour les humains, il
+est plus simple de décrire un langage avec une expression régulière. Et les
+machine comprennent très facilement les automates. Ce qui fait qu'il est
+possible de faire des \textit{programmes informatiques} qui reconnait un
+langage et exécute des tâches à chaque mot.
 
 \end{document}
