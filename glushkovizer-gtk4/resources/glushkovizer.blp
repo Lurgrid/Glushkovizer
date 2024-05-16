@@ -10,14 +10,15 @@ template $GlushkovizerApp : ApplicationWindow {
 
     Box {
       orientation: vertical;
+      margin-bottom: 10;
+      margin-end: 10;
+      margin-start: 10;
+      margin-top: 10;
+      spacing: 10;
 
       Box {
         hexpand: true;
         hexpand-set: true;
-        margin-bottom: 10;
-        margin-end: 10;
-        margin-start: 10;
-        margin-top: 10;
         spacing: 10;
 
         Button {
@@ -27,18 +28,27 @@ template $GlushkovizerApp : ApplicationWindow {
 
         Entry entry {
           hexpand: true;
-          hexpand-set: true;
           placeholder-text: _("Enter a regular expresion");
           activate => $handle_entry_activate() swapped;
         }
       }
 
+      TextView error {
+        visible: false;
+        editable: false;
+        valign: center;
+        hexpand: true;
+        vexpand: true;
+        
+        styles [
+            "error_box",
+        ]
+      }
+
       Box list {
         hexpand: true;
-        hexpand-set: true;
         orientation: vertical;
         vexpand: true;
-        vexpand-set: true;
         visible: false;
 
         Label {
@@ -54,9 +64,7 @@ template $GlushkovizerApp : ApplicationWindow {
 
         Image image {
           hexpand: true;
-          hexpand-set: true;
           vexpand: true;
-          vexpand-set: true;
         }
       }
     }

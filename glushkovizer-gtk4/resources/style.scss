@@ -1,0 +1,14 @@
+* {
+    font-family: Cantarell;
+}
+
+label.glush_title {
+    font-weight: bold;
+    font-size: 2em;
+}
+
+textview.error_box {
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid @error_color;
+}

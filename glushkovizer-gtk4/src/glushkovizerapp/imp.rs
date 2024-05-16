@@ -3,9 +3,9 @@ use glushkovizer::automata::Automata;
 use glushkovizer::regexp::RegExp;
 use gtk::gdk::Texture;
 use gtk::gdk_pixbuf::PixbufLoader;
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, template_callbacks, Button, CompositeTemplate, Entry, Image};
+use gtk::{prelude::*, TextView};
 use std::fmt::Display;
 use std::hash::Hash;
 use std::io::{Error, Result, Write};
@@ -20,6 +20,8 @@ pub struct GlushkovizerApp {
     pub list: TemplateChild<gtk::Box>,
     #[template_child]
     pub image: TemplateChild<Image>,
+    #[template_child]
+    pub error: TemplateChild<TextView>,
 }
 
 #[glib::object_subclass]
@@ -63,7 +65,8 @@ impl GlushkovizerApp {
         let r = RegExp::try_from(sr);
         if let Err(s) = r {
             self.list.set_visible(false);
-            self.entry.set_text(s.as_str());
+            self.error.set_visible(true);
+            self.error.buffer().set_text(s.as_str());
             return;
         }
         let r = r.unwrap();
@@ -71,9 +74,11 @@ impl GlushkovizerApp {
         let svg = get_svg(&a);
         if let Err(s) = svg {
             self.list.set_visible(false);
-            self.entry.set_text(s.to_string().as_str());
+            self.error.set_visible(true);
+            self.error.buffer().set_text(s.to_string().as_str());
             return;
         }
+        self.error.set_visible(false);
         let svg = svg.unwrap();
         let loader = PixbufLoader::new();
 

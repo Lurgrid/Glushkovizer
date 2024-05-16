@@ -21,7 +21,7 @@ fn main() -> glib::ExitCode {
 fn load_css() {
     // Load the CSS file and add it to the provider
     let provider = CssProvider::new();
-    provider.load_from_resource("/com/sagbot/GlushkovApp/style.css");
+    provider.load_from_resource("/com/sagbot/GlushkovApp/style.scss");
 
     // Add the provider to the default screen
     gtk::style_context_add_provider_for_display(
