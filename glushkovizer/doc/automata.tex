@@ -1,0 +1,245 @@
+\section{Les automates}
+
+Dans cette partie, nous parlerons des automates et plus particulièrement, nous
+allons parler des automates sans \(\varepsilon\) transition (de célèbre
+automate utilise des \(\varepsilon\) transitions, comme ceux de
+\textit{Thompson}, qui sont utilisés par nos ordinateurs). Pour autant les
+automates que nous verrons sont tout aussi bons que ceux avec \(\varepsilon\)
+transition.
+
+\subsection{Définition}
+
+Comme dit précédemment un automate est un objet mathématique reconnaissant un
+langage, on notera \(M(\Sigma, \eta)\) l'automate qui a pour transition des
+valeurs dans \(\Sigma\) et des valeurs `d'état' dans \(\eta\). On écrira donc
+\(L(M(\Sigma, \eta))\) pour désigner le langage qu'il reconnait. Un automate
+est un tuple qu'on peut écrire de cette forme \(M(\Sigma, \eta) = (Q, I, F,
+\delta)\) avec~:
+
+\begin{align}
+    Q        & \subseteq \eta \quad \text{L'ensemble des états qui constitue l'automate} \\
+    I        & \subseteq Q \quad \text{L'ensemble des états initiaux}                    \\
+    F        & \subseteq Q \quad \text{L'ensemble des états finaux}                      \\
+    \delta:~ & Q \times \Sigma \to 2^Q \quad \text{La fonction de transition}
+\end{align}
+
+Un automate peut se représenter à l'aide d'un graphe orienté, valué,
+particulier, Par exemple si on veut représenter \(M(\Sigma, \eta) = (\{q_1,
+q_2, q_3, q_4, q_5\}, \{q_1\},\{q_2, q_3\}, \delta)\) avec \(\Sigma = \{0,
+1\}\), \(\eta = \{q_1, q_2, q_3, q_4, q_5\}\) et \(\delta\) défini comme ceci~:
+
+\begin{align*}
+    \delta(q_1, 0) & = \{q_2, q_4\} \\
+    \delta(q_1, 1) & = \varnothing  \\
+    \delta(q_2, 0) & = \varnothing  \\
+    \delta(q_2, 1) & = \varnothing  \\
+    \delta(q_3, 0) & = \{q_3\}      \\
+    \delta(q_3, 1) & = \{q_4\}      \\
+    \delta(q_4, 0) & = \{q_5\}      \\
+    \delta(q_4, 1) & = \{q_3\}      \\
+    \delta(q_5, 0) & = \{q_4\}      \\
+    \delta(q_5, 0) & = \{q_5\}      \\
+\end{align*}
+
+\begin{figure}[H]
+    \centering
+    \captionsetup{type=figure,justification=centering}
+    \begin{tikzpicture}
+        \tikzset{
+            ->,
+            >=stealth',
+            node distance=3cm,
+            every state/.style={thick},
+            initial text=$ $,
+        }
+        \node[state, initial] (q1) {$q_1$};
+        \node[state, accepting, right of=q1] (q2) {$q_2$};
+        \node[state, above of=q2] (q4) {$q_4$};
+        \node[state, accepting, right of=q2] (q3) {$q_3$};
+        \node[state, right of=q4] (q5) {$q_5$};
+
+        \draw   (q1) edge[above] node{0} (q4)
+        (q1) edge[below] node{0} (q2)
+        (q4) edge[bend right, below] node{1} (q3)
+        (q4) edge[above] node{0} (q5)
+        (q3) edge[above] node{1} (q4)
+        (q3) edge[loop right] node{0} (q3)
+        (q5) edge[bend right, above] node{0} (q4)
+        (q5) edge[loop right] node{1} (q5);
+    \end{tikzpicture}
+    \caption{
+        Exemple de représentation graphique d'un automate.
+    }\label{fig:automata}
+\end{figure}
+
+Dans la figure~\ref{fig:automata}, on peut voir que les états initiaux (ici que
+\(q_1\)) ont une petite flèche qui pointe sur lui et que les états finaux ont
+un double contour. Et que les transitions sont symbolisées par des flèches
+entre les états et que ces flèches sont labellisées.
+
+\vphantom{}
+
+On parlera de l'inverse de l'automate \(M(\Sigma, \eta)\) noté
+\(\overline{M(\Sigma, \eta)}\) qui peut être défini de cette façon~:
+
+\begin{gather}
+    \overline{M(\Sigma, \eta)} = (Q, F, I, \delta') \quad \text{avec} \\
+    M(\Sigma, \eta) = (Q, I, F, \delta) \notag \\
+    \forall (p, q) \in Q^2 ~|~ q \in \delta(p, a) \Rightarrow p \in \delta'(q, a) \notag
+\end{gather}
+
+Donc si on veut représenter l'inverse de l'automate représenté dans la
+figure~\ref{fig:automata}, ça nous donnerait ceci~:
+
+\begin{figure}[H]
+    \centering
+    \captionsetup{type=figure,justification=centering}
+    \begin{tikzpicture}
+        \tikzset{
+            ->,
+            >=stealth',
+            node distance=3cm,
+            every state/.style={thick},
+            initial text=$ $,
+        }
+        \node[state, accepting] (q1) {$q_1$};
+        \node[state, initial below, right of=q1] (q2) {$q_2$};
+        \node[state, above of=q2] (q4) {$q_4$};
+        \node[state, initial below, right of=q2] (q3) {$q_3$};
+        \node[state, right of=q4] (q5) {$q_5$};
+
+        \draw   (q4) edge[above] node{0} (q1)
+        (q2) edge[below] node{0} (q1)
+        (q3) edge[bend left, below] node{1} (q4)
+        (q5) edge[above] node{0} (q4)
+        (q4) edge[above] node{1} (q3)
+        (q3) edge[loop right] node{0} (q3)
+        (q4) edge[bend left, above] node{0} (q5)
+        (q5) edge[loop right] node{1} (q5);
+    \end{tikzpicture}
+    \caption{
+        Exemple de représentation graphique de l'inverse de l'automate de la
+        figure~\ref{fig:automata}.
+    }\label{fig:automata_invserse}
+\end{figure}
+
+On voit bien que l'apparence de l'automate ne change pas les transitions sont
+juste inversées et les états initiaux sont devenus finaux et inversement.
+
+\vphantom{}
+
+On peut aussi étendre la fonction de transition \(\delta\) de manière qu'elle
+ait comme signature~:
+
+\[
+    \delta_w: Q \times \Sigma^* \to 2^Q
+\]
+
+En la définissant récursivement de telle sorte~:
+
+\begin{align}
+    \delta_w(q, \varepsilon) & = \{q\}                                                                         \\
+    \delta_w(q, a.w)         & = \bigcup_{q' \in \delta(q, a)} \delta_w(q', w) \quad \text{avec}~ a \in \Sigma
+\end{align}
+
+\begin{example}
+    Voici donc quelques exemples de ce que ça nous donnerait si on reprend
+    l'automate utilisé pour la représentation graphique
+    (figure~\ref{fig:automata})~:
+
+    \begin{gather}
+        \delta_w(q_1, 00) = \varnothing \\
+        \delta_w(q_1, 11) = \{q_3\} \\
+        \delta_w(q_1, \varepsilon) = \{q_1\} \\
+        \delta_w(q_1, 10 \cdot 1^*) = \{q_5\}
+    \end{gather}
+\end{example}
+
+\vphantom{}
+
+\subsubsection*{Propriétés~:}
+
+Un automate est dit \textit{standard} à l'instant où il ne possède qu'un seul
+état initial non ré-entrant, aussi défini comme ceci~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, \{i\}, F, \delta) \quad \text{avec} \\
+    \forall p \in Q, \forall a \in \Sigma ~|~ i \notin \delta(p, a) \notag
+\end{gather}
+
+Un automate est \textit{homogène} quand pour tous les états les transition
+allant vers cet état ont même valeur. En d'autre terme quand il respecte cette
+propriété~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
+    \forall (p, q, r) \in Q^3 ~|~ \exists (a, b) \in \Sigma^2 \land q \in \delta(p, a) \land q \in \delta(r, b) \Longrightarrow a = b\notag
+\end{gather}
+
+Un automate est qualifié d'\textit{accessible} lorsqu'en partant des initiaux,
+on peut arriver sur tous les états qui le composent. C'est-à-dire qu'il valide
+cette condition~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
+    \forall p \in Q, \exists w \in \Sigma^* ~|~ p \in \bigcup_{i \in I} \delta_w(i, w) \notag
+\end{gather}
+
+Un automate est considéré comme \textit{coaccessible} au moment où l'inverse de
+cette automate est accessible. Ceci veut dire qu'il atteste de cette
+particularité~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
+    accessible(\overline{M(\Sigma, \eta)}) \notag
+\end{gather}
+
+Donc l'automate représenté sur la figure~\ref{fig:automata} est standard, non
+homogène, accessible et coaccessible. Car il possède bien un unique état
+initial (\(q_1\)), mais malheureusement \(q_3\), \(q_4\) et \(q_5\) ne respecte
+pas la propriété pour être homogène, parce qu'ils ont des transitions allant
+vers eux avec des valeurs différentes. De plus tous ses états sont par
+accessible depuis l'état initial et son inverse est, lui-même aussi,
+accessible.
+
+\vphantom{}
+
+Les automates pouvant être représentés à l'aide de graphe, on peut étendre les
+propriétés sur les graphes aux automates. Par exemple, on pourra parler des
+composantes fortement connexes d'un automate. Autrement dit en partant de
+n'importe quel état, on peut arriver à tous les autres états. Ainsi ça veut
+dire qu'un automate fortement connexe vérifierait ceci~:
+
+\begin{gather}
+    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
+    \forall (p, q) \in Q^2, \exists w \in \Sigma^* ~|~ q \in \delta_w(p, w) \notag
+\end{gather}
+
+\subsection{Fonction sur les automates}
+
+Une des fonctions la plus importante sur les automates est \(accept\) qui test
+si le mot est reconnu par l'automate. C'est-à-dire que si on prend le chemin
+décrit par le mot donner en argument, on arrive sur un ou plusieurs états
+finaux. Elle a alors pour signature~:
+
+\[
+    accept: M(\Sigma, \eta) \times \Sigma^* \to \mathbb{B}
+\]
+
+Elle peut être définie simplement comme ceci~:
+
+\begin{align}
+    accept(M(\Sigma, \eta), w) = \exists q \in \bigcup_{p \in I} \delta_w(p, w) ~|~ q \in F
+\end{align}
+
+\subsection{Conclusion}
+
+Comme nous venons de voir les automates sont des outils puissants pour
+reconnaitre des mots d'un langage. L'un de leur plus grande force est leur
+simplicité, toutes les opérations sur les automates peuvent donc être
+automatisé. Ce qui fait que cet objet est très intéressant dans le monde de
+l'\textit{informatique}. En revanche l'un de ses points faibles est sa
+représentation, il est difficile de représenter des très gros automates
+contrairement aux expressions régulières. Il serait alors intéressant de
+pouvoir convertir une expression régulière en automate. C'est ce que nous
+allons voir dans la prochaine section.

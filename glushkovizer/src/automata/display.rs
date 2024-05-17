@@ -5,19 +5,27 @@ use crate::automata::in_out::DoorType;
 
 use super::Automata;
 use std::{
-    fmt::{Display, Formatter, Result},
+    fmt::{Display, Formatter, Result, Write},
     hash::Hash,
 };
 
 const NB_ATTR: usize = 3;
 
-impl<T, V> Display for Automata<T, V>
+impl<T, V> Automata<T, V>
 where
     T: Eq + Hash + Display + Clone,
     V: Eq + Hash + Display + Clone,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "digraph {{\n\trankdir=\"LR\"\n")?;
+    /// Représente l'automate en dot avec les couleurs inversé si "inverse" vaut
+    /// vrai.
+    pub fn fmt_arg(&self, f: &mut dyn Write, inverse: bool) -> Result {
+        write!(f, "digraph {{\n\trankdir=LR\n\tbgcolor=transparent\n\tnode [fontname=Cantarell];\n\tedge [fontname=Cantarell];\n")?;
+        if inverse {
+            write!(
+                f,
+                "\tcolor=white\n\tnode [color=white, fontcolor=white];\n\tedge [color=white, fontcolor=white];"
+            )?;
+        }
         let mut attr: Vec<&str> = Vec::with_capacity(NB_ATTR);
         let stype = self.get_states_type();
         for (ind, s) in self.states.iter().enumerate() {
@@ -53,5 +61,24 @@ where
             }
         }
         write!(f, "}}\n")
+    }
+
+    /// Renvoie la représentation graphique du graph en dot avec des couleurs
+    /// inversé si inverse vaut vrai.
+    pub fn to_dot(&self, inverse: bool) -> String {
+        let mut buf = String::new();
+        self.fmt_arg(&mut buf, inverse)
+            .expect("a Display implementation returned an error unexpectedly");
+        buf
+    }
+}
+
+impl<T, V> Display for Automata<T, V>
+where
+    T: Eq + Hash + Display + Clone,
+    V: Eq + Hash + Display + Clone,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        self.fmt_arg(f, false)
     }
 }

@@ -1,0 +1,137 @@
+\section{Les automates de Glushkov}\label{sec:glushkov}
+
+Le terme `automates de Glushkov' est un abus de langage, faisant référence aux
+automates que l'algorithme de transformation d'expression régulière en
+automate, appelé algorithme de Glushkov produit. Son nom vient de
+l'informaticien soviétique \textit{Victor Glushkov} qui est son créateur.
+
+\subsection{Définition}
+
+Nous appliquerons cet algorithme à l'aide la fonction \(glushkov\) qui a donc
+pour signature~:
+
+\[
+    glushkov: E(\Sigma) \to M(\Sigma, \mathbb{N})
+\]
+
+Et a ainsi, on peut définir cette fonction de cette façon~:
+
+\begin{gather}
+    glushkov     (E(\Sigma)) = (Q, \{0\}, F, \delta) \quad \text{avec} \\
+    \begin{align*}
+        Q                                             & \leftarrow \{n ~|~ n \in \mathbb{N} \land 0 \leq n < m\}                                                                                               \\
+        F                                             & \leftarrow \begin{cases} \{n ~|~ (a, n) \in Last\} \cup \{0\}, & \text{si } Null = \varepsilon \\ \{n ~|~ (a, n) \in Last\} & \text{sinon} \end{cases} \\
+        \forall q                    \in \delta(p, a) & ~|~ \begin{cases} (a, q) \in First, & \text{si } p = 0 \\ (a, q) \in Follow((b, p)) & \text{sinon} \end{cases}                                         \\
+        (E', m)                                       & \leftarrow linearization(E(\Sigma), 1)                                                                                                                 \\
+        (First, Last, Null, Follow)                   & \leftarrow flnl(E')
+    \end{align*}
+\end{gather}
+
+\begin{example}
+    Vu qu'un dessin vaut toujours mieux que mile mots, voici un exemple de
+    l'automate résultant de la transformation de cette expression \(E(\mathbb{A}) =
+    (a+b) \cdot a^* \cdot b^* \cdot (a+b)^*\).
+
+    \begin{figure}[H]
+        \centering
+        \captionsetup{type=figure,justification=centering}
+        \begin{tikzpicture}
+            \tikzset{
+                ->,
+                >=stealth',
+                node distance=2.25cm,
+                every state/.style={thick},
+                initial text=\( \),
+            }
+            \node[state, initial] (0) {\(0\)};
+            \node[state, accepting, right of=0, below of=0] (1) {\(1\)};
+            \node[state, accepting, right of=0, above of=0] (2) {\(2\)};
+            \node[state, accepting, right of=2, below of=2] (3) {\(3\)};
+            \node[state, accepting, right of=3] (4) {\(4\)};
+            \node[state, accepting, right of=4, above of=4] (5) {\(5\)};
+            \node[state, accepting, right of=5] (6) {\(6\)};
+
+            \draw   (0) edge[below] node{a} (1)
+            (0) edge[above] node{b} (2)
+            (1) edge[below] node{a} (3)
+            (2) edge[above] node{a} (3)
+            (1) edge[bend right=1.5cm, below] node{b} (6)
+            (2) edge[bend left=1.5cm, above] node{b} (6)
+            (1) edge[bend right, below] node{a} (5)
+            (2) edge[bend left, above] node{a} (5)
+            (1) edge[bend left=2mm, below] node{b} (4)
+            (2) edge[bend right=2mm, above] node{b} (4)
+            (3) edge[above] node{b} (4)
+            (3) edge[loop left] node{a} (3)
+            (3) edge[bend left, above] node{a} (5)
+            (3) edge[bend right=1.75cm, below] node{b} (6)
+            (4) edge[above] node{a} (5)
+            (4) edge[bend right, below] node{b} (6)
+            (4) edge[loop above] node{b} (4)
+            (5) edge[bend right, below] node{b} (6)
+            (5) edge[loop above] node{a} (5)
+            (6) edge[bend right, above] node{a} (5)
+            (6) edge[loop right] node{b} (6);
+        \end{tikzpicture}
+        \caption{
+            Exemple de représentation graphique de l'automate résultant de
+            \(glushkov(E(\mathbb{A}))\).
+        }\label{fig:automata_glushkov}
+    \end{figure}
+\end{example}
+
+\vphantom{}
+
+Comme on peut voir sur la figure~\ref{fig:automata_glushkov} les automates
+produits sont bien souvent gros et peuvent être dur à comprendre, mais une
+machine peut gérer ça très simplement. Outre sa taille, on peut remarquer qu'il
+y a des propriétés intéressant sur cette automate. C'est ce que l'on va étudier
+maintenant.
+
+\subsubsection*{Propriétés~:}
+
+Nous verrons ici plusieurs propriétés sur les automates de Glushkov, mais nous
+n'en ferons pas la preuve, nous en donnerons une justification, mais pas une
+réelle preuve.
+
+\vphantom{}
+
+\begin{itemize}[label=\textbullet]
+    \item La première propriété plutôt évidente, est que les automates de Glushkov sont
+          \textit{standards}, car par constructions, il ne peut avoir qu'un seul état
+          initial (0).
+
+          \vphantom{}
+
+    \item La deuxième est que l'automate à \(n + 1\) avec \(n\) le nombre de symboles de
+          l'expression régulière. Le \(+ 1\) vient dû fait que nous ajoutons un état
+          \(0\) qui a des transitions vers les \(First\).
+
+          \vphantom{}
+
+    \item La troisième propriété un peu moins flagrante est que les automates de Glushkov
+          sont accessibles et coaccessibles. C'est dû au fait que chaque symbole dans
+          l'expression régulière est accessible et coaccessible et que cette propriété ne
+          se perd pas lors de la transformation.
+
+          \vphantom{}
+
+    \item La dernière propriété est que l'automate de Glushkov est homogène. Cela résulte
+          de sa construction, car pour qu'un état aille sur un autre état, il faut qu'il
+          ait dans ses \textit{Follow} \((a, n)\) avec \(a\) le symbole de la transition
+          et \(n\) la valeur de l'état. Et étant donné que pour chaque couple \((b, m)\)
+          il ne peut n'avoir que ce couple avec comme seconde valeur \(m\) alors la
+          transition vers cet état sera toujours la même.
+\end{itemize}
+
+\subsection{Conclusion}
+
+L'algorithme de Glushkov est très puissants, car permet de convertir une
+expression régulière en automate ce qui fait qu'on gagne les avantages des deux
+structures. Avec les expressions régulières, on peut simplement décrire un
+langage et avec les automates, on peut simplement savoir si un mot est reconnu.
+Il est très utilisé en \textit{informatique}, parce que pour les humains, il
+est plus simple de décrire un langage avec une expression régulière. Et les
+machine comprennent très facilement les automates. Ce qui fait qu'il est
+possible de faire des \textit{programmes informatiques} qui reconnait un
+langage et exécute des tâches à chaque mot.

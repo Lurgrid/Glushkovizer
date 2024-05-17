@@ -1,0 +1,72 @@
+\section{Prélude}
+
+Pour la compréhension de l'ensemble de ce document, nous avons besoin de
+plusieurs notions de théorie des langages. C'est donc pourquoi cette partie,
+nous allons étudier les différentes notions nécessaires. Dans un premier temps,
+nous allons définir ce qu'est un mot et quelles sont les opérations sur les
+mots. Enfin dans un second temps, nous définirons ce qu'est un langage et
+quelles opérations sont munis sur les langages.
+
+\subsection{Les mots}
+
+Un \textit{alphabet} \(\Sigma\) est un ensemble fini de symbole non vide. Un
+\textit{mot} est une suite finie de symbole sur un alphabet \(\Sigma\), le mot
+composé de zéro symbole est appelé `mot vide' est noté \(\varepsilon\).
+
+\begin{example}
+    \begin{gather}
+        \Sigma = \{a, b, c, d\} \\
+        w = abbcdda
+    \end{gather}
+\end{example}
+
+On parlera de la \textit{longueur d'un mot} \(w\) noté \(|w|\) pour désigner le
+nombre de symboles qui le compose. De même, on notera \({|w|}_a\) pour parler
+du nombre de \(a\) dans le mot \(w\).
+
+\begin{example}
+    \begin{gather}
+        w = abbcdda \notag \\
+        |w| = 7 \\
+        {|w|}_d = 2
+    \end{gather}
+\end{example}
+
+Une des opérations les plus essentiels sur les mots est la concaténation de
+mots. On notera donc la concaténation de deux mots \(u = a_1 \cdots a_n\) et
+\(v = b_1 \cdots b_n\) par \(u \cdot v\). Qui est ainsi égal à \(u \cdot v =
+a_1 \cdots a_n b_1 \cdots b_n\). On définit l'ensemble des mots sur \(\Sigma\)
+par \(\Sigma ^ *\). On notera que~:
+
+\begin{itemize}[label=\textbullet]
+    \item La concaténation est associative \((w \cdot u) \cdot v = w \cdot (u \cdot v)\).
+    \item La concaténation admet un élément neutre \(u \cdot \varepsilon = \epsilon \cdot
+          u = u\).
+\end{itemize}
+
+\noindent Ce qui implique que l'ensemble \(\Sigma ^ *\) muni de la concaténation
+\((\Sigma, \cdot)\) forme un monoïde.
+
+\begin{example}
+    \begin{gather}
+        u = abab \\
+        v = cdcd \\
+        u \cdot v = ababcdcd
+    \end{gather}
+\end{example}
+
+Grâce à cette opération sur les mots, on peut définir ce qu'est un
+\textit{facteur}. Un facteur \(u\) d’un mot \(w\) est une suite extraite de la
+suite de lettre qui composent le mot \(w\). Autrement dit \(u\) est un sous mot
+de \(w\) si \(\exists (v, x) \in (\Sigma ^ *)^2 ~|~ w = v \cdot u \cdot x\), de
+plus~:
+
+\begin{itemize}[label=\textbullet]
+    \item On parlera de \textit{préfixe} quand \(v = \varepsilon\).
+    \item On parlera de \textit{suffixe} quand \(x = \varepsilon\).
+    \item Enfin, on parlera de \textit{facteur propre} quand \(v \neq \varepsilon \land x
+          \neq \varepsilon\).
+\end{itemize}
+
+\noindent On remarquera que \(\varepsilon\) est \textit{préfixe}, \textit{suffixe} et
+\textit{facteur} de tout mot.

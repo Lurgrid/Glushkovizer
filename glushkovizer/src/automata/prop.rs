@@ -61,7 +61,7 @@ where
             .predecessor
             .into_iter()
             .fold(0, |acc, opt| if opt.is_none() { acc + 1 } else { acc })
-            <= 0
+            <= 1
     }
 
     /// Renvoie si l'automate est une orbite maximal
