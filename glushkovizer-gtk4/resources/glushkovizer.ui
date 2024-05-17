@@ -9,13 +9,13 @@
       <object class="GtkScrolledWindow">
         <property name="hscrollbar-policy">2</property>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="content">
             <property name="orientation">1</property>
+            <property name="spacing">10</property>
             <property name="margin-bottom">10</property>
             <property name="margin-end">10</property>
             <property name="margin-start">10</property>
             <property name="margin-top">10</property>
-            <property name="spacing">10</property>
             <child>
               <object class="GtkBox">
                 <property name="hexpand">true</property>
@@ -51,8 +51,8 @@
             <child>
               <object class="GtkBox" id="list">
                 <property name="hexpand">true</property>
-                <property name="orientation">1</property>
                 <property name="vexpand">true</property>
+                <property name="orientation">1</property>
                 <property name="visible">false</property>
                 <child>
                   <object class="GtkLabel">
@@ -67,6 +67,25 @@
                 </child>
                 <child>
                   <object class="GtkImage" id="image">
+                    <property name="hexpand">true</property>
+                    <property name="vexpand">true</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="orbit_title">
+                    <property name="ellipsize">2</property>
+                    <property name="justify">2</property>
+                    <property name="label" translatable="true">The maximum orbits of this automaton</property>
+                    <property name="selectable">true</property>
+                    <property name="visible">false</property>
+                    <style>
+                      <class name="glush_title"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox" id="orbit">
+                    <property name="visible">false</property>
                     <property name="hexpand">true</property>
                     <property name="vexpand">true</property>
                   </object>
