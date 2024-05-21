@@ -10,12 +10,12 @@ transition.
 \subsection{Définition}
 
 Comme dit précédemment un automate est un objet mathématique reconnaissant un
-langage, on notera \(M \in M(\Sigma, \eta)\) l'automate qui a pour transition
+langage, on notera \(M \in AFN(\Sigma, \eta)\) l'automate qui a pour transition
 des valeurs dans \(\Sigma\), des valeurs \og{}d'état\fg{} dans \(\eta\). Et
-\(M(\Sigma, \eta)\) l'ensemble des automates de valeur de transition dans
-\(\Sigma\) et de valeur d'état dans \(\eta\). On écrira donc \(L(M)\) pour
-désigner le langage qu'il reconnait. Un automate est un tuple qu'on peut écrire
-de cette forme \(M = (Q, I, F, \delta)\) avec~:
+\(AFN(\Sigma, \eta)\) l'ensemble des automates fini non déterministe de valeur
+de transition dans \(\Sigma\) et de valeur d'état dans \(\eta\). On écrira donc
+\(L(M)\) pour désigner le langage qu'il reconnait. Un automate est un tuple
+qu'on peut écrire de cette forme \(M = (Q, I, F, \delta)\) avec~:
 
 \begin{align}
     Q        & \subseteq \eta \quad \text{L'ensemble des états qui constitue l'automate} \\
@@ -26,9 +26,9 @@ de cette forme \(M = (Q, I, F, \delta)\) avec~:
 
 Un automate peut se représenter à l'aide d'un graphe orienté, valué,
 particulier, Par exemple si on veut représenter \(M = (\{q_1, q_2, q_3, q_4,
-q_5\}, \{q_1\},\{q_2, q_3\}, \delta)\) avec \(M \in M(\Sigma, \eta)\), \(\Sigma
-= \{0, 1\}\), \(\eta = \{q_1, q_2, q_3, q_4, q_5\}\) et \(\delta\) défini comme
-ceci~:
+q_5\}, \{q_1\},\{q_2, q_3\}, \delta)\) avec \(M \in AFN(\Sigma, \eta)\),
+\(\Sigma = \{0, 1\}\), \(\eta = \{q_1, q_2, q_3, q_4, q_5\}\) et \(\delta\)
+défini comme ceci~:
 
 \begin{align*}
     \delta(q_1, 0) & = \{q_2, q_4\} \\
@@ -167,7 +167,7 @@ Un automate est dit \textit{standard} à l'instant où il ne possède qu'un seul
 \begin{gather}
     M = (Q, \{i\}, F, \delta) \quad \text{avec} \\
     \forall p \in Q, \forall a \in \Sigma ~|~ i \notin \delta(p, a) \notag \\
-    M \in M(\Sigma, \eta) \notag
+    M \in AFN(\Sigma, \eta) \notag
 \end{gather}
 
 Un automate est \textit{homogène} quand pour tous les états les transition
@@ -177,7 +177,7 @@ propriété~:
 \begin{gather}
     M = (Q, I, F, \delta) \quad \text{avec} \\
     \forall (p, q, r) \in Q^3 ~|~ \exists (a, b) \in \Sigma^2 \land q \in \delta(p, a) \land q \in \delta(r, b) \Longrightarrow a = b \notag \\
-    M \in M(\Sigma, \eta) \notag
+    M \in AFN(\Sigma, \eta) \notag
 \end{gather}
 
 Un automate est qualifié d'\textit{accessible} lorsqu'en partant des initiaux,
@@ -187,7 +187,7 @@ cette condition~:
 \begin{gather}
     M = (Q, I, F, \delta) \quad \text{avec} \\
     \forall p \in Q, \exists w \in \Sigma^* ~|~ p \in \bigcup_{i \in I} \delta_w(i, w) \notag \\
-    M \in M(\Sigma, \eta) \notag
+    M \in AFN(\Sigma, \eta) \notag
 \end{gather}
 
 Un automate est considéré comme \textit{coaccessible} au moment où l'inverse de
@@ -197,7 +197,7 @@ particularité~:
 \begin{gather}
     M = (Q, I, F, \delta) \quad \text{avec} \\
     accessible(\overleftarrow{M}) \notag \\
-    M \in M(\Sigma, \eta) \notag
+    M \in AFN(\Sigma, \eta) \notag
 \end{gather}
 
 Donc l'automate représenté sur la figure~\ref{fig:automata} est standard, non
@@ -219,7 +219,7 @@ dire qu'un automate fortement connexe vérifierait ceci~:
 \begin{gather}
     M = (Q, I, F, \delta) \quad \text{avec} \\
     \forall (p, q) \in Q^2, \exists w \in \Sigma^* ~|~ q \in \delta_w(p, w) \notag \\
-    M \in M(\Sigma, \eta) \notag
+    M \in AFN(\Sigma, \eta) \notag
 \end{gather}
 
 \subsection{Fonction sur les automates}
@@ -230,7 +230,7 @@ décrit par le mot donner en argument, on arrive sur un ou plusieurs états
 finaux. Elle a alors pour signature~:
 
 \[
-    accept: M(\Sigma, \eta) \times \Sigma^* \to \mathbb{B}
+    accept: AFN(\Sigma, \eta) \times \Sigma^* \to \mathbb{B}
 \]
 
 Elle peut être définie simplement comme ceci~:
