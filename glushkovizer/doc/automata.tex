@@ -2,7 +2,7 @@
 
 Dans cette partie, nous parlerons des automates et plus particulièrement, nous
 allons parler des automates sans \(\varepsilon\) transition (de célèbre
-automate utilise des \(\varepsilon\) transitions, comme ceux de
+automate utilise des \(\varepsilon\)-transitions, comme ceux de
 \textit{Thompson}, qui sont utilisés par nos ordinateurs). Pour autant les
 automates que nous verrons sont tout aussi bons que ceux avec \(\varepsilon\)
 transition.
@@ -10,11 +10,12 @@ transition.
 \subsection{Définition}
 
 Comme dit précédemment un automate est un objet mathématique reconnaissant un
-langage, on notera \(M(\Sigma, \eta)\) l'automate qui a pour transition des
-valeurs dans \(\Sigma\) et des valeurs `d'état' dans \(\eta\). On écrira donc
-\(L(M(\Sigma, \eta))\) pour désigner le langage qu'il reconnait. Un automate
-est un tuple qu'on peut écrire de cette forme \(M(\Sigma, \eta) = (Q, I, F,
-\delta)\) avec~:
+langage, on notera \(M \in M(\Sigma, \eta)\) l'automate qui a pour transition
+des valeurs dans \(\Sigma\), des valeurs \og{}d'état\fg{} dans \(\eta\). Et
+\(M(\Sigma, \eta)\) l'ensemble des automates de valeur de transition dans
+\(\Sigma\) et de valeur d'état dans \(\eta\). On écrira donc \(L(M)\) pour
+désigner le langage qu'il reconnait. Un automate est un tuple qu'on peut écrire
+de cette forme \(M = (Q, I, F, \delta)\) avec~:
 
 \begin{align}
     Q        & \subseteq \eta \quad \text{L'ensemble des états qui constitue l'automate} \\
@@ -24,9 +25,10 @@ est un tuple qu'on peut écrire de cette forme \(M(\Sigma, \eta) = (Q, I, F,
 \end{align}
 
 Un automate peut se représenter à l'aide d'un graphe orienté, valué,
-particulier, Par exemple si on veut représenter \(M(\Sigma, \eta) = (\{q_1,
-q_2, q_3, q_4, q_5\}, \{q_1\},\{q_2, q_3\}, \delta)\) avec \(\Sigma = \{0,
-1\}\), \(\eta = \{q_1, q_2, q_3, q_4, q_5\}\) et \(\delta\) défini comme ceci~:
+particulier, Par exemple si on veut représenter \(M = (\{q_1, q_2, q_3, q_4,
+q_5\}, \{q_1\},\{q_2, q_3\}, \delta)\) avec \(M \in M(\Sigma, \eta)\), \(\Sigma
+= \{0, 1\}\), \(\eta = \{q_1, q_2, q_3, q_4, q_5\}\) et \(\delta\) défini comme
+ceci~:
 
 \begin{align*}
     \delta(q_1, 0) & = \{q_2, q_4\} \\
@@ -79,12 +81,12 @@ entre les états et que ces flèches sont labellisées.
 
 \vphantom{}
 
-On parlera de l'inverse de l'automate \(M(\Sigma, \eta)\) noté
-\(\overline{M(\Sigma, \eta)}\) qui peut être défini de cette façon~:
+On parlera de l'inverse de l'automate \(M\) noté \(\overleftarrow{M}\) qui peut
+être défini de cette façon~:
 
 \begin{gather}
-    \overline{M(\Sigma, \eta)} = (Q, F, I, \delta') \quad \text{avec} \\
-    M(\Sigma, \eta) = (Q, I, F, \delta) \notag \\
+    \overleftarrow{M} = (Q, F, I, \delta') \quad \text{avec} \\
+    M = (Q, I, F, \delta) \notag \\
     \forall (p, q) \in Q^2 ~|~ q \in \delta(p, a) \Rightarrow p \in \delta'(q, a) \notag
 \end{gather}
 
@@ -163,8 +165,9 @@ Un automate est dit \textit{standard} à l'instant où il ne possède qu'un seul
 état initial non ré-entrant, aussi défini comme ceci~:
 
 \begin{gather}
-    M(\Sigma, \eta) = (Q, \{i\}, F, \delta) \quad \text{avec} \\
-    \forall p \in Q, \forall a \in \Sigma ~|~ i \notin \delta(p, a) \notag
+    M = (Q, \{i\}, F, \delta) \quad \text{avec} \\
+    \forall p \in Q, \forall a \in \Sigma ~|~ i \notin \delta(p, a) \notag \\
+    M \in M(\Sigma, \eta) \notag
 \end{gather}
 
 Un automate est \textit{homogène} quand pour tous les états les transition
@@ -172,8 +175,9 @@ allant vers cet état ont même valeur. En d'autre terme quand il respecte cette
 propriété~:
 
 \begin{gather}
-    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
-    \forall (p, q, r) \in Q^3 ~|~ \exists (a, b) \in \Sigma^2 \land q \in \delta(p, a) \land q \in \delta(r, b) \Longrightarrow a = b\notag
+    M = (Q, I, F, \delta) \quad \text{avec} \\
+    \forall (p, q, r) \in Q^3 ~|~ \exists (a, b) \in \Sigma^2 \land q \in \delta(p, a) \land q \in \delta(r, b) \Longrightarrow a = b \notag \\
+    M \in M(\Sigma, \eta) \notag
 \end{gather}
 
 Un automate est qualifié d'\textit{accessible} lorsqu'en partant des initiaux,
@@ -181,8 +185,9 @@ on peut arriver sur tous les états qui le composent. C'est-à-dire qu'il valide
 cette condition~:
 
 \begin{gather}
-    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
-    \forall p \in Q, \exists w \in \Sigma^* ~|~ p \in \bigcup_{i \in I} \delta_w(i, w) \notag
+    M = (Q, I, F, \delta) \quad \text{avec} \\
+    \forall p \in Q, \exists w \in \Sigma^* ~|~ p \in \bigcup_{i \in I} \delta_w(i, w) \notag \\
+    M \in M(\Sigma, \eta) \notag
 \end{gather}
 
 Un automate est considéré comme \textit{coaccessible} au moment où l'inverse de
@@ -190,8 +195,9 @@ cette automate est accessible. Ceci veut dire qu'il atteste de cette
 particularité~:
 
 \begin{gather}
-    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
-    accessible(\overline{M(\Sigma, \eta)}) \notag
+    M = (Q, I, F, \delta) \quad \text{avec} \\
+    accessible(\overleftarrow{M}) \notag \\
+    M \in M(\Sigma, \eta) \notag
 \end{gather}
 
 Donc l'automate représenté sur la figure~\ref{fig:automata} est standard, non
@@ -211,8 +217,9 @@ n'importe quel état, on peut arriver à tous les autres états. Ainsi ça veut
 dire qu'un automate fortement connexe vérifierait ceci~:
 
 \begin{gather}
-    M(\Sigma, \eta) = (Q, I, F, \delta) \quad \text{avec} \\
-    \forall (p, q) \in Q^2, \exists w \in \Sigma^* ~|~ q \in \delta_w(p, w) \notag
+    M = (Q, I, F, \delta) \quad \text{avec} \\
+    \forall (p, q) \in Q^2, \exists w \in \Sigma^* ~|~ q \in \delta_w(p, w) \notag \\
+    M \in M(\Sigma, \eta) \notag
 \end{gather}
 
 \subsection{Fonction sur les automates}
@@ -229,7 +236,7 @@ finaux. Elle a alors pour signature~:
 Elle peut être définie simplement comme ceci~:
 
 \begin{align}
-    accept(M(\Sigma, \eta), w) = \exists q \in \bigcup_{p \in I} \delta_w(p, w) ~|~ q \in F
+    accept(M, w) = \exists q \in \bigcup_{p \in I} \delta_w(p, w) ~|~ q \in F
 \end{align}
 
 \subsection{Conclusion}

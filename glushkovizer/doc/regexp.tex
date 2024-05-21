@@ -4,23 +4,24 @@ Dans cette section, nous parlerons d'expressions régulières (\textit{ER}). Nou
 allons nous concentrer sur un type bien particulier d'expressions régulières
 qui ne seront pas les expressions régulières que nous pouvons voir plus
 quotidiennement dans le domaine de l'informatique, les expressions régulières
-\textit{UNIX}. Mais plutôt une version plus simple de celles-ci.
+\textit{UNIX}. Mais plut\^{o}t une version plus simple de celles-ci.
 
 \subsection{Définition}
 
-Nous allons noter une expression régulière \(E(\Sigma)\), c'est-à-dire une
-expression régulière où les symboles sont inclus dans l'ensemble \(\Sigma\).
-Cette expression reconnait un langage qu'on pourra appeler \(L(E(\Sigma))\).
-Nous pouvons définir une expression régulière récursivement de cette manière~:
+Nous allons noter une expression régulière \(E \in Exp(\Sigma)\), c'est-à-dire
+une expression régulière où les symboles sont inclus dans l'ensemble \(\Sigma\)
+et où \(Exp(\Sigma)\) représente l'ensemble des expressions sur \(\Sigma\).
+Cette expression reconnait un langage qu'on pourra appeler \(L(E)\). Nous
+pouvons définir une expression régulière récursivement de cette manière~:
 
 \begin{align}
-    E                      & = \varepsilon                          \\
-    E                      & = a                                    \\
-    E                      & = F + G                                \\
-    E                      & = F \cdot G                            \\
-    E                      & = F^*                                  \\
-    E                      & = (F)\label{align:parenthese}          \\
-    \text{avec } (E, F, G) & \in (E(\Sigma))^3,~ a \in \Sigma\notag
+    E                      & = \varepsilon                            \\
+    E                      & = a                                      \\
+    E                      & = F + G                                  \\
+    E                      & = F \cdot G                              \\
+    E                      & = F^*                                    \\
+    E                      & = (F)\label{align:parenthese}            \\
+    \text{avec } (E, F, G) & \in (Exp(\Sigma))^3,~ a \in \Sigma\notag
 \end{align}
 
 On notera que \(*\) est prioritaire sur \(\cdot\) qui est lui-même prioritaire
@@ -28,68 +29,57 @@ sur \(+\) et qu'ils sont tous deux associatifs à gauche. On comprend donc
 pourquoi l'équation~(\ref{align:parenthese}) existe, elle est là pour des
 raisons de priorité. Il est alors évident de calculer les diverses fonctions
 sur celle-ci, c'est pour cela qu'on ne précisera pas son
-calcul\label{text:parenthese}. On peut définir chaque équation comme ceci~:
+calcul\label{subsec:parenthese}. On peut définir chaque équation comme ceci~:
 
 \vphantom{}
 
 \begin{itemize}
     \item[\textbullet] \textbf{\(E = \varepsilon\) (epsilon)~:}
-        Représente le mot vide, de ce fait un mot de longueur zéro. Il en vient
-        que~:
-
-        \begin{align}
-            L(E) & = \{\varepsilon\}
-        \end{align}
-
-        Il peut être parfois représenté par `\$'.
+        Représente le mot vide, de ce fait un mot de longueur zéro. Il peut être
+        parfois représenté par \og{}\$\fg{}.
 
         \vphantom{}
 
     \item[\textbullet] \textbf{\(E = a\)~:} Représente un symbole
-        présent dans l'ensemble \(\Sigma\). Il en vient que~:
-
-        \begin{align}
-            L(E) & = \{a\}
-        \end{align}
+        présent dans l'ensemble \(\Sigma\)
 
         \vphantom{}
 
     \item[\textbullet] \textbf{\(E = F + G\)~:} Représente l'union
-        des deux expressions régulières \(F\) et \(G\). Il en
-        vient que~:
-
-        \begin{align}
-            L(E) & = L(F) \cup L(G)
-        \end{align}
-
-        Par abus de langage, on peut aussi dire \(F\) `ou' \(G\) pour représenter cette
-        union.
+        des deux expressions régulières \(F\) et \(G\). Par abus de langage, on
+        peut aussi dire \(F\) \og{}ou\fg{} \(G\) pour représenter cette union.
 
         \vphantom{}
 
     \item[\textbullet] \textbf{\(E = F \cdot G\)~:}
         Représente la concaténation deux des deux expressions régulières
-        \(F\) et \(G\). Il en vient que~:
-
-        \begin{align}
-            L(E) & = L(F) \cdot L(G)
-        \end{align}
+        \(F\) et \(G\).
 
         \vphantom{}
 
     \item[\textbullet] \textbf{\(E = F^* \)~:} Représente la
         répétition infinie de \(F(\Sigma)\), cette répétition incluant,
-        puissance \(0\) et donc le mot vide. Il en vient que~:
-
-        \begin{align}
-            L(E) & = (L(F))^*
-        \end{align}
+        puissance \(0\) et donc le mot vide.
 \end{itemize}
 
+\vphantom{}
+
+Pour calculer le langage que dénote l'expression régulière, on peut le calculer
+récursivement de cette manière~:
+
+\begin{gather}
+    L(\varepsilon) = \{\varepsilon\} \\
+    L(a) = \{a\} \\
+    L(F + G) = L(F) \cup L(G) \\
+    L(F \cdot G) = L(F) \cdot L(G) \\
+    L(F^*) = (L(F))^* \\
+    \text{Avec } a \in \Sigma \text{ et } (F, G) \in (Exp(\Sigma))^2 \notag
+\end{gather}
+
 \begin{example}
-    On comprendra ainsi que l'expression \(E(\mathbb{A}) = a+c \cdot d\) avec
-    \(\mathbb{A} = \{a, b, c, d\}\), dénote le langage \(L(E(\mathbb{A})) = \{a,
-    cd\}\). Car on peut représenter \(E(\mathbb{A})\) comme ceci~:
+    On comprendra ainsi que l'expression \(E = a+c \cdot d\) avec \(E \in
+    Exp(\mathbb{A})\) et \(\mathbb{A} = \{a, b, c, d\}\), dénote le langage
+    \(L(E) = \{a, cd\}\). Car on peut représenter \(E\) comme ceci~:
 
     \begin{figure}[H]
         \centering
@@ -129,16 +119,16 @@ calcul\label{text:parenthese}. On peut définir chaque équation comme ceci~:
 
     Comme on peut voir sur la figure~\ref{fig:arbre_syn} grâce à cette
     représentation, on peut calculer simplement le langage reconnu par l'expression
-    régulière (ici représenté par les ensembles à côté de chaque arbre).
+    régulière (ici représenté par les ensembles à c\^{o}té de chaque arbre).
 \end{example}
 
 \vphantom{}
 
 \begin{example}
 
-    On comprendra aussi que l'expression \(E'(\mathbb{A}) = \varepsilon + b^* \cdot
-    a\), dénote le langage \(L(E'(\mathbb{A})) = \{\varepsilon, b^* \cdot a\}
-    \Leftrightarrow \{\varepsilon, a, b^+ \cdot a\}\).
+    On comprendra aussi que l'expression \(E' = \varepsilon + b^* \cdot a\), dénote
+    le langage \(L(E') = \{\varepsilon, b^* \cdot a\} \Leftrightarrow
+    \{\varepsilon, a, b^+ \cdot a\}\).
 
     \begin{figure}[H]
         \centering
@@ -186,14 +176,14 @@ calcul\label{text:parenthese}. On peut définir chaque équation comme ceci~:
 
 \subsection{Fonction sur les \textit{ER}}
 
-\textbullet~Une des fonctions les plus importantes sur les expressions régulières
-est \(flnf\) permettant de calculer \(FLNF(E(\Sigma))\) qui est un tuple défini
+Une des fonctions les plus importantes sur les expressions régulières est
+\(flnf\) permettant de calculer \(FLNF(Exp(\Sigma))\) qui est un tuple défini
 comme ceci~:
 
 \vphantom{}
 
 \begin{center}
-    \(FLNF(E(\Sigma)) = (F, L, \Theta, \delta)\)
+    \(FLNF(Exp(\Sigma)) = (F, L, \Theta, \delta)\)
 
     \begin{itemize}
         \item[\textbullet] \(F \subseteq \Sigma\)~: Ensemble des premiers
@@ -209,7 +199,7 @@ comme ceci~:
         \item[\textbullet] \(\Theta\) =
             \(
             \begin{cases}
-                \varepsilon, & \text{si}~ \varepsilon \in L(E(\Sigma)) \\
+                \varepsilon, & \text{si } \varepsilon \in L(E) \\
                 \varnothing  & \text{sinon}
             \end{cases}
             \)
@@ -225,10 +215,11 @@ comme ceci~:
 La fonction \(flnf\) a donc comme signature~:
 
 \begin{align}
-    flnf: E(\Sigma) \to FLNF(E(\Sigma))
+    flnf: Exp(\Sigma) \to FLNF(Exp(\Sigma))
 \end{align}
 
-Et peut-être calculée de cette manière~:
+Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
+(Exp(\Sigma))^2\)~:
 
 \begin{align}
     flnf(\varepsilon) & = (\varnothing, \varnothing, \varepsilon, \delta) ~|~ \delta(a) = \varnothing, a \in \Sigma \\
@@ -238,29 +229,30 @@ Et peut-être calculée de cette manière~:
 \end{align}
 
 \begin{gather}
-    flnf(E(\Sigma) + G(\Sigma)) = (F \cup F', L \cup L', \Theta \cup \Theta', \delta'')~ \text{avec} \\
+    flnf(E + G) = (F \cup F', L \cup L', \Theta \cup \Theta', \delta'')~ \text{avec} \\
     \delta''(a) = \delta(a) \cup \delta'(a) ~|~ \forall a \in \Sigma \notag \\
-    (F, L, \Theta, \delta) = flnf(E(\Sigma)) \land (F', L', \Theta', \delta') = flnf(G(\Sigma)) \notag
+    (F, L, \Theta, \delta) = flnf(E) \land (F', L', \Theta', \delta') = flnf(G) \notag
 \end{gather}
 
 \begin{gather}
-    flnf(E(\Sigma) \cdot G(\Sigma)) = (F'', L'', \Theta \cap \Theta', \delta'')~ \text{avec} \\
+    flnf(E \cdot G) = (F'', L'', \Theta \cap \Theta', \delta'')~ \text{avec} \\
     F'' = F \cup F' \cdot \Theta \notag \\
     L'' = L' \cup L \cdot \Theta' \notag \\
     \delta''(a) = \begin{cases} \delta(a) \cup \delta'(a) \cup F', & \text{si}~ a \in L \\ \delta(a) \cup \delta'(a) & \text{sinon}\end{cases} ~|~ \forall a \in \Sigma\notag \\
-    (F, L, \Theta, \delta) = flnf(E(\Sigma)) \land (F', L', \Theta', \delta') = flnf(G(\Sigma)) \notag
+    (F, L, \Theta, \delta) = flnf(E) \land (F', L', \Theta', \delta') = flnf(G) \notag
 \end{gather}
 
 \begin{gather}
-    flnf(E(\Sigma)^*) = (F, L, \varepsilon, \delta')~ \text{avec} \\
+    flnf(E^*) = (F, L, \varepsilon, \delta')~ \text{avec} \\
     \delta'(a) = \begin{cases} \delta(a) \cup F, & \text{si}~ a \in L \\ \delta(a) & \text{sinon}\end{cases} ~|~ \forall a \in \Sigma\notag \\
-    (F, L, \Theta, \delta) = flnf(E(\Sigma)) \notag
+    (F, L, \Theta, \delta) = flnf(E) \notag
 \end{gather}
 
 \begin{example}
-    Prenons par exemple l'expression régulière suivante \(E(\mathbb{A}) = a \cdot b
-    + c \cdot d\), avec \(\mathbb{A} = \{a, b, c, d\}\). Toujours à l'aide d'un
-    arbre syntaxique, on peut calculer ce que \(flnf(E(\mathbb{A}))\) donnerait.
+    Prenons par exemple l'expression régulière suivante \(E = a \cdot b
+    + c \cdot d\), avec \(E \in Exp(\mathbb{A})\) et \(\mathbb{A} = \{a, b, c,
+    d\}\). Toujours à l'aide d'un arbre syntaxique, on peut calculer ce que
+    \(flnf(E)\) donnerait.
 
     \begin{figure}[H]
         \centering
@@ -314,8 +306,8 @@ Et peut-être calculée de cette manière~:
         }
     \end{figure}
 
-    Il advient que \(flnf(E(\mathbb{A})) = \{\{a, c\}, \{b, d\}, \varnothing,
-    \delta\}\) avec \(\delta\) qui est défini comme ceci~:
+    Il advient que \(flnf(E) = \{\{a, c\}, \{b, d\}, \varnothing, \delta\}\) avec
+    \(\delta\) qui est défini comme ceci~:
 
     \begin{align*}
         \delta(a) & = \{b\}       \\
@@ -328,10 +320,10 @@ Et peut-être calculée de cette manière~:
 \vphantom{}
 
 \begin{example}
-    Un autre exemple pourrait être \(E'(\mathbb{A}) = (a + b) \cdot c^*\), avec cet
+    Un autre exemple pourrait être \(E' = (a + b) \cdot c^*\), avec cet
     exemple, on voit l'utilité de la parenthèse, car sans elle la concaténation
     aurait été sur \(b \cdot c^*\) et comme dit précédemment
-    (\ref{text:parenthese}) son calcul reste le même que si c'était une union.
+    (\ref{subsec:parenthese}) son calcul reste le même que si c'était une union.
 
     \begin{figure}[H]
         \centering
@@ -383,53 +375,53 @@ Et peut-être calculée de cette manière~:
         }
     \end{figure}
 
-    Ce qui fait que \(flnf(E'(\mathbb{A})) = (\{a, b\}, \{a, b, c\}, \varnothing,
-    \delta')\) avec \(\delta'\) qui est défini comme décrit après~:
+    Ce qui fait que \(flnf(E') = (\{a, b\}, \{a, b, c\}, \varnothing, \delta')\)
+    avec \(\delta'\) qui est défini comme décrit après~:
 
     \begin{align*}
-        \delta(a) & = \{c\}       \\
-        \delta(b) & = \{c\}       \\
-        \delta(c) & = \{c\}       \\
-        \delta(d) & = \varnothing
+        \delta'(a) & = \{c\}       \\
+        \delta'(b) & = \{c\}       \\
+        \delta'(c) & = \{c\}       \\
+        \delta'(d) & = \varnothing
     \end{align*}
 
 \end{example}
 
 \vphantom{}
 
-\textbullet~Une autre fonction qui s'applique sur les expressions régulières
-est \(linearization\);(elle peut paraitre inutile), mais elle nous servira dans
+Une autre fonction qui s'applique sur les expressions régulières est
+\(linearization\)~; (elle peut paraitre inutile, mais) elle nous servira dans
 la Section~\ref{sec:glushkov}. Sa signature est~:
 
 \begin{gather*}
-    linearization: E(\Sigma) \times \mathbb{N} \to (E(\Sigma^{\mathbb{N}}), \mathbb{N}) \\
+    linearization: Exp(\Sigma) \times \mathbb{N} \to (Exp(\Sigma^{\mathbb{N}}), \mathbb{N}) \\
     \text{avec } \Sigma^{\mathbb{N}} = (\Sigma, \mathbb{N}) \land \forall ((a, b), (c, d)) \in (\Sigma^{\mathbb{N}})^2 ~|~ b = d \Rightarrow a = c \Rightarrow (a, b) = (c, d)
 \end{gather*}
 
-Elle peut être définie récursivement de cette manière~:
+Elle peut être définie récursivement de cette manière, pour \(a \in \Sigma\) et
+\((E, F) \in (Exp(\Sigma))^2\)~:
 
 \begin{gather}
     linearization(\varepsilon, n) = (\varepsilon, n) \\
     linearization(a, n) = ((a, n), n + 1) \\
-    linearization(E(\Sigma) + F(\Sigma), n) = (E' + F', n'') \quad \text{avec } \\
-    (E', n') \leftarrow linearization(E(\Sigma), n) \notag \\
-    (F', n'') \leftarrow linearization(F(\Sigma), n') \notag \\
-    linearization(E(\Sigma) \cdot F(\Sigma), n) = (E' \cdot F', n'') \quad
-    \text{avec } \\
-    (E', n') \leftarrow linearization(E(\Sigma), n) \notag \\
-    (F', n'') \leftarrow linearization(F(\Sigma), n') \notag \\
-    linearization(E(\Sigma)^*, n) = (E'^*, n') \quad \text{avec} \\
-    (E', n') \leftarrow linearization(E(\Sigma), n) \notag
+    linearization(E + F, n) = (E' + F', n'') \quad \text{avec } \\
+    (E', n') \leftarrow linearization(E, n) \notag \\
+    (F', n'') \leftarrow linearization(F, n') \notag \\
+    linearization(E \cdot F, n) = (E' \cdot F', n'') \quad \text{avec } \\
+    (E', n') \leftarrow linearization(E, n) \notag \\
+    (F', n'') \leftarrow linearization(F, n') \notag \\
+    linearization(E^*, n) = (E'^*, n') \quad \text{avec} \\
+    (E', n') \leftarrow linearization(E, n) \notag
 \end{gather}
 
 Avec cette définition, on peut voir que tous les deuxièmes éléments du couple
-des symboles du résultat \(E'\) avec \(linearization(E(\Sigma), n) = (E', m)\),
-seront supérieurs ou égaux à \(n\) et inférieurs stricts à \(m\).
+des symboles du résultat \(E'\) avec \(linearization(E, n) = (E', m)\), seront
+supérieurs ou égaux à \(n\) et inférieurs stricts à \(m\).
 
 \begin{example}
 
-    Si on reprend cette expression régulière \(E(\mathbb{A}) = \varepsilon + b^*
-    \cdot a\), avec \(\mathbb{A} = \{a, b, c, d\}\).
+    Si on reprend cette expression régulière \(E = \varepsilon + b^* \cdot a\),
+    avec \(E \in Exp(\mathbb{A})\) et \(\mathbb{A} = \{a, b, c, d\}\).
 
     \begin{figure}[H]
         \centering

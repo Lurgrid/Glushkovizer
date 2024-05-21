@@ -1,12 +1,20 @@
 \documentclass[12pt]{article}
 \usepackage[french]{babel}
-\usepackage{./cmpt/cmpt}
+\usepackage{cmpt}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{tikz}
 \usepackage{float}
 \usepackage{enumitem}
 \usepackage{caption}
+\usepackage{csquotes}
+\usepackage[
+    backend=biber,
+    style=alphabetic,
+    sorting=ynt
+]{biblatex}
+\addbibresource{references.bib}
+\nocite{*} 
 \usetikzlibrary{positioning}
 \usetikzlibrary{arrows.meta}
 \usetikzlibrary{automata, arrows}
@@ -37,6 +45,8 @@
 
 \newpage
 
+\tableofcontents
+
 \include{prelude}
 
 \include{regexp}
@@ -44,5 +54,9 @@
 \include{automata}
 
 \include{glushkov}
+
+\include{conclusion}
+
+\printbibliography[title=Bibliographie]
 
 \end{document}

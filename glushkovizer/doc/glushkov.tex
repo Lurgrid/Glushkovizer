@@ -1,8 +1,8 @@
 \section{Les automates de Glushkov}\label{sec:glushkov}
 
-Le terme `automates de Glushkov' est un abus de langage, faisant référence aux
-automates que l'algorithme de transformation d'expression régulière en
-automate, appelé algorithme de Glushkov produit. Son nom vient de
+Le terme \og{}automate de Glushkov\fg{} est un abus de langage, faisant
+référence aux automates que l'algorithme de transformation d'expression
+régulière en automate, appelé algorithme de Glushkov produit. Son nom vient de
 l'informaticien soviétique \textit{Victor Glushkov} qui est son créateur.
 
 \subsection{Définition}
@@ -11,25 +11,25 @@ Nous appliquerons cet algorithme à l'aide la fonction \(glushkov\) qui a donc
 pour signature~:
 
 \[
-    glushkov: E(\Sigma) \to M(\Sigma, \mathbb{N})
+    glushkov: Exp(\Sigma) \to M(\Sigma, \mathbb{N})
 \]
 
 Et a ainsi, on peut définir cette fonction de cette façon~:
 
 \begin{gather}
-    glushkov     (E(\Sigma)) = (Q, \{0\}, F, \delta) \quad \text{avec} \\
+    glushkov     (E) = (Q, \{0\}, F, \delta) \quad \text{avec} \\
     \begin{align*}
         Q                                             & \leftarrow \{n ~|~ n \in \mathbb{N} \land 0 \leq n < m\}                                                                                               \\
         F                                             & \leftarrow \begin{cases} \{n ~|~ (a, n) \in Last\} \cup \{0\}, & \text{si } Null = \varepsilon \\ \{n ~|~ (a, n) \in Last\} & \text{sinon} \end{cases} \\
         \forall q                    \in \delta(p, a) & ~|~ \begin{cases} (a, q) \in First, & \text{si } p = 0 \\ (a, q) \in Follow((b, p)) & \text{sinon} \end{cases}                                         \\
-        (E', m)                                       & \leftarrow linearization(E(\Sigma), 1)                                                                                                                 \\
+        (E', m)                                       & \leftarrow linearization(E, 1)                                                                                                                         \\
         (First, Last, Null, Follow)                   & \leftarrow flnl(E')
     \end{align*}
 \end{gather}
 
 \begin{example}
     Vu qu'un dessin vaut toujours mieux que mile mots, voici un exemple de
-    l'automate résultant de la transformation de cette expression \(E(\mathbb{A}) =
+    l'automate résultant de la transformation de cette expression \(E =
     (a+b) \cdot a^* \cdot b^* \cdot (a+b)^*\).
 
     \begin{figure}[H]
@@ -75,7 +75,7 @@ Et a ainsi, on peut définir cette fonction de cette façon~:
         \end{tikzpicture}
         \caption{
             Exemple de représentation graphique de l'automate résultant de
-            \(glushkov(E(\mathbb{A}))\).
+            \(glushkov(E)\).
         }\label{fig:automata_glushkov}
     \end{figure}
 \end{example}
@@ -88,7 +88,7 @@ machine peut gérer ça très simplement. Outre sa taille, on peut remarquer qu'
 y a des propriétés intéressant sur cette automate. C'est ce que l'on va étudier
 maintenant.
 
-\subsubsection*{Propriétés~:}
+\subsection{Propriétés~:}
 
 Nous verrons ici plusieurs propriétés sur les automates de Glushkov, mais nous
 n'en ferons pas la preuve, nous en donnerons une justification, mais pas une
@@ -97,9 +97,9 @@ réelle preuve.
 \vphantom{}
 
 \begin{itemize}[label=\textbullet]
-    \item La première propriété plutôt évidente, est que les automates de Glushkov sont
-          \textit{standards}, car par constructions, il ne peut avoir qu'un seul état
-          initial (0).
+    \item La première propriété plut\^{o}t évidente, est que les automates de Glushkov
+          sont \textit{standards}, car par constructions, il ne peut avoir qu'un seul
+          état initial (0).
 
           \vphantom{}
 

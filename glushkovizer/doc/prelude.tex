@@ -11,7 +11,7 @@ quelles opérations sont munis sur les langages.
 
 Un \textit{alphabet} \(\Sigma\) est un ensemble fini de symbole non vide. Un
 \textit{mot} est une suite finie de symbole sur un alphabet \(\Sigma\), le mot
-composé de zéro symbole est appelé `mot vide' est noté \(\varepsilon\).
+composé de zéro symbole est appelé \textit{mot vide} est noté \(\varepsilon\).
 
 \begin{example}
     \begin{gather}
@@ -56,7 +56,7 @@ par \(\Sigma ^ *\). On notera que~:
 \end{example}
 
 Grâce à cette opération sur les mots, on peut définir ce qu'est un
-\textit{facteur}. Un facteur \(u\) d’un mot \(w\) est une suite extraite de la
+\textit{facteur}. Un facteur \(u\) d'un mot \(w\) est une suite extraite de la
 suite de lettre qui composent le mot \(w\). Autrement dit \(u\) est un sous mot
 de \(w\) si \(\exists (v, x) \in (\Sigma ^ *)^2 ~|~ w = v \cdot u \cdot x\), de
 plus~:
@@ -68,5 +68,160 @@ plus~:
           \neq \varepsilon\).
 \end{itemize}
 
-\noindent On remarquera que \(\varepsilon\) est \textit{préfixe}, \textit{suffixe} et
+\noindent On remarquera que \(\varepsilon\) est~: \textit{préfixe}, \textit{suffixe} et
 \textit{facteur} de tout mot.
+
+\begin{example}
+    \begin{gather}
+        w = abbcdda \\
+        u = bcd \\
+        y = abb \\
+        w = ab \cdot u \cdot da\\
+        u \text{ est donc un facteur propre} \notag \\
+        w = y \cdot cdda \quad \\
+        y \text{ est un facteur et un préfixe} \notag
+    \end{gather}
+\end{example}
+
+De plus aussi grâce à la concaténation, nous pouvons définir le \textit{miroir}
+d'un mot \(w\) noté \(\overleftarrow{w}\). Qui est ainsi défini récursivement
+comme ceci~:
+
+\begin{gather}
+    \overleftarrow{\varepsilon} = \varepsilon \\
+    \overleftarrow{a} = a \\
+    \overleftarrow{u \cdot a} = a \cdot \overleftarrow{u} \\
+    \text{Avec } a \in \Sigma \text{ et } u \in \Sigma ^ * \notag
+\end{gather}
+
+\noindent On remarquera qu'un mot est un palindrome si \(u = \overleftarrow{u}\).
+
+\begin{example}
+    \begin{gather}
+        w = abbcdda \\
+        \overleftarrow{w} = addcbba
+    \end{gather}
+\end{example}
+
+\subsection{Les langages}
+
+Un \textit{langage} \(L\) est un ensemble de mot sur un alphabet fini
+\(\Sigma\). On appellera \textit{langage vide} le langage ne comportant aucun
+mot, ainsi défini comme ceci~: \(L = \varnothing\).
+
+\begin{example}
+    \begin{gather}
+        \Sigma = \{a, b, c, d\} \\
+        L_1 = \{a, aa, bc, da, \varepsilon\} \\
+        L_2 = \varnothing
+    \end{gather}
+\end{example}
+
+L'équivalant de la longueur d'un mot sur les langages est donc le
+\textit{cardinal} du langage. On remarquera qu'un langage n'est pas forcément
+fini et qu'alors son \textit{cardinal} peut être infini.
+
+\begin{example}
+    \begin{gather}
+        \Sigma = \{a, b, c, d\} \\
+        L_1 = \{a, aa, bc, da, \varepsilon\} \\
+        L_2 = \varnothing \\
+        | L_1 | = 5 \\
+        | L_2 | = 0
+    \end{gather}
+\end{example}
+
+L'une des opérations les plus importantes sur les langages est
+l'\textit{union}. On parlera de l'union de langage noté \(L_1 \cup L_2\) et
+défini comme ceci~:
+
+\begin{gather}
+    L_1 \cup L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \lor w \in L_2\}
+\end{gather}
+
+\noindent On notera que l'union est associative, commutative et admet un
+élément neutre (\(\varnothing\)).
+
+\vphantom{}
+
+À l'image de l'union de langages, nous avons aussi l'\textit{intersection} de
+langage noté \(L_1 \cap L_2\) et donc défini comme cela~:
+
+\begin{gather}
+    L_1 \cap L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \land w \in L_2\}
+\end{gather}
+
+\noindent On notera qu'elle aussi est associative, commutative et admet
+aussi un élément neutre (\(\Sigma ^ *\)). On remarquera que \(\varnothing\) est
+un élément absorbant.
+
+\begin{example}
+    \begin{gather}
+        \Sigma = \{a, b, c, d\} \\
+        L_1 = \{\varepsilon, a, aa, bc, da\} \\
+        L_2 = \{d, aa, cd\} \\
+        L_1 \cup L_2 = \{\varepsilon, a, d, aa, cd, bc, da\} \\
+        L_1 \cap L_2 = \{aa\}
+    \end{gather}
+\end{example}
+
+Un autre opération importante sur les langages est la \textit{concaténation}.
+Elle est bien sûr définie en utilisant la concaténation des mots qui compose le
+langage. Cette opération est ainsi définie comme ceci~:
+
+\begin{gather}
+    L_1 \cdot L_2 = \{u \cdot v ~|~ u \in L_1, v \in L_2\}
+\end{gather}
+
+\noindent On remarquera qu'elle est associative, pas commutative et admet un
+élément neutre (\(\{\varepsilon\}\)). Et que \(\varnothing\) est aussi un
+élément absorbant pour cette opération.
+
+\begin{example}
+    \begin{gather}
+        \Sigma = \{a, b, c, d\} \\
+        L_1 = \{\varepsilon, a, aa\} \\
+        L_2 = \{d, cc\} \\
+        L_1 \cdot L_2 = \{d, ad, aad, cc, acc, aacc\}
+    \end{gather}
+\end{example}
+
+Par extension, on définit la \textit{copie n-ième} d'un langage \(L\) notée
+\(L^n\) et défini récursivement comme ceci~:
+
+\begin{gather}
+    L^0 = \{\varepsilon\} \\
+    L^n = L^{n - 1} \cdot L
+\end{gather}
+
+\noindent On remarquera que \(\varnothing^0 = \{\varepsilon\}\).
+
+\begin{example}
+    \begin{gather}
+        \Sigma = \{a, b\} \\
+        L = \{\varepsilon, a\} \\
+        L^3 = \{\varepsilon, a, aa, aaa\}
+    \end{gather}
+\end{example}
+
+Grâce à cette opération, on peut définir l'\textit{étoile} d'un langage notée
+\(L^*\). Qui peut être défini comme ceci~:
+
+\begin{gather}
+    L^* = \bigcup_{i \geq 0}^{\infty} L^i
+\end{gather}
+
+\begin{example}
+    \begin{gather}
+        L = \{a\} \\
+        L^* = \{\varepsilon\} \cup \{a\} \cup \{aa\} \cup \cdots
+    \end{gather}
+\end{example}
+
+\subsection{Conclusion}
+
+Nous avons défini les concepts de \textit{mot}, de \textit{langage} et
+l'ensemble des opérations applicables à ces objets. Bien que nous n'ayons
+couvert qu'une partie des opérations possibles, nous vous encourageons à
+consulter un cours de théorie des langages pour obtenir des informations plus
+détaillées.
