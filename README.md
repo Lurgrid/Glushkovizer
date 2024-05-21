@@ -3,7 +3,7 @@
 Program that transforms a regular expression into a Glushkov automaton and then 
 transforms it into a grammar
 
-## Formal définition
+## Formal definition
 
 The formal definition of data types used by this library is available in French 
 [here](./glushkovizer/doc/formal.pdf)
