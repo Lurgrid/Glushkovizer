@@ -49,11 +49,13 @@
 //! ```
 
 use crate::automata::error::Result;
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 use self::error::AutomataError;
 
+pub mod deserialize;
 pub mod dfs;
 pub mod display;
 pub mod error;
@@ -62,12 +64,13 @@ pub mod in_out;
 pub mod prop;
 pub mod scc;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 /// Structure regroupant les informations nécessaire à la gestion d'un état d'un
 /// automate.
 struct State<V>(V);
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(remote = "Self")]
 /// Structure regroupant les informations nécessaire à la gestion d'un automate
 /// finit.
 pub struct Automata<T, V>

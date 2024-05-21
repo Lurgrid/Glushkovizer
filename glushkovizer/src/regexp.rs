@@ -33,6 +33,7 @@
 
 use lrlex::lrlex_mod;
 use lrpar::lrpar_mod;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
     fmt::{self, Debug, Display, Formatter},
@@ -42,7 +43,7 @@ use std::{
 lrlex_mod!("reg.l");
 lrpar_mod!("reg.y");
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 /// Nom d'un "enum" ayant pour but de représenter une expression régulière à
 ///     l'aide d'un arbre, composer de symbole de type T.
 pub enum RegExp<T> {
