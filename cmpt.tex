@@ -1,0 +1,52 @@
+\documentclass[12pt]{article}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{cmpt}
+\usepackage{lipsum}
+\usepackage{tikz}
+
+%--- begin document ------------------------------------------------------------
+
+\title{CMPT~-~Template}
+\author{Lurgrid}
+\date{2023--2024}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    \lipsum[1]
+\end{abstract}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\code{function}
+
+\type{Type}
+
+\begin{mcode}
+    void foo(int a) \{
+
+    $\tab$ return a;
+
+    $\tab{00001}$ return a; // dead code
+
+    \}
+\end{mcode}
+
+\newpage
+
+\foreach \x in {1,...,5}{
+        \section{Section \x}
+        \foreach \y in {1,...,5}{
+                \subsection{Sous-section \y}
+                \lipsum[1-5]
+            }
+    }
+
+\end{document}
