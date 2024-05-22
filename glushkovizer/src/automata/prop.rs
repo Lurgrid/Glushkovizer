@@ -1,4 +1,4 @@
-//! Module de tests des propriétées d'un automates
+//! Module for testing the properties of an automaton
 
 use super::Automata;
 use std::{collections::HashSet, hash::Hash};
@@ -7,12 +7,12 @@ impl<T, V> Automata<T, V>
 where
     T: Eq + Hash + Clone + Eq,
 {
-    /// Renvoie si l'automate est standart
+    /// Returns if the automaton is standard
     pub fn is_standard(&self) -> bool {
         self.initials.len() <= 1
     }
 
-    /// Renvoie si l'automate est deterministe
+    /// Returns if the automaton is deterministic
     pub fn is_deterministic(&self) -> bool {
         if !self.is_standard() {
             return false;
@@ -31,7 +31,7 @@ where
         true
     }
 
-    /// Renvoie si l'automate est homogène
+    /// Returns if the automaton is homogeneous
     pub fn is_homogeneous(&self) -> bool {
         let mut dir: Vec<Option<T>> = vec![None; self.states.len()];
 
@@ -55,7 +55,7 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
 {
-    /// Renvoie si l'automate est fortement connecté
+    /// Returns whether the automaton is strongly connected
     pub fn is_strongly_connected(&self) -> bool {
         unsafe { self.get_dfs_unchecked((0..self.get_nb_states()).collect()) }
             .predecessor
@@ -64,7 +64,7 @@ where
             <= 1
     }
 
-    /// Renvoie si l'automate est une orbite maximal
+    /// Returns whether the automaton is a maximal orbit
     pub fn is_maximal_orbit(&self) -> bool {
         self.is_strongly_connected()
             && (self.get_nb_states() != 1 || self.follow[0].values().any(|set| set.len() > 0))

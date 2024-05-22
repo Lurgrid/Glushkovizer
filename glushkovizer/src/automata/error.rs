@@ -1,26 +1,26 @@
-//! Module ayant pour but de facilité la gestion des erreurs qui peuvent arriver
-//! lors de la manipulation des automates
+//! Module designed to facilitate the management of errors that may occur
+//! during automata operation
 
 #[derive(thiserror::Error, Debug)]
-/// Enumeration des erreurs possible lors de la manipulation des automates
+/// Enumeration of possible errors when manipulating automata
 pub enum AutomataError {
     #[error("Unknow state 'from' given")]
-    /// Erreur representant le fait que l'état qu'on veut modifer est inconnu
+    /// Error representing the fact that the state to be modified is unknown
     UnknowStateFrom,
     #[error("Unknow state 'to' given")]
-    /// Erreur repsesentant le fait que l'état d'arrivé est inconnu
+    /// Error representing the fact that the arrival state does not exist
     UnknowStateTo,
     #[error("Unknow state given")]
-    /// Erreur representant le fait que l'état chercher n'existe pas
+    /// Error representing the fact that the searched state does not exist
     UnknowState,
     #[error("Not enough state given")]
-    /// Erreur representant le fait qu'il n'y à pas assez d'état donné en
-    /// parametre.
+    /// Error representing the fact that not enough state given in
+    /// parameter
     NotEnoughState,
     #[error("Duplicate state")]
-    /// Erreur representant le fait qu'un état à un doublon
+    /// Error representing the fact that a state has a duplicate
     DuplicateState,
 }
 
-/// Type alias des resultat des fonction de manipulation des automates
+/// Result alias type for automaton manipulation functions
 pub type Result<T> = core::result::Result<T, AutomataError>;

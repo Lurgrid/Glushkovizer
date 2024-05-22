@@ -1,7 +1,7 @@
-//! Module regroupant les informations et implémentation nécéssaire au parcours
-//! en profondeur.
+//! Module containing all the information and implementation required for the
+//! deep path
 //!
-//! # Exemple
+//! # Example
 //! ```rust
 //! use glushkovizer::automata::{Automata, error::Result};
 //!
@@ -29,18 +29,18 @@ use super::error::{AutomataError, Result};
 use super::Automata;
 
 #[derive(Debug)]
-/// Structure regroupant les informantions d'un parcours en profondeur de
-/// l'automate
+/// Structure grouping together the information of a depth path of the
+/// the automaton
 pub struct DFSInfo<V> {
-    /// Ensemble d'état déﬁni par prefix\[i\] contient l'état que l’on
-    /// découvre à l’instant i.
+    /// State set deﬁned by prefix\[i\] contains the state that is being
+    /// discovered at time i
     pub prefix: Vec<V>,
-    /// Ensemble d'état déﬁni par suffix\[i\] contient l'état que l’on termine
-    /// d’explorer à l’instant i.
+    /// Set of states deﬁned by suffix\[i\] contains the state we've finished
+    /// to explore at time i
     pub suffix: Vec<V>,
-    /// Ensemble, déﬁni par predecessor\[u\] = None, si u est une racine de la
-    /// forêt d’exploration et par predecessor\[u\] est le prédécesseur du
-    /// sommet u sinon
+    /// Set, deﬁned by predecessor\[u\] = None, if u is a root of the
+    /// exploration forest and by predecessor\[u\] is the predecessor of the
+    /// vertex u otherwise
     pub predecessor: Vec<Option<V>>,
 }
 
@@ -49,10 +49,9 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
 {
-    /// Renvoie les informations du parcours en profondeur selon l'ordre
-    /// "order".
-    /// Renvoie [Err] si order ne contient par toute les valeurs possible des
-    /// états.
+    /// Returns depth path information in the following order "order
+    ///
+    /// Returns [Err] if order does not contain all possible values ​​of states
     pub fn get_dfs(&self, order: Vec<V>) -> Result<DFSInfo<V>> {
         if self.get_nb_states() != order.len() || !self.states.iter().all(|d| order.contains(&d.0))
         {
@@ -81,9 +80,10 @@ where
         })
     }
 
-    /// Renvoie les informations du parcours en profondeur selon l'ordre "order"
-    /// qui est un vecteur des indices des états
-    /// Aucun test n'est fait sur la validité de order
+    /// Returns depth path information in "order" order which is a vector of
+    /// state indices
+    ///
+    /// No test is performed on the validity of order
     pub(crate) unsafe fn get_dfs_unchecked(&self, order: Vec<usize>) -> DFSInfo<usize> {
         let mut info = DFSInfo::<usize> {
             prefix: Vec::with_capacity(self.get_nb_states()),

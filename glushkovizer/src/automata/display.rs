@@ -1,5 +1,5 @@
-//! Module regroupant les informations et implémentation nécéssaire à
-//! l'affichage d'un automate.
+//! Module containing the information and implementation required for the
+//! display of a automata
 
 use crate::automata::in_out::DoorType;
 
@@ -16,8 +16,7 @@ where
     T: Eq + Hash + Display + Clone,
     V: Eq + Hash + Display + Clone,
 {
-    /// Représente l'automate en dot avec les couleurs inversé si "inverse" vaut
-    /// vrai.
+    /// Represents dot automaton with colors inverted if "inverse" is true
     pub fn fmt_arg(&self, f: &mut dyn Write, inverse: bool) -> Result {
         write!(f, "digraph {{\n\trankdir=LR\n\tbgcolor=transparent\n\tnode [fontname=Cantarell];\n\tedge [fontname=Cantarell];\n")?;
         if inverse {
@@ -63,8 +62,8 @@ where
         write!(f, "}}\n")
     }
 
-    /// Renvoie la représentation graphique du graph en dot avec des couleurs
-    /// inversé si inverse vaut vrai.
+    /// Returns graphical representation of dot graph with colors inverted if
+    /// "inverse" is true
     pub fn to_dot(&self, inverse: bool) -> String {
         let mut buf = String::new();
         self.fmt_arg(&mut buf, inverse)

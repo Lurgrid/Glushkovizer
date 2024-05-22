@@ -1,4 +1,4 @@
-//! Module permettant la désérialisation en respectant l'invariant
+//! Module allowing deserialization while respecting the invariant
 
 use std::{collections::HashSet, hash::Hash};
 

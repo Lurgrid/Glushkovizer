@@ -1,22 +1,21 @@
-//! Module permettant la gestion d'expression régulière. On peut crée une
-//! expression régulière "à la main" mais aussi la "parse" à partir d'une chaine
-//! de caractère qui contient les opérations suivante:
+//! Module for managing regular expressions. You can create a regular expression
+//! "by hand" or "parse" it from a string containing the following operations:
 //!
-//! - ```a```: Où "a" est une lettre de l'alphabet entre 'a' et 'z' ou 'A' et
-//!     'Z'.
+//! - ```a```: Where "a" is a letter of the alphabet between 'a' and 'z' or 'A'
+//!     and 'Z'
 //!
-//! - ```$```: Caractère qui permet de représenter epsilon (le mot vide).
+//! - ```$```: Character used to represent epsilon (the empty word)
 //!
-//! - ```expr*```: Permet une répétion infinie de fois, avec une répétion de
-//!     zero fois inclu.
+//! - ```expr*```: Allows infinite repetition, with a repetition of
+//!     zero times included
 //!
-//! - ```expr.expr```: Représente la concaténation des deux expressions
-//!     régulières.
+//! - ```expr.expr```: Represents the concatenation of the two regular
+//!     expressions
 //!
-//! - ```expr+expr```: Permet de représenter le "ou" entre les deux expressions
-//!     régulières
+//! - ```expr+expr```: Represents the "or" between the two regular
+//!     expressions
 //!
-//! # Exemple
+//! # Example
 //!
 //! ```rust
 //! use glushkovizer::regexp::RegExp;
@@ -43,23 +42,22 @@ use std::{
 lrlex_mod!("reg.l");
 lrpar_mod!("reg.y");
 
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
-/// Nom d'un "enum" ayant pour but de représenter une expression régulière à
-///     l'aide d'un arbre, composer de symbole de type T.
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+/// Name of an enum whose purpose is to represent a regular expression using a
+/// tree, composed of T-type symbols
 pub enum RegExp<T> {
-    /// Element de l'enum pour representer le mot vide epsilon.
+    /// Element of the enum to represent the empty word epsilon.
     Epsilon,
-    /// Element de l'enum pour representer une lettre de l'alphabet Sigma où
-    ///     chaque élément est de type T.
+    /// Enum element to represent a letter of the Sigma alphabet, where each
+    /// element is of type T
     Symbol(T),
-    /// Element de l'enum pour representer la répétition d'une expression
-    ///     régulière. Cette répétition est infini et inclu le mot vide.
+    /// Enum element to represent the repetition of an expression. This
+    /// repetition is infinite and includes the empty word
     Repeat(Box<RegExp<T>>),
-    /// Element de l'enum pour representer la concaténation de deux sous
-    ///     expression régulière.
+    /// Enum element to represent the concatenation of two regular
+    /// sub-expressions
     Concat(Box<RegExp<T>>, Box<RegExp<T>>),
-    /// Element de l'enum pour representer l'union de deux sous expression
-    ///     régulière.
+    /// Enum element to represent the union of two regular sub-expressions
     Or(Box<RegExp<T>>, Box<RegExp<T>>),
 }
 
@@ -106,18 +104,18 @@ impl TryFrom<String> for RegExp<char> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-/// Structure ayant pour but de representer des symboles numérotés
+/// Structure to represent numbered symbols
 pub struct Numbered<T>(pub T, pub usize);
 
-/// Structure regroupant toute les informations d'une expression régulière
+/// Structure containing all the information of a regular expression
 pub struct FLNF<T> {
-    /// Ensemble des premier d'une expression regulière
+    /// Set of firsts of a regular expression
     pub firsts: HashSet<T>,
-    /// Ensemble des dernier d'une expression regulière
+    /// Set of the last of a regular expression
     pub lasts: HashSet<T>,
-    /// Est ce que le mot vide est reconnu
+    /// Is the empty word recognized
     pub null: bool,
-    /// Tableau associatif représantant les suivants
+    /// An map representing follows
     pub follows: HashMap<T, HashSet<T>>,
 }
 
@@ -125,10 +123,9 @@ impl<T> RegExp<T>
 where
     T: Eq + Hash + Clone,
 {
-    /// Crée à partir d'une expression régulière une autre expression
-    ///     régulière où chaque symbole sera numéroté en partant de "start" et
-    ///     renvoie celle-ci dans un couple, accompagné de "start" + le nombre
-    ///     de symbole numéroté
+    /// Creates from a regular expression another regular expression where each
+    /// symbol will be numbered starting from "start" and returns it in a pair,
+    /// accompanied by "start" + the number of numbered symbols
     pub fn linearization(&self, start: usize) -> (RegExp<Numbered<T>>, usize) {
         match self {
             RegExp::Epsilon => (RegExp::Epsilon, start),
@@ -155,7 +152,7 @@ where
         }
     }
 
-    /// Renvoie les informations de l'expression regulère.
+    /// Returns regular expression information.
     pub fn get_flnf(&self) -> FLNF<T> {
         match self {
             RegExp::Epsilon => FLNF {

@@ -1,22 +1,22 @@
-//! Module regroupant les informations et implémentation nécéssaire à
-//! la recuppération du type d'état d'un composant fortement connexe
+//! Module containing the information and implementation required for
+//! retrieving the state type of a strongly connected component
 
 use std::{collections::HashMap, hash::Hash, ops::AddAssign};
 
 use super::Automata;
 
 #[derive(PartialEq, Clone)]
-/// Type qu'un état peut être
+/// Type that a state can be
 pub enum DoorType {
-    /// Represente le fait que l'état est une porte d'entrée
+    /// Represents the fact that the state is an input door
     In,
-    /// Represente le fait que l'état est une porte de sortie
+    /// Represents the fact that the state is an output doorr
     Out,
-    /// Represente le fait que l'état est à la fois une porte d'entrée et une
-    /// porte de sortie
+    /// Represents the fact that the state is both an input door and an
+    /// output door
     Both,
-    /// Represente le fait que l'état n'est ni une porte d'entrée ni une porte
-    /// de sortie
+    /// Represents the fact that the state is neither an input nor an output
+    /// gate
     None,
 }
 
@@ -36,7 +36,7 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
 {
-    /// Renvoie un tableau associatif entre un état et son type
+    /// Returns an map between a state and its type
     pub fn get_states_type(&self) -> HashMap<V, DoorType> {
         let k = self.kosaraju();
         let mut stype = HashMap::new();
@@ -44,12 +44,9 @@ where
             stype.insert(s.0.clone(), DoorType::None);
         });
         for (ind, s) in self.states.iter().enumerate() {
-            /*
-            À débat, est-ce-que les initiaux sont des portes d'entrée
             if self.initials.contains(&ind) {
                 *stype.get_mut(&s.0).unwrap() += DoorType::In;
             }
-            */
             if self.finals.contains(&ind) {
                 *stype.get_mut(&s.0).unwrap() += DoorType::Out;
             }

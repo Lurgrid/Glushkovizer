@@ -1,5 +1,5 @@
-//! Sous module permettant la gestion d'automate de Glushkov, avec une
-//! convertion de RegExp en automate de Glushkov
+//! Module for Glushkov automaton management, with a conversion of [RegExp] into
+//! a Glushkov automaton
 
 use std::fmt::Display;
 use std::hash::Hash;

@@ -1,10 +1,10 @@
 #![warn(missing_docs)]
-//! Module ayant pour but la gestion d'expression régulière, d'automate et la
-//! convertion d'expression régulière en automate de Glushkov.
+//! Module for managing regular expressions, automata and converting regular
+//! expressions into Glushkov automata.
 //!
-//! # Exemple
+//! # Example
 //!
-//! Voici un exemple qui illustre bien l'utilisation qu'on pourrait en faire:
+//! Here's an example of how it could be used:
 //! ```rust
 //! use glushkovizer::automata::Automata;
 //! use glushkovizer::regexp::RegExp;

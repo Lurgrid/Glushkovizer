@@ -10,8 +10,8 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
 {
-    /// Appliquer l'algorithme de kosaraju sur l'autome et renvoie les
-    /// composantes fortement connexe.
+    /// Apply the kosaraju algorithm to the automaton and return the strongly
+    /// connected components.
     pub fn kosaraju(&self) -> Vec<Vec<V>> {
         let DFSInfo {
             prefix: _,
@@ -42,8 +42,9 @@ where
         r
     }
 
-    /// Renvoie les sous automate des composantes fortement connexe, où les
-    /// initiaux sont les portes entrante et les finaux les portes sortante
+    /// Returns the sub-automata of the strongly connected components, where the
+    /// initial states are the input gates and the final states are the output
+    /// gates
     pub fn extract_scc(&self) -> Vec<Self> {
         let mut res = Vec::new();
         let stype = self.get_states_type();

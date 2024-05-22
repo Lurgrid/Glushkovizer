@@ -1,11 +1,10 @@
-//! Module permettant la gestion d'automate. Avec la possibilité de le
-//! "crée à la main", de vérifié si un mot est reconnu par cet automate. Enfin
-//! on peut aussi le convertir en [Graph], qui permettera une analyse sur
-//! celui-ci et une représentation en dot.
+//! Module allowing automaton management. With the possibility of "created by
+//! hand", checks if a word is recognized by this automata. Finally it can also
+//! be converted into dot format
 //!
-//! # Exemple
+//! # Examples
 //!
-//! Voici un exemple de l'utilisation d'un automate crée "à la main":
+//! Here is an example of using a hand-created automaton:
 //! ```rust
 //! use glushkovizer::automata::{error::Result, Automata};
 //!
@@ -25,9 +24,10 @@
 //! }
 //! ```
 //!
-//! Un autre exemple plus concret cette fois-ci, dans cet exemple on peut voir
-//! qu'on "parse" une expression regulière puis on la convertie en automate pour
-//! après reconnaitre des mots:
+//! Another more concrete example: in this example we can see that we "parse" a
+//! regular expression and then convert it into an automaton in order to
+//! afterwards to recognize words:
+//!
 //! ```rust
 //! use glushkovizer::automata::Automata;
 //! use glushkovizer::regexp::RegExp;
@@ -65,14 +65,14 @@ pub mod prop;
 pub mod scc;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-/// Structure regroupant les informations nécessaire à la gestion d'un état d'un
-/// automate.
+/// Structure grouping together the information necessary for managing the state
+/// of a automaton
 struct State<V>(V);
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(remote = "Self")]
-/// Structure regroupant les informations nécessaire à la gestion d'un automate
-/// finit.
+/// Structure grouping together the information necessary for managing an finite
+/// automaton
 pub struct Automata<T, V>
 where
     T: Eq + Hash,
@@ -101,7 +101,7 @@ impl<T, V> Automata<T, V>
 where
     T: Eq + Hash,
 {
-    /// Renvoie le nombre d'état dans l'automate
+    /// Returns the number of states in the automaton
     pub fn get_nb_states(&self) -> usize {
         self.states.len()
     }
@@ -112,21 +112,23 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
 {
-    /// Crée un automate initialement vide.
+    /// Creates an initially empty automaton.
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Renvoie les suivants de l'état d'indice "state" avec pour transition
-    /// "sym".
-    /// Aucun test n'est fait sur la validiter de "state"
+    /// Returns the following of the state with index "state" with transition
+    /// "sym"
+    ///
+    /// No test is done on the validity of "state"
     unsafe fn follow_unchecked(&self, state: usize, sym: &T) -> Option<&HashSet<usize>> {
         self.follow[state].get(sym)
     }
 
-    /// Renvoie les états suivant de l'état qui a pour valeur "state" avec pour
-    /// transition "sym".
-    /// Renvoie une erreur si "state" n'est pas valide.
+    /// Returns the following states of the state which has the value "state"
+    /// with for "sym" transition
+    ///
+    /// Returns an error if "state" is invalid
     pub fn follow(&self, state: &V, sym: &T) -> Result<Vec<V>> {
         let to = self
             .states
@@ -139,9 +141,10 @@ where
         }
     }
 
-    /// Renvoie les suivants de l'état d'indice "state" avec pour chemain de
-    /// transition "word".
-    /// Aucun test n'est fait sur la validiter de "state"
+    /// Returns the following of the state with index "state" with path of
+    /// "word" transition.
+    ///
+    /// No test is done on the validity of "state"
     unsafe fn follow_word_unchecked<'a>(
         &self,
         state: usize,
@@ -163,9 +166,10 @@ where
         })
     }
 
-    /// Renvoie les suivants de l'état qui à pour valeur "state" avec pour
-    /// chemain de transition "word".
-    /// Renvoie une erreur si "state" n'est pas valide.
+    /// Returns the following of the state which has the value "state" with for
+    /// transition path "word"
+    ///
+    /// Returns an error if "state" is invalid
     pub fn follow_word<'a>(&self, state: &V, word: impl Iterator<Item = &'a T>) -> Result<Vec<V>>
     where
         T: 'a,
@@ -181,7 +185,7 @@ where
             .collect())
     }
 
-    /// Test si le mot passé en paramètre est reconnu par l'automate.
+    /// Test if the word passed as a parameter is recognized by the automaton
     pub fn accept<'a>(&self, word: impl Iterator<Item = &'a T> + Clone) -> bool
     where
         T: 'a,
@@ -197,7 +201,7 @@ where
             .is_some()
     }
 
-    /// Renvoie la liste des états initiaux.
+    /// Returns the list of initial states
     pub fn get_initials(&self) -> Vec<V> {
         self.initials
             .iter()
@@ -205,7 +209,7 @@ where
             .collect()
     }
 
-    /// Renvoie la liste des états finaux.
+    /// Returns the list of final states
     pub fn get_finals(&self) -> Vec<V> {
         self.finals
             .iter()
@@ -213,13 +217,13 @@ where
             .collect()
     }
 
-    /// Renvoie la liste des états.
+    /// Returns the list of states
     pub fn get_states(&self) -> Vec<V> {
         self.states.iter().map(|s| s.0.clone()).collect()
     }
 
-    /// Renvoie l'indice de l'état de valeur "state".
-    /// Aucun test n'est fait sur la présence ou non d'un état de cette valeur
+    /// Returns the index of the state value "state"
+    /// No test is done on the presence or absence of a state of this value
     unsafe fn get_ind_state(&self, state: &V) -> usize {
         self.states
             .iter()
@@ -227,7 +231,8 @@ where
             .unwrap_unchecked()
     }
 
-    /// Renvoie l'automate inverse, qui reconnait donc le miroir des mots.
+    /// Returns the inverse automaton, which therefore recognizes the mirror of
+    /// the words
     pub fn get_inverse(&self) -> Self {
         let mut g = Self {
             states: self.states.clone(),
@@ -245,12 +250,13 @@ where
         g
     }
 
-    /// Crée une copie du "sous automate", c'est à dire un automate composé
-    /// des états "states" et ayant gardé les transition entre ces états. Et
-    /// ayant aucun états initials et finaux
-    /// Renvoie une erreur si les valeurs de "states" contient des doublons ou
-    /// si "states" contient des valeurs ne décrivant aucun état de l'automate
-    /// courrant. Sinon renvoie cette copie du sous automate.
+    /// Creates a copy of the "sub-automaton", i.e. an automaton composed of
+    /// of the "states" and having kept the transitions between these states.
+    /// And having no initial and final states
+    ///
+    /// Returns an error if the values of "states" contain duplicates or if
+    /// "states" contains values that do not describe any state of the automaton
+    /// state. Otherwise returns this copy of the sub-automaton
     pub fn get_subautomata(&self, states: &Vec<V>) -> Result<Self> {
         if has_dup(&states) {
             return Err(AutomataError::DuplicateState);
@@ -283,8 +289,8 @@ where
         Ok(a)
     }
 
-    /// Ajoute une transition entre l'état de valeur "from" vers l'état de
-    /// valeur "to" avec comme transition "sym".
+    /// Adds a transition from the state of value "from" to the state of value
+    /// "to" with "sym" as transition
     pub fn add_transition(&mut self, from: V, to: V, sym: T) -> Result<()> {
         let to = self
             .states
@@ -302,8 +308,8 @@ where
         Ok(())
     }
 
-    /// Supprime la transition entre l'état de valeur "from" vers l'état de
-    /// valeur "to" avec comme transition "sym".
+    /// Removes the transition from the "from" value state to the state of
+    /// value "to" with "sym" as transition
     pub fn remove_transition(&mut self, from: V, to: V, sym: T) -> Result<()> {
         let to = self
             .states
@@ -321,9 +327,10 @@ where
         Ok(())
     }
 
-    /// Ajoute une transition entre l'état d'indice "from" vers l'état d'indice
-    /// "to" avec comme transition "sym".
-    /// Aucun test n'est fait si "from" et "to" ne sont pas des indices valides
+    /// Adds a transition from "from" index state to index state "to" with "sym"
+    /// as transition
+    ///
+    /// No test is done if "from" and "to" are not valid indices
     unsafe fn add_transition_unchecked(&mut self, from: usize, to: usize, sym: T) {
         match self.follow[from].get_mut(&sym) {
             None => {
@@ -335,9 +342,10 @@ where
         };
     }
 
-    /// Supprime la transition entre l'état d'indice "from" vers l'état d'indice
-    /// "to" avec comme transition "sym".
-    /// Aucun test n'est fait si "from" et "to" ne sont pas des indices valides
+    /// Remove transition from "from" index state to index state "to" with "sym"
+    /// as transition
+    ///
+    /// No test is done if "from" and "to" are not valid indices
     unsafe fn remove_transition_unchecked(&mut self, from: usize, to: usize, sym: T) {
         match self.follow[from].get_mut(&sym) {
             Some(n) => {
@@ -347,8 +355,9 @@ where
         };
     }
 
-    /// Ajoute un état à l'automate de valeur "state".
-    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent.
+    /// Adds a state to the state value automaton.
+    ///
+    /// Returns true if it was added and false if it was already present.
     pub fn add_state(&mut self, state: V) -> bool {
         if self.states.iter().find(|s| s.0 == state).is_some() {
             return false;
@@ -358,7 +367,7 @@ where
         return true;
     }
 
-    /// Supprime le état à l'automate de valeur "state".
+    /// Removes the state from the automaton with the value "state"
     pub fn remove_state(&mut self, state: V) -> Result<()> {
         let s = self
             .states
@@ -382,9 +391,10 @@ where
         Ok(())
     }
 
-    /// Ajoute à la liste des initiaux de l'automate, l'état qui a pour valeur
-    /// "state".
-    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent.
+    /// Adds to the list of initial states of the automaton, the state which has
+    /// the value "state"
+    ///
+    /// Returns true if it was added and false if it was already present
     pub fn add_initial(&mut self, state: V) -> Result<bool> {
         let s = self
             .states
@@ -394,8 +404,8 @@ where
         Ok(self.initials.insert(s))
     }
 
-    /// Supprime à la liste des initiaux de l'automate, l'état qui a pour valeur
-    /// "state".
+    /// Deletes from the list of initial states of the automaton, the state
+    /// whose value is "state"
     pub fn remove_initial(&mut self, state: V) -> Result<()> {
         let s = self
             .states
@@ -406,9 +416,10 @@ where
         Ok(())
     }
 
-    /// Ajoute à la liste des finaux de l'automate, l'état qui a pour valeur
-    /// "state".
-    /// Renvoie vrai s'il a été ajouté et faux s'il était déjà présent.
+    /// Adds to the list of final states of the automaton, the state whose value
+    /// is "state"
+    ///
+    /// Returns true if it was added and false if it was already present
     pub fn add_final(&mut self, state: V) -> Result<bool> {
         let s = self
             .states
@@ -418,8 +429,8 @@ where
         Ok(self.finals.insert(s))
     }
 
-    /// Supprime à la liste des finaux de l'automate, l'état qui a pour valeur
-    /// "state".
+    /// Deletes from the list of final states of the automaton, the state whose
+    /// value is "state"
     pub fn remove_final(&mut self, state: V) -> Result<()> {
         let s = self
             .states
