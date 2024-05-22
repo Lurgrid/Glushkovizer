@@ -15,13 +15,13 @@ Cette expression reconnait un langage qu'on pourra appeler \(L(E)\). Nous
 pouvons définir une expression régulière récursivement de cette manière~:
 
 \begin{align}
-    E                      & = \varepsilon                            \\
-    E                      & = a                                      \\
-    E                      & = F + G                                  \\
-    E                      & = F \cdot G                              \\
-    E                      & = F^*                                    \\
-    E                      & = (F)\label{align:parenthese}            \\
-    \text{avec } (E, F, G) & \in (Exp(\Sigma))^3,~ a \in \Sigma\notag
+    E                      & = \varepsilon                             \\
+    E                      & = a                                       \\
+    E                      & = F + G                                   \\
+    E                      & = F \cdot G                               \\
+    E                      & = F^*                                     \\
+    E                      & = (F)\label{align:parenthese}             \\
+    \text{avec } (E, F, G) & \in (Exp(\Sigma))^3,~ a \in \Sigma \notag
 \end{align}
 
 On notera que \(*\) est prioritaire sur \(\cdot\) qui est lui-même prioritaire
@@ -58,7 +58,7 @@ calcul\label{subsec:parenthese}. On peut définir chaque équation comme ceci~:
         \vphantom{}
 
     \item[\textbullet] \textbf{\(E = F^* \)~:} Représente la
-        répétition infinie de \(F(\Sigma)\), cette répétition incluant,
+        répétition infinie de \(F\), cette répétition incluant,
         puissance \(0\) et donc le mot vide.
 \end{itemize}
 
@@ -127,8 +127,7 @@ récursivement de cette manière~:
 \begin{example}
 
     On comprendra aussi que l'expression \(E' = \varepsilon + b^* \cdot a\), dénote
-    le langage \(L(E') = \{\varepsilon, b^* \cdot a\} \Leftrightarrow
-    \{\varepsilon, a, b^+ \cdot a\}\).
+    le langage \(L(E') = \{\varepsilon, b^* \cdot a\}\).
 
     \begin{figure}[H]
         \centering
@@ -420,7 +419,7 @@ supérieurs ou égaux à \(n\) et inférieurs stricts à \(m\).
 
 \begin{example}
 
-    Si on reprend cette expression régulière \(E = \varepsilon + b^* \cdot a\),
+    Si on reprend cette expression régulière \(E = \varepsilon + b^* \cdot b\),
     avec \(E \in Exp(\mathbb{A})\) et \(\mathbb{A} = \{a, b, c, d\}\).
 
     \begin{figure}[H]
@@ -451,7 +450,7 @@ supérieurs ou égaux à \(n\) et inférieurs stricts à \(m\).
                                     node[mycircle] {b}
                                 }
                         }
-                    child {node[mycircle] {a}}
+                    child {node[mycircle] {b}}
                 };
             \node[mysquare, right=7cm of 1] (2) {+}
             child {node[mycircle] {\(\varepsilon\)}}
@@ -463,7 +462,7 @@ supérieurs ou égaux à \(n\) et inférieurs stricts à \(m\).
                                     node[mycircle] {(b, 1)}
                                 }
                         }
-                    child {node[mycircle] {(a, 2)}}
+                    child {node[mycircle] {(b, 2)}}
                 };
 
             \draw[line width=.5mm, -{Stealth[length=5mm, open]}] ($(1.east) + (1.5cm, -2cm)$) -- node[midway, above=2mm] {\(linearization\)} ($(2.west) + (-1.5cm, -2cm)$);
