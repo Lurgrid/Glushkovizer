@@ -32,9 +32,6 @@ Saved !
 Saved !
 Saved !
 Saved !
-Saved !
-Saved !
-Saved !
 Please enter a regular expression - Press Ctrl + D to quit
 ```
 
@@ -53,21 +50,31 @@ $ ./target/release/glushkovizer-gtk4
 
 ### Run Dependencies
 
-- ``dot 9.0.0 >=`` _(May work on an earlier version, but has not been tested)_
+- ``dot 9.0 >=`` _(May work on an earlier version, but has not been tested)_
 
 For the ``gtk4`` version :
 
 - ``gtk4 4.14 >=``
 
+    _(Has also been tested in 4.6.9)_
+
 - ``libadwaita 1.5 >=``
+
+    _(Has also been tested in 1.1.7)_
 
 ### Build Dependencies
 
+For the ``gtk4`` version :
+
 - ``blueprint-compiler 0.10 >=`` _(May work on an earlier version, but has not been tested)_
+
+- ``gcc 14.1 >=`` _(May work on an earlier version, but has not been tested)_
 
 - ``gtk4 devel 4.14 >=`` For installation, please refer to the [book](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation.html)
 
+
 - ``libadwaita devel 1.5 >=`` For installation, please refer to the [book](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html)
+
 
 ## License
 
