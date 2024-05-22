@@ -30,7 +30,11 @@ fn main() -> ExitCode {
         let a = a.unwrap();
         println!("{:?}", a);
         let g = Automata::from(a);
-        let mut scc = g.extract_scc();
+        let mut scc = g
+            .extract_scc()
+            .into_iter()
+            .filter(|a| a.is_maximal_orbit())
+            .collect::<Vec<_>>();
         scc.push(g);
         loop {
             println!(
