@@ -9,44 +9,41 @@ where
 {
     /// Returns if the automaton is standard
     pub fn is_standard(&self) -> bool {
-        self.initials.len() <= 1
+        self.initials.len() == 1
+            && self.follow.iter().all(|map| {
+                map.values().all(|set| {
+                    !set.contains(unsafe { self.initials.iter().next().unwrap_unchecked() })
+                })
+            })
     }
 
     /// Returns if the automaton is deterministic
     pub fn is_deterministic(&self) -> bool {
-        if !self.is_standard() {
-            return false;
-        }
         let mut t_set = HashSet::new();
-        for ind in 0..self.get_nb_states() {
+        (0..self.get_nb_states()).all(|ind| {
             t_set.clear();
-            for nexts in self.follow[ind].values() {
-                for next in nexts.iter() {
-                    if !t_set.insert(*next) {
-                        return false;
-                    }
-                }
-            }
-        }
-        true
+            self.follow[ind]
+                .values()
+                .all(|nexts| nexts.iter().all(|next| !t_set.insert(*next)))
+        })
     }
 
     /// Returns if the automaton is homogeneous
     pub fn is_homogeneous(&self) -> bool {
         let mut dir: Vec<Option<T>> = vec![None; self.states.len()];
 
-        for f in self.follow.iter() {
-            for (key, set) in f.iter() {
-                for to in set.iter() {
+        self.follow.iter().all(|f| {
+            f.iter().all(|(key, set)| {
+                set.iter().all(|to| {
                     match &dir[*to] {
                         None => dir[*to] = Some(key.clone()),
                         Some(val) if val.eq(key) => (),
                         _ => return false,
-                    }
-                }
-            }
-        }
-        true
+                    };
+                    return true;
+                })
+            })
+        })
     }
 }
 
@@ -55,17 +52,35 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
 {
-    /// Returns whether the automaton is strongly connected
-    pub fn is_strongly_connected(&self) -> bool {
-        unsafe { self.get_dfs_unchecked((0..self.get_nb_states()).collect()) }
+    /// Returns if the automaton is accessible
+    pub fn is_accessible(&self) -> bool {
+        let mut p: Vec<usize> = (0..self.get_nb_states()).collect();
+        p.sort_by_key(|ind| {
+            self.initials
+                .iter()
+                .position(|x| x == ind)
+                .unwrap_or(self.get_nb_states())
+        });
+
+        unsafe { self.get_dfs_unchecked(p) }
             .predecessor
             .into_iter()
             .fold(0, |acc, opt| if opt.is_none() { acc + 1 } else { acc })
             <= 1
     }
 
-    /// Returns whether the automaton is a maximal orbit
-    pub fn is_maximal_orbit(&self) -> bool {
+    /// Returns if the automaton is coaccessible
+    pub fn is_coaccessible(&self) -> bool {
+        self.get_inverse().is_accessible()
+    }
+
+    /// Returns whether the automaton is strongly connected
+    pub fn is_strongly_connected(&self) -> bool {
+        self.kosaraju().len() <= 1
+    }
+
+    /// Returns whether the automaton is a orbit
+    pub fn is_orbit(&self) -> bool {
         self.is_strongly_connected()
             && (self.get_nb_states() != 1 || self.follow[0].values().any(|set| set.len() > 0))
     }
@@ -76,14 +91,14 @@ mod test {
     use crate::{automata::Automata, regexp::RegExp};
 
     #[test]
-    fn maximal_orbit() {
+    fn orbit() {
         let r = RegExp::try_from("(a+b).a*.b*.(a+b)*");
         assert!(r.is_ok());
         let r = r.unwrap();
         let a = Automata::from(r);
         let scc = a.extract_scc();
-        assert!(scc[3].is_maximal_orbit());
-        assert!(scc[4].is_maximal_orbit());
-        assert!(scc[5].is_maximal_orbit());
+        assert!(scc[3].is_orbit());
+        assert!(scc[4].is_orbit());
+        assert!(scc[5].is_orbit());
     }
 }

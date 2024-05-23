@@ -3,7 +3,7 @@
 use crate::automata::dfs::DFSInfo;
 
 use super::{in_out::DoorType, Automata};
-use std::hash::Hash;
+use std::{collections::HashSet, hash::Hash};
 
 impl<T, V> Automata<T, V>
 where
@@ -12,7 +12,7 @@ where
 {
     /// Apply the kosaraju algorithm to the automaton and return the strongly
     /// connected components.
-    pub fn kosaraju(&self) -> Vec<Vec<V>> {
+    pub fn kosaraju(&self) -> Vec<HashSet<V>> {
         let DFSInfo {
             prefix: _,
             suffix: mut order,
@@ -26,16 +26,16 @@ where
             predecessor: res,
         } = unsafe { inverse.get_dfs_unchecked(order) };
         let mut r = Vec::new();
-        let mut cur = Vec::new();
+        let mut cur = HashSet::new();
         for pos in prefix {
             let p = self.states[pos].0.clone();
             if res[pos].is_none() {
                 if cur.len() != 0 {
                     r.push(cur);
                 }
-                cur = vec![p];
+                cur = HashSet::from([p]);
             } else {
-                cur.push(p)
+                cur.insert(p);
             }
         }
         r.push(cur);

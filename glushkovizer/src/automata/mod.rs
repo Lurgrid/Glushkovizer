@@ -254,13 +254,10 @@ where
     /// of the "states" and having kept the transitions between these states.
     /// And having no initial and final states
     ///
-    /// Returns an error if the values of "states" contain duplicates or if
-    /// "states" contains values that do not describe any state of the automaton
-    /// state. Otherwise returns this copy of the sub-automaton
-    pub fn get_subautomata(&self, states: &Vec<V>) -> Result<Self> {
-        if has_dup(&states) {
-            return Err(AutomataError::DuplicateState);
-        }
+    /// Returns an error if if "states" contains values that do not describe any
+    /// state of the automaton state. Otherwise returns this copy of the
+    /// sub-automaton
+    pub fn get_subautomata(&self, states: &HashSet<V>) -> Result<Self> {
         if !states
             .iter()
             .all(|e| self.states.iter().find(|s| s.0.eq(e)).is_some())
@@ -442,11 +439,6 @@ where
     }
 }
 
-fn has_dup<T: Eq + Hash + Clone>(vec: &Vec<T>) -> bool {
-    let mut set: HashSet<T> = HashSet::new();
-    !vec.iter().all(|e| set.insert(e.clone()))
-}
-
 #[cfg(test)]
 mod test {
     use crate::automata::{error::Result, Automata};
@@ -497,7 +489,7 @@ mod test {
         g.add_final(3)?;
         g.add_transition(1, 2, 'a')?;
         g.add_transition(2, 3, 'a')?;
-        let g2 = g.get_subautomata(&vec![1, 2]);
+        let g2 = g.get_subautomata(&[1, 2].into());
         assert!(g2.is_ok());
         let mut g2 = g2.unwrap();
         g2.add_initial(1)?;

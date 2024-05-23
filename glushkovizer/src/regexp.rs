@@ -126,7 +126,7 @@ where
     /// Creates from a regular expression another regular expression where each
     /// symbol will be numbered starting from "start" and returns it in a pair,
     /// accompanied by "start" + the number of numbered symbols
-    pub fn linearization(&self, start: usize) -> (RegExp<Numbered<T>>, usize) {
+    pub fn linearization_start(&self, start: usize) -> (RegExp<Numbered<T>>, usize) {
         match self {
             RegExp::Epsilon => (RegExp::Epsilon, start),
             RegExp::Symbol(v) => {
@@ -136,20 +136,26 @@ where
                 (r, end)
             }
             RegExp::Repeat(c) => {
-                let (nc, end) = c.linearization(start);
+                let (nc, end) = c.linearization_start(start);
                 (RegExp::Repeat(Box::new(nc)), end)
             }
             RegExp::Or(l, r) => {
-                let (nl, end) = l.linearization(start);
-                let (nr, end) = r.linearization(end);
+                let (nl, end) = l.linearization_start(start);
+                let (nr, end) = r.linearization_start(end);
                 (RegExp::Or(Box::new(nl), Box::new(nr)), end)
             }
             RegExp::Concat(l, r) => {
-                let (nl, end) = l.linearization(start);
-                let (nr, end) = r.linearization(end);
+                let (nl, end) = l.linearization_start(start);
+                let (nr, end) = r.linearization_start(end);
                 (RegExp::Concat(Box::new(nl), Box::new(nr)), end)
             }
         }
+    }
+
+    /// Creates from a regular expression another regular expression where each
+    /// symbol will be numbered starting from 1 and returns it
+    pub fn linearization(&self) -> RegExp<Numbered<T>> {
+        self.linearization_start(1).0
     }
 
     /// Returns regular expression information.
@@ -308,7 +314,7 @@ mod test {
     fn numbered() {
         let a = RegExp::try_from("(a+b).(a*.b)");
         assert!(a.is_ok());
-        let (a, n) = a.unwrap().linearization(1);
+        let (a, n) = a.unwrap().linearization_start(1);
         let _ = a.get_flnf();
         assert_eq!(
             "Concat(Or(Symbol(Numbered('a', 1)), Symbol(Numbered('b', 2))), \

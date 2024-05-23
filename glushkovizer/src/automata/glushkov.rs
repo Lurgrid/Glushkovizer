@@ -12,7 +12,7 @@ where
     T: Eq + Hash + Clone + Display,
 {
     fn from(reg: RegExp<T>) -> Self {
-        let (a, end) = reg.linearization(1);
+        let (a, end) = reg.linearization_start(1);
         let info = a.get_flnf();
         let mut g = Automata::new();
         for i in 0..end {
