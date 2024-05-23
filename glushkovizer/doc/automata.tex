@@ -17,12 +17,12 @@ de transition dans \(\Sigma\) et de valeur d'état dans \(\eta\). On écrira don
 \(L(M)\) pour désigner le langage qu'il reconnait. Un automate est un tuple
 qu'on peut écrire de cette forme \(M = (Q, I, F, \delta)\) avec~:
 
-\begin{align}
+\begin{align*}
     Q        & \subseteq \eta \quad \text{L'ensemble des états qui constitue l'automate} \\
     I        & \subseteq Q \quad \text{L'ensemble des états initiaux}                    \\
     F        & \subseteq Q \quad \text{L'ensemble des états finaux}                      \\
     \delta:~ & Q \times \Sigma \to 2^Q \quad \text{La fonction de transition}
-\end{align}
+\end{align*}
 
 Un automate peut se représenter à l'aide d'un graphe orienté, valué,
 particulier, Par exemple si on veut représenter \(M = (\{q_1, q_2, q_3, q_4,
@@ -31,16 +31,11 @@ q_5\}, \{q_1\},\{q_2, q_3\}, \delta)\) avec \(M \in AFN(\Sigma, \eta)\),
 défini comme ceci~:
 
 \begin{align*}
-    \delta(q_1, 0) & = \{q_2, q_4\} \\
-    \delta(q_1, 1) & = \varnothing  \\
-    \delta(q_2, 0) & = \varnothing  \\
-    \delta(q_2, 1) & = \varnothing  \\
-    \delta(q_3, 0) & = \{q_3\}      \\
-    \delta(q_3, 1) & = \{q_4\}      \\
-    \delta(q_4, 0) & = \{q_5\}      \\
-    \delta(q_4, 1) & = \{q_3\}      \\
-    \delta(q_5, 0) & = \{q_4\}      \\
-    \delta(q_5, 0) & = \{q_5\}      \\
+    \delta(q_1, 0) & = \{q_2, q_4\} & \delta(q_3, 1) & = \{q_4\} \\
+    \delta(q_1, 1) & = \varnothing  & \delta(q_4, 0) & = \{q_5\} \\
+    \delta(q_2, 0) & = \varnothing  & \delta(q_4, 1) & = \{q_3\} \\
+    \delta(q_2, 1) & = \varnothing  & \delta(q_5, 0) & = \{q_4\} \\
+    \delta(q_3, 0) & = \{q_3\}      & \delta(q_5, 1) & = \{q_5\} \\
 \end{align*}
 
 \begin{figure}[H]
@@ -74,7 +69,7 @@ défini comme ceci~:
     }\label{fig:automata}
 \end{figure}
 
-Dans la figure~\ref{fig:automata}, on peut voir que les états initiaux (ici que
+Dans la Figure~\ref{fig:automata}, on peut voir que les états initiaux (ici que
 \(q_1\)) ont une petite flèche qui pointe sur lui et que les états finaux ont
 un double contour. Et que les transitions sont symbolisées par des flèches
 entre les états et que ces flèches sont labellisées.
@@ -84,14 +79,14 @@ entre les états et que ces flèches sont labellisées.
 On parlera de l'inverse de l'automate \(M\) noté \(\overleftarrow{M}\) qui peut
 être défini de cette façon~:
 
-\begin{gather}
+\begin{gather*}
     \overleftarrow{M} = (Q, F, I, \delta') \quad \text{avec} \\
     M = (Q, I, F, \delta) \notag \\
     \forall (p, q) \in Q^2 ~|~ q \in \delta(p, a) \Rightarrow p \in \delta'(q, a) \notag
-\end{gather}
+\end{gather*}
 
 Donc si on veut représenter l'inverse de l'automate représenté dans la
-figure~\ref{fig:automata}, ça nous donnerait ceci~:
+Figure~\ref{fig:automata}, ça nous donnerait ceci~:
 
 \begin{figure}[H]
     \centering
@@ -121,7 +116,7 @@ figure~\ref{fig:automata}, ça nous donnerait ceci~:
     \end{tikzpicture}
     \caption{
         Exemple de représentation graphique de l'inverse de l'automate de la
-        figure~\ref{fig:automata}.
+        Figure~\ref{fig:automata}.
     }\label{fig:automata_invserse}
 \end{figure}
 
@@ -134,79 +129,86 @@ On peut aussi étendre la fonction de transition \(\delta\) de manière qu'elle
 ait comme signature~:
 
 \[
-    \delta_w: Q \times \Sigma^* \to 2^Q
+    \delta: Q \times \Sigma^* \to 2^Q
 \]
 
 En la définissant récursivement de telle sorte~:
 
-\begin{align}
-    \delta_w(q, \varepsilon) & = \{q\}                                                                         \\
-    \delta_w(q, a \cdot w)   & = \bigcup_{q' \in \delta(q, a)} \delta_w(q', w) \quad \text{avec}~ a \in \Sigma
-\end{align}
+\begin{align*}
+    \delta(q, \varepsilon) & = \{q\}                                                                       \\
+    \delta(q, a \cdot w)   & = \bigcup_{q' \in \delta(q, a)} \delta(q', w) \quad \text{avec}~ a \in \Sigma
+\end{align*}
 
 \begin{example}
     Voici donc quelques exemples de ce que ça nous donnerait si on reprend
     l'automate utilisé pour la représentation graphique
-    (figure~\ref{fig:automata})~:
+    (Figure~\ref{fig:automata})~:
 
-    \begin{gather}
+    \begin{gather*}
         \delta_w(q_1, 00) = \varnothing \\
         \delta_w(q_1, 11) = \{q_3\} \\
         \delta_w(q_1, \varepsilon) = \{q_1\} \\
         \delta_w(q_1, 10 \cdot 1^*) = \{q_5\}
-    \end{gather}
+    \end{gather*}
 \end{example}
 
 \vphantom{}
 
-\subsubsection*{Propriétés~:}
+\begin{definition}
+    Un automate est dit \textit{standard} à l'instant où il ne possède qu'un seul
+    état initial non ré-entrant, aussi défini comme ceci~:
 
-Un automate est dit \textit{standard} à l'instant où il ne possède qu'un seul
-état initial non ré-entrant, aussi défini comme ceci~:
+    \begin{gather*}
+        M = (Q, \{i\}, F, \delta) \quad \text{avec} \\
+        \forall p \in Q, \forall a \in \Sigma ~|~ i \notin \delta(p, a) \notag \\
+        M \in AFN(\Sigma, \eta) \notag
+    \end{gather*}
+\end{definition}
 
-\begin{gather}
-    M = (Q, \{i\}, F, \delta) \quad \text{avec} \\
-    \forall p \in Q, \forall a \in \Sigma ~|~ i \notin \delta(p, a) \notag \\
-    M \in AFN(\Sigma, \eta) \notag
-\end{gather}
+\begin{definition}
+    Un automate est \textit{homogène} quand pour tous les états les transition
+    allant vers cet état ont même valeur. En d'autre terme quand il respecte cette
+    propriété~:
 
-Un automate est \textit{homogène} quand pour tous les états les transition
-allant vers cet état ont même valeur. En d'autre terme quand il respecte cette
-propriété~:
+    \begin{gather*}
+        M = (Q, I, F, \delta) \quad \text{avec} \\
+        \forall (p, q, r) \in Q^3 ~|~ \exists (a, b) \in \Sigma^2 \land q \in \delta(p, a) \land q \in \delta(r, b) \Longrightarrow a = b \notag \\
+        M \in AFN(\Sigma, \eta) \notag
+    \end{gather*}
+\end{definition}
 
-\begin{gather}
-    M = (Q, I, F, \delta) \quad \text{avec} \\
-    \forall (p, q, r) \in Q^3 ~|~ \exists (a, b) \in \Sigma^2 \land q \in \delta(p, a) \land q \in \delta(r, b) \Longrightarrow a = b \notag \\
-    M \in AFN(\Sigma, \eta) \notag
-\end{gather}
+\begin{definition}
+    Un automate est qualifié d'\textit{accessible} lorsqu'en partant des initiaux,
+    on peut arriver sur tous les états qui le composent. C'est-à-dire qu'il valide
+    cette condition~:
 
-Un automate est qualifié d'\textit{accessible} lorsqu'en partant des initiaux,
-on peut arriver sur tous les états qui le composent. C'est-à-dire qu'il valide
-cette condition~:
+    \begin{gather*}
+        M = (Q, I, F, \delta) \quad \text{avec} \\
+        \forall p \in Q, \exists w \in \Sigma^* ~|~ p \in \bigcup_{i \in I} \delta(i, w) \notag \\
+        M \in AFN(\Sigma, \eta) \notag
+    \end{gather*}
+\end{definition}
 
-\begin{gather}
-    M = (Q, I, F, \delta) \quad \text{avec} \\
-    \forall p \in Q, \exists w \in \Sigma^* ~|~ p \in \bigcup_{i \in I} \delta_w(i, w) \notag \\
-    M \in AFN(\Sigma, \eta) \notag
-\end{gather}
+\begin{lemma}
+    Un automate est considéré comme \textit{coaccessible} au moment où l'inverse de
+    cette automate est accessible. Ceci veut dire qu'il atteste de cette
+    particularité~:
 
-Un automate est considéré comme \textit{coaccessible} au moment où l'inverse de
-cette automate est accessible. Ceci veut dire qu'il atteste de cette
-particularité~:
+    \begin{gather*}
+        M = (Q, I, F, \delta) \quad \text{avec} \\
+        accessible(\overleftarrow{M}) \notag \\
+        M \in AFN(\Sigma, \eta) \notag
+    \end{gather*}
+\end{lemma}
 
-\begin{gather}
-    M = (Q, I, F, \delta) \quad \text{avec} \\
-    accessible(\overleftarrow{M}) \notag \\
-    M \in AFN(\Sigma, \eta) \notag
-\end{gather}
+\vphantom{}
 
-Donc l'automate représenté sur la figure~\ref{fig:automata} est standard, non
+Donc l'automate représenté sur la Figure~\ref{fig:automata} est standard, non
 homogène, accessible et coaccessible. Car il possède bien un unique état
-initial (\(q_1\)), mais malheureusement \(q_3\), \(q_4\) et \(q_5\) ne respecte
-pas la propriété pour être homogène, parce qu'ils ont des transitions allant
-vers eux avec des valeurs différentes. De plus tous ses états sont par
-accessible depuis l'état initial et son inverse est, lui-même aussi,
-accessible.
+initial (\(q_1\)), mais \(q_3\), \(q_4\) et \(q_5\) ne respecte pas la
+propriété pour être homogène, parce qu'ils ont des transitions allant vers eux
+avec des valeurs différentes. De plus tous ses états sont par accessible depuis
+l'état initial et son inverse est, lui-même aussi, accessible.
 
 \vphantom{}
 
@@ -216,11 +218,11 @@ composantes fortement connexes d'un automate. Autrement dit en partant de
 n'importe quel état, on peut arriver à tous les autres états. Ainsi ça veut
 dire qu'un automate fortement connexe vérifierait ceci~:
 
-\begin{gather}
+\begin{gather*}
     M = (Q, I, F, \delta) \quad \text{avec} \\
     \forall (p, q) \in Q^2, \exists w \in \Sigma^* ~|~ q \in \delta_w(p, w) \notag \\
     M \in AFN(\Sigma, \eta) \notag
-\end{gather}
+\end{gather*}
 
 \subsection{Fonction sur les automates}
 
@@ -235,9 +237,9 @@ finaux. Elle a alors pour signature~:
 
 Elle peut être définie simplement comme ceci~:
 
-\begin{align}
+\begin{align*}
     accept(M, w) = \exists q \in \bigcup_{p \in I} \delta_w(p, w) ~|~ q \in F
-\end{align}
+\end{align*}
 
 \subsection{Conclusion}
 

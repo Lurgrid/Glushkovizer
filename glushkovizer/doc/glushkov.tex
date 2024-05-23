@@ -16,16 +16,14 @@ pour signature~:
 
 Et a ainsi, on peut définir cette fonction de cette façon~:
 
-\begin{gather}
-    glushkov     (E) = (Q, \{0\}, F, \delta) \quad \text{avec} \\
-    \begin{align*}
-        Q                                             & \leftarrow \{n ~|~ n \in \mathbb{N} \land 0 \leq n < m\}                                                                                               \\
-        F                                             & \leftarrow \begin{cases} \{n ~|~ (a, n) \in Last\} \cup \{0\}, & \text{si } Null = \varepsilon \\ \{n ~|~ (a, n) \in Last\} & \text{sinon} \end{cases} \\
-        \forall q                    \in \delta(p, a) & ~|~ \begin{cases} (a, q) \in First, & \text{si } p = 0 \\ (a, q) \in Follow((b, p)) & \text{sinon} \end{cases}                                         \\
-        (E', m)                                       & \leftarrow linearization(E, 1)                                                                                                                         \\
-        (First, Last, Null, Follow)                   & \leftarrow flnl(E')
-    \end{align*}
-\end{gather}
+\begin{align*}
+    glushkov     (E)                              & = (Q, \{0\}, F, \delta) \quad \text{avec}                                                                      \\
+    Q                                             & \leftarrow \{n ~|~ n \in \mathbb{N} \land 0 \leq n < m\}                                                       \\
+    F                                             & \leftarrow \{n ~|~ (a, n) \in Last\} \cup (\{0\} \cdot Null)                                                   \\
+    \forall q                    \in \delta(p, a) & ~|~ \begin{cases} (a, q) \in First, & \text{si } p = 0 \\ (a, q) \in Follow((b, p)) & \text{sinon} \end{cases} \\
+    (E', m)                                       & \leftarrow linearization(E)                                                                                    \\
+    (First, Last, Null, Follow)                   & \leftarrow flnl(E')
+\end{align*}
 
 \begin{example}
     Vu qu'un dessin vaut toujours mieux que mile mots, voici un exemple de
@@ -51,27 +49,27 @@ Et a ainsi, on peut définir cette fonction de cette façon~:
             \node[state, accepting, right of=4, above of=4] (5) {\(5\)};
             \node[state, accepting, right of=5] (6) {\(6\)};
 
-            \draw   (0) edge[below] node{a} (1)
-            (0) edge[above] node{b} (2)
-            (1) edge[below] node{a} (3)
-            (2) edge[above] node{a} (3)
-            (1) edge[bend right=1.5cm, below] node{b} (6)
-            (2) edge[bend left=1.5cm, above] node{b} (6)
-            (1) edge[bend right, below] node{a} (5)
-            (2) edge[bend left, above] node{a} (5)
-            (1) edge[bend left=2mm, below] node{b} (4)
-            (2) edge[bend right=2mm, above] node{b} (4)
-            (3) edge[above] node{b} (4)
-            (3) edge[loop left] node{a} (3)
-            (3) edge[bend left, above] node{a} (5)
-            (3) edge[bend right=1.75cm, below] node{b} (6)
-            (4) edge[above] node{a} (5)
-            (4) edge[bend right, below] node{b} (6)
-            (4) edge[loop above] node{b} (4)
-            (5) edge[bend right, below] node{b} (6)
-            (5) edge[loop above] node{a} (5)
-            (6) edge[bend right, above] node{a} (5)
-            (6) edge[loop right] node{b} (6);
+            \draw   (0) edge[below] node{\(a\)} (1)
+            (0) edge[above] node{\(b\)} (2)
+            (1) edge[below] node{\(a\)} (3)
+            (2) edge[above] node{\(a\)} (3)
+            (1) edge[bend right=1.5cm, below] node{\(b\)} (6)
+            (2) edge[bend left=1.5cm, above] node{\(b\)} (6)
+            (1) edge[bend right, below] node{\(a\)} (5)
+            (2) edge[bend left, above] node{\(a\)} (5)
+            (1) edge[bend left=2mm, below] node{\(b\)} (4)
+            (2) edge[bend right=2mm, above] node{\(b\)} (4)
+            (3) edge[above] node{\(b\)} (4)
+            (3) edge[loop left] node{\(a\)} (3)
+            (3) edge[bend left, above] node{\(a\)} (5)
+            (3) edge[bend right=1.75cm, below] node{\(b\)} (6)
+            (4) edge[above] node{\(a\)} (5)
+            (4) edge[bend right, below] node{\(b\)} (6)
+            (4) edge[loop above] node{\(b\)} (4)
+            (5) edge[bend right, below] node{\(b\)} (6)
+            (5) edge[loop above] node{\(a\)} (5)
+            (6) edge[bend right, above] node{\(a\)} (5)
+            (6) edge[loop right] node{\(b\)} (6);
         \end{tikzpicture}
         \caption{
             Exemple de représentation graphique de l'automate résultant de
@@ -82,17 +80,18 @@ Et a ainsi, on peut définir cette fonction de cette façon~:
 
 \vphantom{}
 
-Comme on peut voir sur la figure~\ref{fig:automata_glushkov} les automates
-produits sont bien souvent gros et peuvent être dur à comprendre, mais une
-machine peut gérer ça très simplement. Outre sa taille, on peut remarquer qu'il
-y a des propriétés intéressant sur cette automate. C'est ce que l'on va étudier
-maintenant.
+Comme on peut voir sur la Figure~\ref{fig:automata_glushkov} les automates
+produits sont bien souvent gros et peuvent être difficile à comprendre, mais
+une machine peut gérer ça très simplement. Outre sa taille, on peut remarquer
+qu'il y a des propriétés intéressant sur cette automate. C'est ce que l'on va
+étudier maintenant.
 
 \subsection{Propriétés~:}
 
 Nous verrons ici plusieurs propriétés sur les automates de Glushkov, mais nous
 n'en ferons pas la preuve, nous en donnerons une justification, mais pas une
-réelle preuve.
+réelle preuve (preuve disponible dans ce
+document~\cite{DBLP:journals/tcs/CaronZ00}).
 
 \vphantom{}
 

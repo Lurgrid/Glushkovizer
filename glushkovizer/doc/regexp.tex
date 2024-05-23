@@ -1,4 +1,4 @@
-\section{Les expressions régulières}
+\section{Les expressions rationnelles}
 
 Dans cette section, nous parlerons d'expressions régulières (\textit{ER}). Nous
 allons nous concentrer sur un type bien particulier d'expressions régulières
@@ -67,18 +67,18 @@ calcul\label{subsec:parenthese}. On peut définir chaque équation comme ceci~:
 Pour calculer le langage que dénote l'expression régulière, on peut le calculer
 récursivement de cette manière~:
 
-\begin{gather}
+\begin{gather*}
     L(\varepsilon) = \{\varepsilon\} \\
     L(a) = \{a\} \\
     L(F + G) = L(F) \cup L(G) \\
     L(F \cdot G) = L(F) \cdot L(G) \\
     L(F^*) = (L(F))^* \\
     \text{Avec } a \in \Sigma \text{ et } (F, G) \in (Exp(\Sigma))^2 \notag
-\end{gather}
+\end{gather*}
 
 \begin{example}
     On comprendra ainsi que l'expression \(E = a+c \cdot d\) avec \(E \in
-    Exp(\mathbb{A})\) et \(\mathbb{A} = \{a, b, c, d\}\), dénote le langage
+    Exp(\Sigma)\) et \(\Sigma = \{a, b, c, d\}\), dénote le langage
     \(L(E) = \{a, cd\}\). Car on peut représenter \(E\) comme ceci~:
 
     \begin{figure}[H]
@@ -117,7 +117,7 @@ récursivement de cette manière~:
         }\label{fig:arbre_syn}
     \end{figure}
 
-    Comme on peut voir sur la figure~\ref{fig:arbre_syn} grâce à cette
+    Comme on peut voir sur la Figure~\ref{fig:arbre_syn} grâce à cette
     représentation, on peut calculer simplement le langage reconnu par l'expression
     régulière (ici représenté par les ensembles à c\^{o}té de chaque arbre).
 \end{example}
@@ -213,43 +213,43 @@ comme ceci~:
 
 La fonction \(flnf\) a donc comme signature~:
 
-\begin{align}
+\begin{align*}
     flnf: Exp(\Sigma) \to FLNF(Exp(\Sigma))
-\end{align}
+\end{align*}
 
 Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
 (Exp(\Sigma))^2\)~:
 
-\begin{align}
+\begin{align*}
     flnf(\varepsilon) & = (\varnothing, \varnothing, \varepsilon, \delta) ~|~ \delta(a) = \varnothing, a \in \Sigma \\
     \vphantom{} \notag                                                                                              \\
     flnf(a)           & = (\{a\}, \{a\}, \varnothing, \delta) ~|~ \delta(a) = \varnothing, a
     \in \Sigma
-\end{align}
+\end{align*}
 
-\begin{gather}
+\begin{gather*}
     flnf(E + G) = (F \cup F', L \cup L', \Theta \cup \Theta', \delta'')~ \text{avec} \\
     \delta''(a) = \delta(a) \cup \delta'(a) ~|~ \forall a \in \Sigma \notag \\
     (F, L, \Theta, \delta) = flnf(E) \land (F', L', \Theta', \delta') = flnf(G) \notag
-\end{gather}
+\end{gather*}
 
-\begin{gather}
+\begin{gather*}
     flnf(E \cdot G) = (F'', L'', \Theta \cap \Theta', \delta'')~ \text{avec} \\
     F'' = F \cup F' \cdot \Theta \notag \\
     L'' = L' \cup L \cdot \Theta' \notag \\
     \delta''(a) = \begin{cases} \delta(a) \cup \delta'(a) \cup F', & \text{si}~ a \in L \\ \delta(a) \cup \delta'(a) & \text{sinon}\end{cases} ~|~ \forall a \in \Sigma\notag \\
     (F, L, \Theta, \delta) = flnf(E) \land (F', L', \Theta', \delta') = flnf(G) \notag
-\end{gather}
+\end{gather*}
 
-\begin{gather}
+\begin{gather*}
     flnf(E^*) = (F, L, \varepsilon, \delta')~ \text{avec} \\
     \delta'(a) = \begin{cases} \delta(a) \cup F, & \text{si}~ a \in L \\ \delta(a) & \text{sinon}\end{cases} ~|~ \forall a \in \Sigma\notag \\
     (F, L, \Theta, \delta) = flnf(E) \notag
-\end{gather}
+\end{gather*}
 
 \begin{example}
     Prenons par exemple l'expression régulière suivante \(E = a \cdot b
-    + c \cdot d\), avec \(E \in Exp(\mathbb{A})\) et \(\mathbb{A} = \{a, b, c,
+    + c \cdot d\), avec \(E \in Exp(\Sigma)\) et \(\Sigma = \{a, b, c,
     d\}\). Toujours à l'aide d'un arbre syntaxique, on peut calculer ce que
     \(flnf(E)\) donnerait.
 
@@ -393,34 +393,41 @@ Une autre fonction qui s'applique sur les expressions régulières est
 la Section~\ref{sec:glushkov}. Sa signature est~:
 
 \begin{gather*}
-    linearization: Exp(\Sigma) \times \mathbb{N} \to (Exp(\Sigma^{\mathbb{N}}), \mathbb{N}) \\
-    \text{avec } \Sigma^{\mathbb{N}} = (\Sigma, \mathbb{N}) \land \forall ((a, b), (c, d)) \in (\Sigma^{\mathbb{N}})^2 ~|~ b = d \Rightarrow a = c \Rightarrow (a, b) = (c, d)
+    linearization: Exp(\Sigma) \to Exp(\Sigma \times \mathbb{N}) \\
 \end{gather*}
 
-Elle peut être définie récursivement de cette manière, pour \(a \in \Sigma\) et
-\((E, F) \in (Exp(\Sigma))^2\)~:
+Elle peut être définie de cette manière, pour \(a \in \Sigma\) et \((E, F) \in
+(Exp(\Sigma))^2\)~:
 
-\begin{gather}
-    linearization(\varepsilon, n) = (\varepsilon, n) \\
-    linearization(a, n) = ((a, n), n + 1) \\
-    linearization(E + F, n) = (E' + F', n'') \quad \text{avec } \\
-    (E', n') \leftarrow linearization(E, n) \notag \\
-    (F', n'') \leftarrow linearization(F, n') \notag \\
-    linearization(E \cdot F, n) = (E' \cdot F', n'') \quad \text{avec } \\
-    (E', n') \leftarrow linearization(E, n) \notag \\
-    (F', n'') \leftarrow linearization(F, n') \notag \\
-    linearization(E^*, n) = (E'^*, n') \quad \text{avec} \\
-    (E', n') \leftarrow linearization(E, n) \notag
-\end{gather}
+\begin{gather*}
+    linearization(E) = \pi_2(linearization\_aux(E, 1)) \quad \text{avec}
+\end{gather*}
 
-Avec cette définition, on peut voir que tous les deuxièmes éléments du couple
-des symboles du résultat \(E'\) avec \(linearization(E, n) = (E', m)\), seront
-supérieurs ou égaux à \(n\) et inférieurs stricts à \(m\).
+\noindent Avec \(\pi_n\) la fonction de projection sur les tuples et
+\(linearization\_aux\) défini récursivement comme ceci~:
+
+\begin{gather*}
+    linearization\_aux(\varepsilon, n) = (\varepsilon, n) \\
+    linearization\_aux(a, n) = ((a, n), n + 1) \\
+    linearization\_aux(E + F, n) = (E' + F', n'') \quad \text{avec} \\
+    (E', n') \leftarrow linearization\_aux(E, n) \notag \\
+    (F', n'') \leftarrow linearization\_aux(F, n') \notag \\
+    linearization\_aux(E \cdot F, n) = (E' \cdot F', n'') \quad \text{avec} \\
+    (E', n') \leftarrow linearization\_aux(E, n) \notag \\
+    (F', n'') \leftarrow linearization\_aux(F, n') \notag \\
+    linearization\_aux(E^*, n) = (E'^*, n') \quad \text{avec} \\
+    (E', n') \leftarrow linearization\_aux(E, n) \notag
+\end{gather*}
+
+Avec cette définition, on peut voir que tous les symboles sont associés à un
+unique entier. Ce qui fait que l'expression régulière résultante ne contient
+que des symboles uniques. Et que de ce fait si deux couples partages le même
+entier cela implique qu'ils ont même valeur de symbole.
 
 \begin{example}
 
     Si on reprend cette expression régulière \(E = \varepsilon + b^* \cdot b\),
-    avec \(E \in Exp(\mathbb{A})\) et \(\mathbb{A} = \{a, b, c, d\}\).
+    avec \(E \in Exp(\Sigma)\) et \(\Sigma = \{a, b, c, d\}\).
 
     \begin{figure}[H]
         \centering
@@ -482,11 +489,11 @@ supérieurs ou égaux à \(n\) et inférieurs stricts à \(m\).
 On saisit aisément que ces expressions ont beau être simples (peu d'opération
 comparé aux expressions régulières d'\textit{UNIX}). Elles n'en sont rien pas
 complètes, on peut voir qu'elles permettent de décrire des langages très
-complexes et en quantité infinie. Malheureusement, il est difficile de savoir
-si un mot est reconnu par une expression régulière simplement. Par exemple
-est-ce-que le mot \(eipipipipipip\) est reconnu par cette expression \(((((o
-\cdot \varepsilon)+(\varepsilon \cdot e))+((g\cdot \varepsilon) \cdot
-\varepsilon^*)) \cdot ((\varepsilon \cdot i)\cdot (p+\varepsilon))^*)\)~? La
-réponse est oui. C'est pour cela qu'il serait peut-être intéressant d'utiliser
-une autre structure de donnée pour reconnaitre des mots, comme les automates
-que nous allons voir maintenant.
+complexes et en quantité infinie. En revanche, il est difficile de savoir si un
+mot est reconnu par une expression régulière simplement. Par exemple est-ce-que
+le mot \(eipipipipipip\) est reconnu par cette expression \(((((o \cdot
+\varepsilon)+(\varepsilon \cdot e))+((g\cdot \varepsilon) \cdot \varepsilon^*))
+\cdot ((\varepsilon \cdot i)\cdot (p+\varepsilon))^*)\)~? La réponse est oui.
+C'est pour cela qu'il serait peut-être intéressant d'utiliser une autre
+structure de donnée pour reconnaitre des mots, comme les automates que nous
+allons voir maintenant.

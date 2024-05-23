@@ -9,70 +9,78 @@ quelles opérations sont munis sur les langages.
 
 \subsection{Les mots}
 
-Un \textit{alphabet} \(\Sigma\) est un ensemble fini de symbole non vide. Un
-\textit{mot} est une suite finie de symbole sur un alphabet \(\Sigma\), le mot
-composé de zéro symbole est appelé \textit{mot vide} est noté \(\varepsilon\).
+\begin{definition}
+    Un \textit{alphabet} \(\Sigma\) est un ensemble fini de symbole non vide. Un
+    \textit{mot} est une suite finie de symbole sur un alphabet \(\Sigma\), le mot
+    composé de zéro symbole est appelé \textit{mot vide} est noté \(\varepsilon\).
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         \Sigma = \{a, b, c, d\} \\
         w = abbcdda
-    \end{gather}
+    \end{gather*}
 \end{example}
 
-On parlera de la \textit{longueur d'un mot} \(w\) noté \(|w|\) pour désigner le
-nombre de symboles qui le compose. De même, on notera \({|w|}_a\) pour parler
-du nombre de \(a\) dans le mot \(w\).
+\begin{definition}
+    On parlera de la \textit{longueur d'un mot} \(w\) noté \(|w|\) pour désigner le
+    nombre de symboles qui le compose. De même, on notera \({|w|}_a\) pour parler
+    du nombre de \(a\) dans le mot \(w\).
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         w = abbcdda \notag \\
         |w| = 7 \\
         {|w|}_d = 2
-    \end{gather}
+    \end{gather*}
 \end{example}
 
-Une des opérations les plus essentiels sur les mots est la
-\textit{concaténation} de mots. On notera donc la concaténation de deux mots
-\(u = a_1 \cdots a_n\) et \(v = b_1 \cdots b_n\) par \(u \cdot v\). Qui est
-ainsi égal à \(u \cdot v = a_1 \cdots a_n b_1 \cdots b_n\). On définit
-l'ensemble des mots sur \(\Sigma\) par \(\Sigma ^ *\). On notera que~:
+\begin{definition}
+    Une des opérations les plus essentiels sur les mots est la
+    \textit{concaténation} de mots. On notera donc la concaténation de deux mots
+    \(u = a_1 \cdots a_n\) et \(v = b_1 \cdots b_n\) par \(u \cdot v\). Qui est
+    ainsi égal à \(u \cdot v = a_1 \cdots a_n b_1 \cdots b_n\). On définit
+    l'ensemble des mots sur \(\Sigma\) par \(\Sigma ^ *\). On notera que~:
 
-\begin{itemize}[label=\textbullet]
-    \item La concaténation est associative \((w \cdot u) \cdot v = w \cdot (u \cdot v)\).
-    \item La concaténation admet un élément neutre \(u \cdot \varepsilon = \epsilon \cdot
-          u = u\).
-\end{itemize}
+    \begin{itemize}[label=\textbullet]
+        \item La concaténation est associative \((w \cdot u) \cdot v = w \cdot (u \cdot v)\).
+        \item La concaténation admet un élément neutre \(u \cdot \varepsilon = \epsilon \cdot
+              u = u\).
+    \end{itemize}
 
-\noindent Ce qui implique que l'ensemble \(\Sigma ^ *\) muni de la concaténation
-\((\Sigma, \cdot)\) forme un monoïde.
+    \noindent Ce qui implique que l'ensemble \(\Sigma ^ *\) muni de la concaténation
+    \((\Sigma, \cdot)\) forme un monoïde.
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         u = abab \\
         v = cdcd \\
         u \cdot v = ababcdcd
-    \end{gather}
+    \end{gather*}
 \end{example}
 
-Grâce à cette opération sur les mots, on peut définir ce qu'est un
-\textit{facteur}. Un facteur \(u\) d'un mot \(w\) est une suite extraite de la
-suite de lettre qui composent le mot \(w\). Autrement dit \(u\) est un sous mot
-de \(w\) si \(\exists (v, x) \in (\Sigma ^ *)^2 ~|~ w = v \cdot u \cdot x\), de
-plus~:
+\begin{definition}
+    Grâce à cette opération sur les mots, on peut définir ce qu'est un
+    \textit{facteur}. Un facteur \(u\) d'un mot \(w\) est une suite extraite de la
+    suite de lettre qui composent le mot \(w\). Autrement dit \(u\) est un sous mot
+    de \(w\) si \(\exists (v, x) \in (\Sigma ^ *)^2 ~|~ w = v \cdot u \cdot x\), de
+    plus~:
 
-\begin{itemize}[label=\textbullet]
-    \item On parlera de \textit{préfixe} quand \(v = \varepsilon\).
-    \item On parlera de \textit{suffixe} quand \(x = \varepsilon\).
-    \item Enfin, on parlera de \textit{facteur propre} quand \(v \neq \varepsilon \land x
-          \neq \varepsilon\).
-\end{itemize}
+    \begin{itemize}[label=\textbullet]
+        \item On parlera de \textit{préfixe} quand \(v = \varepsilon\).
+        \item On parlera de \textit{suffixe} quand \(x = \varepsilon\).
+        \item Enfin, on parlera de \textit{facteur propre} quand \(v \neq \varepsilon \land x
+              \neq \varepsilon\).
+    \end{itemize}
 
-\noindent On remarquera que \(\varepsilon\) est~: \textit{préfixe}, \textit{suffixe} et
-\textit{facteur} de tout mot.
+    \noindent On remarquera que \(\varepsilon\) est~: \textit{préfixe}, \textit{suffixe} et
+    \textit{facteur} de tout mot.
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         w = abbcdda \\
         u = bcd \\
         y = abb \\
@@ -80,142 +88,156 @@ plus~:
         u \text{ est donc un facteur propre} \notag \\
         w = y \cdot cdda \quad \\
         y \text{ est un facteur et un préfixe} \notag
-    \end{gather}
+    \end{gather*}
 \end{example}
 
-De plus aussi grâce à la concaténation, nous pouvons définir le \textit{miroir}
-d'un mot \(w\) noté \(\overleftarrow{w}\). Qui est ainsi défini récursivement
-comme ceci~:
+\begin{definition}
+    De plus aussi grâce à la concaténation, nous pouvons définir le \textit{miroir}
+    d'un mot \(w\) noté \(\overleftarrow{w}\). Qui est ainsi défini récursivement
+    comme ceci~:
 
-\begin{gather}
-    \overleftarrow{\varepsilon} = \varepsilon \\
-    \overleftarrow{a} = a \\
-    \overleftarrow{u \cdot a} = a \cdot \overleftarrow{u} \\
-    \text{Avec } a \in \Sigma \text{ et } u \in \Sigma ^ * \notag
-\end{gather}
+    \begin{gather*}
+        \overleftarrow{\varepsilon} = \varepsilon \\
+        \overleftarrow{a} = a \\
+        \overleftarrow{u \cdot a} = a \cdot \overleftarrow{u} \\
+        \text{Avec } a \in \Sigma \text{ et } u \in \Sigma ^ * \notag
+    \end{gather*}
 
-\noindent On remarquera qu'un mot est un palindrome si \(u = \overleftarrow{u}\).
+    \noindent On remarquera qu'un mot est un palindrome si \(u = \overleftarrow{u}\).
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         w = abbcdda \\
         \overleftarrow{w} = addcbba
-    \end{gather}
+    \end{gather*}
 \end{example}
 
 \subsection{Les langages}
 
-Un \textit{langage} \(L\) est un ensemble de mot sur un alphabet fini
-\(\Sigma\). On appellera \textit{langage vide} le langage ne comportant aucun
-mot, ainsi défini comme ceci~: \(L = \varnothing\).
+\begin{definition}
+    Un \textit{langage} \(L\) est un ensemble de mot sur un alphabet fini
+    \(\Sigma\). On appellera \textit{langage vide} le langage ne comportant aucun
+    mot, ainsi défini comme ceci~: \(L = \varnothing\).
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         \Sigma = \{a, b, c, d\} \\
         L_1 = \{a, aa, bc, da, \varepsilon\} \\
         L_2 = \varnothing
-    \end{gather}
+    \end{gather*}
 \end{example}
 
-L'équivalant de la longueur d'un mot sur les langages est donc le
-\textit{cardinal} du langage. On remarquera qu'un langage n'est pas forcément
-fini et qu'alors son \textit{cardinal} peut être infini.
+\begin{definition}
+    L'équivalant de la longueur d'un mot sur les langages est donc le
+    \textit{cardinal} du langage. On remarquera qu'un langage n'est pas forcément
+    fini et qu'alors son \textit{cardinal} peut être infini.
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         \Sigma = \{a, b, c, d\} \\
         L_1 = \{a, aa, bc, da, \varepsilon\} \\
         L_2 = \varnothing \\
         | L_1 | = 5 \\
         | L_2 | = 0
-    \end{gather}
+    \end{gather*}
 \end{example}
 
-L'une des opérations les plus importantes sur les langages est
-l'\textit{union}. On parlera de l'union de langage noté \(L_1 \cup L_2\) et
-défini comme ceci~:
+\begin{definition}
+    L'une des opérations les plus importantes sur les langages est
+    l'\textit{union}. On parlera de l'union de langage noté \(L_1 \cup L_2\) et
+    défini comme ceci~:
 
-\begin{gather}
-    L_1 \cup L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \lor w \in L_2\}
-\end{gather}
+    \begin{gather*}
+        L_1 \cup L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \lor w \in L_2\}
+    \end{gather*}
 
-\noindent On notera que l'union est associative, commutative et admet un
-élément neutre (\(\varnothing\)).
+    \noindent On notera que l'union est associative, commutative et admet un
+    élément neutre (\(\varnothing\)).
+\end{definition}
 
-\vphantom{}
+\begin{definition}
+    À l'image de l'union de langages, nous avons aussi l'\textit{intersection} de
+    langage noté \(L_1 \cap L_2\) et donc défini comme cela~:
 
-À l'image de l'union de langages, nous avons aussi l'\textit{intersection} de
-langage noté \(L_1 \cap L_2\) et donc défini comme cela~:
+    \begin{gather*}
+        L_1 \cap L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \land w \in L_2\}
+    \end{gather*}
 
-\begin{gather}
-    L_1 \cap L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \land w \in L_2\}
-\end{gather}
-
-\noindent On notera qu'elle aussi est associative, commutative et admet
-aussi un élément neutre (\(\Sigma ^ *\)). On remarquera que \(\varnothing\) est
-un élément absorbant.
+    \noindent On notera qu'elle aussi est associative, commutative et admet
+    aussi un élément neutre (\(\Sigma ^ *\)). On remarquera que \(\varnothing\) est
+    un élément absorbant.
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         \Sigma = \{a, b, c, d\} \\
         L_1 = \{\varepsilon, a, aa, bc, da\} \\
         L_2 = \{d, aa, cd\} \\
         L_1 \cup L_2 = \{\varepsilon, a, d, aa, cd, bc, da\} \\
         L_1 \cap L_2 = \{aa\}
-    \end{gather}
+    \end{gather*}
 \end{example}
 
-Un autre opération importante sur les langages est la \textit{concaténation}.
-Elle est bien sûr définie en utilisant la concaténation des mots qui compose
-les langages. Cette opération est ainsi définie comme ceci~:
+\begin{definition}
+    Un autre opération importante sur les langages est la \textit{concaténation}.
+    Elle est bien sûr définie en utilisant la concaténation des mots qui compose
+    les langages. Cette opération est ainsi définie comme ceci~:
 
-\begin{gather}
-    L_1 \cdot L_2 = \{u \cdot v ~|~ u \in L_1, v \in L_2\}
-\end{gather}
+    \begin{gather*}
+        L_1 \cdot L_2 = \{u \cdot v ~|~ u \in L_1, v \in L_2\}
+    \end{gather*}
 
-\noindent On remarquera qu'elle est associative, pas commutative et admet un
-élément neutre (\(\{\varepsilon\}\)). Et que \(\varnothing\) est aussi un
-élément absorbant pour cette opération.
+    \noindent On remarquera qu'elle est associative, pas commutative et admet un
+    élément neutre (\(\{\varepsilon\}\)). Et que \(\varnothing\) est aussi un
+    élément absorbant pour cette opération.
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         \Sigma = \{a, b, c, d\} \\
         L_1 = \{\varepsilon, a, aa\} \\
         L_2 = \{d, cc\} \\
         L_1 \cdot L_2 = \{d, ad, aad, cc, acc, aacc\}
-    \end{gather}
+    \end{gather*}
 \end{example}
 
-Par extension, on définit la \textit{copie n-ième} d'un langage \(L\) notée
-\(L^n\) et défini récursivement comme ceci~:
+\begin{definition}
+    Par extension, on définit la \textit{copie n-ième} d'un langage \(L\) notée
+    \(L^n\) et défini récursivement comme ceci~:
 
-\begin{gather}
-    L^0 = \{\varepsilon\} \\
-    L^n = L^{n - 1} \cdot L
-\end{gather}
+    \begin{gather*}
+        L^0 = \{\varepsilon\} \\
+        L^n = L^{n - 1} \cdot L
+    \end{gather*}
 
-\noindent On remarquera que \(\varnothing^0 = \{\varepsilon\}\).
+    \noindent On remarquera que \(\varnothing^0 = \{\varepsilon\}\).
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         \Sigma = \{a, b\} \\
         L = \{\varepsilon, a\} \\
         L^3 = \{\varepsilon, a, aa, aaa\}
-    \end{gather}
+    \end{gather*}
 \end{example}
 
-Grâce à cette opération, on peut définir l'\textit{étoile} d'un langage notée
-\(L^*\). Qui peut être défini comme ceci~:
+\begin{definition}
+    Grâce à cette opération, on peut définir l'\textit{étoile} d'un langage notée
+    \(L^*\). Qui peut être défini comme ceci~:
 
-\begin{gather}
-    L^* = \bigcup_{i \geq 0}^{\infty} L^i
-\end{gather}
+    \begin{gather*}
+        L^* = \bigcup_{i \geq 0} L^i
+    \end{gather*}
+\end{definition}
 
 \begin{example}
-    \begin{gather}
+    \begin{gather*}
         L = \{a\} \\
         L^* = \{\varepsilon\} \cup \{a\} \cup \{aa\} \cup \cdots
-    \end{gather}
+    \end{gather*}
 \end{example}
 
 \subsection{Conclusion}

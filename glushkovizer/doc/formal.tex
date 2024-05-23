@@ -3,6 +3,7 @@
 \usepackage{cmpt}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{amsthm}
 \usepackage{tikz}
 \usepackage{float}
 \usepackage{enumitem}
@@ -22,7 +23,15 @@
 \usetikzlibrary{shapes.geometric}
 \usetikzlibrary{calc}
 
-\newtheorem{example}{Example}
+\theoremstyle{definition}
+
+\newtheorem{definition}{Définition}[section]
+\newtheorem{lemma}[definition]{Lemme}
+\newtheorem{example}{Example}[definition]
+
+\makeatletter
+\renewcommand{\thedefinition}{\arabic{section}.\arabic{definition}}
+\makeatother
 
 %--- begin document ------------------------------------------------------------
 
