@@ -4,18 +4,33 @@ use glushkovizer::regexp::RegExp;
 use gtk::gdk::Texture;
 use gtk::gdk_pixbuf::PixbufLoader;
 use gtk::subclass::prelude::*;
-use gtk::{glib, template_callbacks, Align, Button, CompositeTemplate, Entry, Image, Label};
+use gtk::{
+    glib, template_callbacks, Align, Button, CompositeTemplate, Entry, FileDialog, FileFilter,
+    Image, Label,
+};
 use gtk::{prelude::*, TextView};
+use std::cell::RefCell;
 use std::fmt::Display;
+use std::fs::File;
 use std::hash::Hash;
-use std::io::{Error, Result, Write};
+use std::io::{BufReader, Error, Result, Write};
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 const IMAGE_MARG: i32 = 100;
 
+macro_rules! error {
+    ($error:expr, $x:expr) => {{
+        $error.buffer().set_text($x.to_string().as_str());
+        $error.set_visible(true);
+        return;
+    }};
+}
+
 #[derive(CompositeTemplate, Default)]
 #[template(resource = "/com/sagbot/GlushkovApp/glushkovizer.ui")]
 pub struct GlushkovizerApp {
+    automata: RefCell<Automata<char, usize>>,
     #[template_child]
     pub content: TemplateChild<gtk::Box>,
     #[template_child]
@@ -65,12 +80,82 @@ impl ObjectImpl for GlushkovizerApp {
 impl GlushkovizerApp {
     #[template_callback]
     fn handle_parse_clicked(&self, _: &Button) {
+        let sr = self.entry.text().to_string();
+        let r = match RegExp::try_from(sr) {
+            Err(s) => {
+                self.error.buffer().set_text(s.as_str());
+                self.error.set_visible(true);
+                return;
+            }
+            Ok(r) => r,
+        };
+        *self.automata.borrow_mut() = Automata::from(r);
         self.update();
     }
 
     #[template_callback]
     fn handle_entry_activate(&self, _: &Entry) {
+        let sr = self.entry.text().to_string();
+        let r = match RegExp::try_from(sr) {
+            Err(s) => error!(self.error, s),
+            Ok(r) => r,
+        };
+        *self.automata.borrow_mut() = Automata::from(r);
         self.update();
+    }
+
+    #[template_callback]
+    async fn handle_import_clicked(&self, _: &Button) {
+        let f = FileFilter::new();
+        f.add_suffix("json");
+        let d = FileDialog::builder()
+            .title("Choose a automata file")
+            .default_filter(&f)
+            .modal(true)
+            .build();
+        let file = d.open_future(Some(self.obj().as_ref())).await;
+        match file {
+            Err(e) => error!(self.error, e),
+            Ok(file) => {
+                let path: PathBuf = file.path().unwrap();
+                let file = match File::open(path) {
+                    Err(e) => error!(self.error, e),
+                    Ok(f) => f,
+                };
+                *self.automata.borrow_mut() = match serde_json::from_reader(BufReader::new(file)) {
+                    Err(e) => error!(self.error, e),
+                    Ok(a) => a,
+                }
+            }
+        };
+        self.update();
+    }
+
+    #[template_callback]
+    async fn handle_save_clicked(&self, _: &Button) {
+        let d = FileDialog::builder()
+            .title("Choose a file to save the automata")
+            .modal(true)
+            .build();
+        let file = d.save_future(Some(self.obj().as_ref())).await;
+        match file {
+            Err(e) => error!(self.error, e),
+            Ok(file) => {
+                let mut path: PathBuf = file.path().unwrap();
+                path.set_extension("json");
+                let mut file = match File::create_new(path.clone()) {
+                    Err(e) => error!(self.error, e),
+                    Ok(f) => f,
+                };
+                match serde_json::to_string(&*self.automata.borrow()) {
+                    Err(e) => error!(self.error, e),
+                    Ok(json) => match file.write_all(json.as_bytes()) {
+                        Err(e) => error!(self.error, e),
+                        Ok(_) => (),
+                    },
+                }
+            }
+        };
     }
 }
 
@@ -87,24 +172,11 @@ impl GlushkovizerApp {
                 .sync_create()
                 .build();
         }
-        let sr = self.entry.text().to_string();
-        let r = match RegExp::try_from(sr) {
-            Err(s) => {
-                self.error.buffer().set_text(s.as_str());
-                self.error.set_visible(true);
-                return;
-            }
-            Ok(r) => r,
-        };
-        let a = Automata::from(r);
+        let a = self.automata.borrow();
         let width = self.obj().width() - IMAGE_MARG;
         let height = self.obj().height() - IMAGE_MARG;
         let texture = match get_automata_texture(&a, width, height) {
-            Err(e) => {
-                self.error.buffer().set_text(e.to_string().as_str());
-                self.error.set_visible(true);
-                return;
-            }
+            Err(e) => error!(self.error, e),
             Ok(t) => t,
         };
         self.image.set_from_paintable(Some(&texture));
@@ -114,7 +186,7 @@ impl GlushkovizerApp {
         let scc = a
             .extract_scc()
             .into_iter()
-            .filter(|a| a.is_maximal_orbit())
+            .filter(|a| a.is_orbit())
             .collect::<Vec<_>>();
         let nb: i32 = match scc.len() as i32 {
             0 => {
@@ -132,11 +204,7 @@ impl GlushkovizerApp {
 
         for automata in scc {
             let texture = match get_automata_texture(&automata, owidth, oheight) {
-                Err(e) => {
-                    self.error.buffer().set_text(e.to_string().as_str());
-                    self.error.set_visible(true);
-                    return;
-                }
+                Err(e) => error!(self.error, e),
                 Ok(t) => t,
             };
             let image = Image::from_paintable(Some(&texture));

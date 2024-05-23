@@ -10,8 +10,16 @@ glib::wrapper! {
                     gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
 }
 
+#[cfg(not(feature = "no-adwaita"))]
 impl GlushkovizerApp {
     pub fn new(app: &adw::Application) -> Self {
+        Object::builder().property("application", app).build()
+    }
+}
+
+#[cfg(feature = "no-adwaita")]
+impl GlushkovizerApp {
+    pub fn new(app: &gtk::Application) -> Self {
         Object::builder().property("application", app).build()
     }
 }

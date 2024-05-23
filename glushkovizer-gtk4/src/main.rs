@@ -10,7 +10,11 @@ fn main() -> glib::ExitCode {
     gio::resources_register_include!("glushkovizer.gresource")
         .expect("Failed to register resources.");
 
+    #[cfg(not(feature = "no-adwaita"))]
     let app = adw::Application::builder().application_id(APP_ID).build();
+
+    #[cfg(feature = "no-adwaita")]
+    let app = gtk::Application::builder().application_id(APP_ID).build();
 
     app.connect_startup(|_| load_css());
     app.connect_activate(build_ui);
@@ -31,7 +35,14 @@ fn load_css() {
     );
 }
 
+#[cfg(not(feature = "no-adwaita"))]
 fn build_ui(app: &adw::Application) {
+    let glush = GlushkovizerApp::new(app);
+    glush.present();
+}
+
+#[cfg(feature = "no-adwaita")]
+fn build_ui(app: &gtk::Application) {
     let glush = GlushkovizerApp::new(app);
     glush.present();
 }

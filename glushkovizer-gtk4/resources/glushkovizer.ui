@@ -34,6 +34,18 @@
                     <signal name="activate" handler="handle_entry_activate" swapped="True"/>
                   </object>
                 </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label" translatable="true">Save</property>
+                    <signal name="clicked" handler="handle_save_clicked" swapped="True"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label" translatable="true">Import</property>
+                    <signal name="clicked" handler="handle_import_clicked" swapped="True"/>
+                  </object>
+                </child>
               </object>
             </child>
             <child>

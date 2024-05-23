@@ -31,6 +31,16 @@ template $GlushkovizerApp : ApplicationWindow {
           placeholder-text: _("Enter a regular expresion");
           activate => $handle_entry_activate() swapped;
         }
+
+        Button {
+          label: _("Save");
+          clicked => $handle_save_clicked() swapped;
+        }
+
+        Button {
+          label: _("Import");
+          clicked => $handle_import_clicked() swapped;
+        }
       }
 
       TextView error {

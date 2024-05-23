@@ -1,6 +1,6 @@
 [package]
 name = "glushkovizer-gtk4"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,7 +8,14 @@ edition = "2021"
 [dependencies]
 gtk = { version = "0.8", package = "gtk4", features = ["v4_14"] }
 glushkovizer = { path = "../glushkovizer" }
-adw = { version = "0.6", package = "libadwaita", features = ["v1_5"] }
+adw = { optional = true, version = "0.6", package = "libadwaita", features = [
+    "v1_5",
+] }
+serde_json = "1"
 
 [build-dependencies]
 glib-build-tools = "0.19"
+
+[features]
+default = ["dep:adw"]
+no-adwaita = []
