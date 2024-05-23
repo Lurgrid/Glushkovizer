@@ -33,7 +33,7 @@ fn main() -> ExitCode {
         let mut scc = g
             .extract_scc()
             .into_iter()
-            .filter(|a| a.is_maximal_orbit())
+            .filter(|a| a.is_orbit())
             .collect::<Vec<_>>();
         scc.push(g);
         loop {
