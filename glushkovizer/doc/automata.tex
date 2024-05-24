@@ -167,8 +167,8 @@ En la définissant récursivement de telle sorte~:
 
 \begin{definition}
     Un automate est \textit{homogène} quand pour tous les états les transition
-    allant vers cet état ont même valeur. En d'autre terme quand il respecte cette
-    propriété~:
+    allant vers cet état ont même valeur. En d'autre terme quand il respecte
+    cette propriété~:
 
     \begin{gather*}
         M = (Q, I, F, \delta) \quad \text{avec} \\
@@ -201,6 +201,38 @@ En la définissant récursivement de telle sorte~:
     \end{gather*}
 \end{lemma}
 
+\begin{definition}
+    Un automate est dit \textit{déterministe} quand tous ses états vont au
+    maximum à un état par symbole. Autrement dit qu'il valide cette propriété~:
+
+    \begin{gather*}
+        M = (Q, I, F, \delta) \quad \text{avec} \\
+        |I| = 1 \land \forall q \in Q, \forall a \in \Sigma ~|~ | \delta(q, a) | \leq 1\\
+        M \in AFN(\Sigma, \eta) \notag
+    \end{gather*}
+
+    On parlera de \textit{déterministe complet} lorsque tous ses états vont sur un
+    état par symbole. C'est-à-dire qu'il respecte cette condition~:
+
+    \begin{gather*}
+        M = (Q, I, F, \delta) \quad \text{avec} \\
+        |I| = 1 \land \forall q \in Q, \forall a \in \Sigma ~|~ | \delta(q, a) | = 1\\
+        M \in AFN(\Sigma, \eta) \notag
+    \end{gather*}
+\end{definition}
+
+\begin{lemma}
+    Un automate est qualifié de \textit{hamac} à l'instant où il est standard,
+    accessible et coaccessible. Ceci veut dire qu'il peut être décrit comme
+    ceci~:
+
+    \begin{gather*}
+        M = (Q, I, F, \delta) \quad \text{avec} \\
+        standard(M) \land accessible(M) \land coaccessible(M) \\
+        M \in AFN(\Sigma, \eta) \notag
+    \end{gather*}
+\end{lemma}
+
 \vphantom{}
 
 Donc l'automate représenté sur la Figure~\ref{fig:automata} est standard, non
@@ -208,7 +240,8 @@ homogène, accessible et coaccessible. Car il possède bien un unique état
 initial (\(q_1\)), mais \(q_3\), \(q_4\) et \(q_5\) ne respecte pas la
 propriété pour être homogène, parce qu'ils ont des transitions allant vers eux
 avec des valeurs différentes. De plus tous ses états sont par accessible depuis
-l'état initial et son inverse est, lui-même aussi, accessible.
+l'état initial et son inverse est, lui-même aussi, accessible. Et bien sûr il
+n'est pas déterministe.
 
 \vphantom{}
 
