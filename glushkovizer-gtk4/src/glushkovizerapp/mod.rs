@@ -1,7 +1,14 @@
 mod imp;
 
 use glib::Object;
+use gtk::gdk::Display;
 use gtk::{gio, glib};
+use gtk::{prelude::*, CssProvider};
+
+#[cfg(feature = "no-adwaita")]
+pub type App = gtk::Application;
+#[cfg(not(feature = "no-adwaita"))]
+pub type App = adw::Application;
 
 glib::wrapper! {
     pub struct GlushkovizerApp(ObjectSubclass<imp::GlushkovizerApp>)
@@ -10,16 +17,21 @@ glib::wrapper! {
                     gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
 }
 
-#[cfg(not(feature = "no-adwaita"))]
 impl GlushkovizerApp {
-    pub fn new(app: &adw::Application) -> Self {
-        Object::builder().property("application", app).build()
-    }
-}
+    pub fn new(app: &App) -> Self {
+        gio::resources_register_include!("glushkovizer.gresource")
+            .expect("Failed to register resources.");
+        app.set_accels_for_action("win.save", &["<Ctrl>s"]);
+        app.set_accels_for_action("win.open", &["<Ctrl>o"]);
 
-#[cfg(feature = "no-adwaita")]
-impl GlushkovizerApp {
-    pub fn new(app: &gtk::Application) -> Self {
+        let provider = CssProvider::new();
+        provider.load_from_resource("/com/sagbot/GlushkovApp/style.scss");
+        gtk::style_context_add_provider_for_display(
+            &Display::default().expect("Could not connect to a display."),
+            &provider,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+
         Object::builder().property("application", app).build()
     }
 }

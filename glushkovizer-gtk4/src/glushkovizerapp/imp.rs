@@ -57,6 +57,15 @@ impl ObjectSubclass for GlushkovizerApp {
     fn class_init(klass: &mut Self::Class) {
         klass.bind_template();
         klass.bind_template_callbacks();
+        klass.install_action("win.save", None, |window, _, _| {
+            let window = window.clone();
+            glib::MainContext::default().spawn_local(async move { window.imp().save().await });
+        });
+
+        klass.install_action("win.open", None, |window, _, _| {
+            let window = window.clone();
+            glib::MainContext::default().spawn_local(async move { window.imp().import().await });
+        });
     }
 
     fn instance_init(obj: &InitializingObject<Self>) {
@@ -106,56 +115,12 @@ impl GlushkovizerApp {
 
     #[template_callback]
     async fn handle_import_clicked(&self, _: &Button) {
-        let f = FileFilter::new();
-        f.add_suffix("json");
-        let d = FileDialog::builder()
-            .title("Choose a automata file")
-            .default_filter(&f)
-            .modal(true)
-            .build();
-        let file = d.open_future(Some(self.obj().as_ref())).await;
-        match file {
-            Err(e) => error!(self.error, e),
-            Ok(file) => {
-                let path: PathBuf = file.path().unwrap();
-                let file = match File::open(path) {
-                    Err(e) => error!(self.error, e),
-                    Ok(f) => f,
-                };
-                *self.automata.borrow_mut() = match serde_json::from_reader(BufReader::new(file)) {
-                    Err(e) => error!(self.error, e),
-                    Ok(a) => a,
-                }
-            }
-        };
-        self.update();
+        self.import().await;
     }
 
     #[template_callback]
     async fn handle_save_clicked(&self, _: &Button) {
-        let d = FileDialog::builder()
-            .title("Choose a file to save the automata")
-            .modal(true)
-            .build();
-        let file = d.save_future(Some(self.obj().as_ref())).await;
-        match file {
-            Err(e) => error!(self.error, e),
-            Ok(file) => {
-                let mut path: PathBuf = file.path().unwrap();
-                path.set_extension("json");
-                let mut file = match File::create_new(path.clone()) {
-                    Err(e) => error!(self.error, e),
-                    Ok(f) => f,
-                };
-                match serde_json::to_string(&*self.automata.borrow()) {
-                    Err(e) => error!(self.error, e),
-                    Ok(json) => match file.write_all(json.as_bytes()) {
-                        Err(e) => error!(self.error, e),
-                        Ok(_) => (),
-                    },
-                }
-            }
-        };
+        self.save().await;
     }
 }
 
@@ -216,6 +181,58 @@ impl GlushkovizerApp {
             self.orbit.append(&image);
         }
     }
+
+    async fn save(&self) {
+        let d = FileDialog::builder()
+            .title("Choose a file to save the automata")
+            .modal(true)
+            .build();
+        let file = d.save_future(Some(self.obj().as_ref())).await;
+        match file {
+            Err(e) => error!(self.error, e),
+            Ok(file) => {
+                let mut path: PathBuf = file.path().unwrap();
+                path.set_extension("json");
+                let mut file = match File::create_new(path.clone()) {
+                    Err(e) => error!(self.error, e),
+                    Ok(f) => f,
+                };
+                match serde_json::to_string(&*self.automata.borrow()) {
+                    Err(e) => error!(self.error, e),
+                    Ok(json) => match file.write_all(json.as_bytes()) {
+                        Err(e) => error!(self.error, e),
+                        Ok(_) => (),
+                    },
+                }
+            }
+        };
+    }
+
+    async fn import(&self) {
+        let f = FileFilter::new();
+        f.add_suffix("json");
+        let d = FileDialog::builder()
+            .title("Choose a automata file")
+            .default_filter(&f)
+            .modal(true)
+            .build();
+        let file = d.open_future(Some(self.obj().as_ref())).await;
+        match file {
+            Err(e) => error!(self.error, e),
+            Ok(file) => {
+                let path: PathBuf = file.path().unwrap();
+                let file = match File::open(path) {
+                    Err(e) => error!(self.error, e),
+                    Ok(f) => f,
+                };
+                *self.automata.borrow_mut() = match serde_json::from_reader(BufReader::new(file)) {
+                    Err(e) => error!(self.error, e),
+                    Ok(a) => a,
+                }
+            }
+        };
+        self.update();
+    }
 }
 
 /// Renvoie une Texture représentant le graph, en cas d'erreur renvoie cette
@@ -228,7 +245,7 @@ where
     let svg = get_svg(
         &a,
         gtk::Settings::default()
-            .map(|s| s.property("gtk-application-prefer-dark-theme"))
+            .map(|s| s.is_gtk_application_prefer_dark_theme())
             .unwrap_or(false),
     )?;
     let loader = PixbufLoader::new();
