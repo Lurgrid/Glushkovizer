@@ -1,11 +1,13 @@
 //! Module for testing the properties of an automaton
 
+use super::in_out::DoorType;
 use super::Automata;
-use std::{collections::HashSet, hash::Hash};
+use std::collections::HashSet;
+use std::hash::Hash;
 
 impl<T, V> Automata<T, V>
 where
-    T: Eq + Hash + Clone + Eq,
+    T: Eq + Hash + Clone,
 {
     /// Returns if the automaton is standard
     pub fn is_standard(&self) -> bool {
@@ -19,13 +21,20 @@ where
 
     /// Returns if the automaton is deterministic
     pub fn is_deterministic(&self) -> bool {
-        let mut t_set = HashSet::new();
-        (0..self.get_nb_states()).all(|ind| {
-            t_set.clear();
-            self.follow[ind]
-                .values()
-                .all(|nexts| nexts.iter().all(|next| !t_set.insert(*next)))
-        })
+        self.is_standard()
+            && self
+                .follow
+                .iter()
+                .all(|map| map.values().all(|nexts| nexts.len() <= 1))
+    }
+
+    /// Returns if the automaton is fully deterministic
+    pub fn is_fully_deterministic(&self) -> bool {
+        self.is_standard()
+            && self
+                .follow
+                .iter()
+                .all(|map| map.values().all(|nexts| nexts.len() == 1))
     }
 
     /// Returns if the automaton is homogeneous
@@ -83,6 +92,40 @@ where
     pub fn is_orbit(&self) -> bool {
         self.is_strongly_connected()
             && (self.get_nb_states() != 1 || self.follow[0].values().any(|set| set.len() > 0))
+    }
+
+    /// Returns whether the orbit is stable
+    pub fn is_stable(&self) -> bool {
+        if !self.is_orbit() {
+            return false;
+        }
+        let mut inp = HashSet::new();
+        let mut out = HashSet::new();
+        self.get_states_type_ind()
+            .into_iter()
+            .for_each(|(i, t)| match t {
+                DoorType::In => {
+                    inp.insert(i);
+                }
+                DoorType::Out => {
+                    out.insert(i);
+                }
+                DoorType::Both => {
+                    inp.insert(i);
+                    out.insert(i);
+                }
+                _ => {}
+            });
+
+        inp.iter().all(|i| {
+            self.follow[*i]
+                .values()
+                .any(|set| set.intersection(&out).count() != 0)
+        }) && out.into_iter().all(|i| {
+            self.follow[i]
+                .values()
+                .any(|set| set.intersection(&inp).count() != 0)
+        })
     }
 }
 

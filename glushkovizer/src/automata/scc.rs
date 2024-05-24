@@ -13,6 +13,19 @@ where
     /// Apply the kosaraju algorithm to the automaton and return the strongly
     /// connected components.
     pub fn kosaraju(&self) -> Vec<HashSet<V>> {
+        self.kosaraju_ind()
+            .into_iter()
+            .map(|set| {
+                set.into_iter()
+                    .map(|ind| self.states[ind].0.clone())
+                    .collect()
+            })
+            .collect()
+    }
+
+    /// Apply the kosaraju algorithm to the automaton and return the strongly
+    /// connected components.
+    pub(crate) fn kosaraju_ind(&self) -> Vec<HashSet<usize>> {
         let DFSInfo {
             prefix: _,
             suffix: mut order,
@@ -28,14 +41,13 @@ where
         let mut r = Vec::new();
         let mut cur = HashSet::new();
         for pos in prefix {
-            let p = self.states[pos].0.clone();
             if res[pos].is_none() {
                 if cur.len() != 0 {
                     r.push(cur);
                 }
-                cur = HashSet::from([p]);
+                cur = HashSet::from([pos]);
             } else {
-                cur.insert(p);
+                cur.insert(pos);
             }
         }
         r.push(cur);

@@ -38,29 +38,36 @@ where
 {
     /// Returns an map between a state and its type
     pub fn get_states_type(&self) -> HashMap<V, DoorType> {
-        let k = self.kosaraju();
+        self.get_states_type_ind()
+            .into_iter()
+            .map(|(k, v)| (self.states[k].0.clone(), v))
+            .collect()
+    }
+
+    pub(crate) fn get_states_type_ind(&self) -> HashMap<usize, DoorType> {
+        let k = self.kosaraju_ind();
         let mut stype = HashMap::new();
-        self.states.iter().for_each(|s| {
-            stype.insert(s.0.clone(), DoorType::None);
+        (0..self.get_nb_states()).for_each(|_| {
+            stype.insert(0, DoorType::None);
         });
-        for (ind, s) in self.states.iter().enumerate() {
+        (0..self.get_nb_states()).for_each(|ind| {
             if self.initials.contains(&ind) {
-                *stype.get_mut(&s.0).unwrap() += DoorType::In;
+                *stype.get_mut(&ind).unwrap() += DoorType::In;
             }
             if self.finals.contains(&ind) {
-                *stype.get_mut(&s.0).unwrap() += DoorType::Out;
+                *stype.get_mut(&ind).unwrap() += DoorType::Out;
             }
-            for set in self.follow[ind].values() {
+            self.follow[ind].values().for_each(|set| {
                 for v in set {
-                    let pf = k.iter().position(|vec| vec.contains(&s.0));
-                    let pt = k.iter().position(|vec| vec.contains(&self.states[*v].0));
+                    let pf = k.iter().position(|vec| vec.contains(&ind));
+                    let pt = k.iter().position(|vec| vec.contains(v));
                     if pf != pt {
-                        *stype.get_mut(&s.0).unwrap() += DoorType::Out;
-                        *stype.get_mut(&self.states[*v].0).unwrap() += DoorType::In;
+                        *stype.get_mut(&ind).unwrap() += DoorType::Out;
+                        *stype.get_mut(v).unwrap() += DoorType::In;
                     }
                 }
-            }
-        }
+            });
+        });
         stype
     }
 }
