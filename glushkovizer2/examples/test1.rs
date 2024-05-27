@@ -1,10 +1,21 @@
-use glushkovizer::automata::inner_automata::{state::RefState, InnerAutomata};
+use glushkovizer::automata::Automata;
+use glushkovizer::prelude::*;
+
+#[allow(unused_must_use)]
 
 fn main() {
-    let mut a = InnerAutomata::new();
-
-    let _s0 = RefState::new('a');
-    let s0 = _s0.clone();
-    a.add_state(_s0);
-    s0.add_follow(s0.clone(), 'a');
+    let mut a: Automata<usize, char> = Automata::new();
+    dbg!(a.add_state('a'));
+    dbg!(a.add_initial(&'a'));
+    dbg!(a.add_final(&'b'));
+    dbg!(a.add_state('b'));
+    dbg!(a.get_follow_count(&'a', &2usize));
+    dbg!(&a);
+    dbg!(a.remove_state(&'a'));
+    dbg!(&a);
+    dbg!(a.add_transition(&'b', &'b', 1usize));
+    dbg!(a.add_transition(&'b', &'b', 1usize));
+    dbg!(a.remove_transition(&'b', &'b', &1usize));
+    dbg!(&a);
+    dbg!(a.cloned());
 }

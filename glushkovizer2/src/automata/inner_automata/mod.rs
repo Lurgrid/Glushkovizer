@@ -1,3 +1,4 @@
+//! Non-secure internal module for automata management
 #![allow(dead_code)]
 
 pub mod state;
@@ -5,19 +6,20 @@ pub mod state;
 use state::RefState;
 use std::{collections::HashSet, hash::Hash};
 
+/// Internal data structure for automaton management
 #[derive(Clone, Debug)]
-pub struct InnerAutomata<T, V>
+pub struct InnerAutomata<'a, T, V>
 where
-    T: Eq + Hash,
+    T: Eq + Hash + Clone,
 {
-    states: HashSet<RefState<T, V>>,
-    inputs: HashSet<RefState<T, V>>,
-    outputs: HashSet<RefState<T, V>>,
+    states: HashSet<RefState<'a, T, V>>,
+    inputs: HashSet<RefState<'a, T, V>>,
+    outputs: HashSet<RefState<'a, T, V>>,
 }
 
-impl<T, V> Default for InnerAutomata<T, V>
+impl<'a, T, V> Default for InnerAutomata<'a, T, V>
 where
-    T: Eq + Hash,
+    T: Eq + Hash + Clone,
 {
     fn default() -> Self {
         Self {
@@ -28,9 +30,9 @@ where
     }
 }
 
-impl<T, V> InnerAutomata<T, V>
+impl<'a, T, V> InnerAutomata<'a, T, V>
 where
-    T: Eq + Hash,
+    T: Eq + Hash + Clone,
 {
     /// Returns an empty automaton
     pub fn new() -> Self {
@@ -54,19 +56,19 @@ where
 
     /// An iterator visiting all states in arbitrary order. The iterator
     /// element type is ``&RefState<T, V>``
-    pub fn states(&self) -> impl Iterator<Item = &RefState<T, V>> {
+    pub fn states(&self) -> impl Iterator<Item = &RefState<'a, T, V>> {
         self.states.iter()
     }
 
     /// An iterator visiting all inputs in arbitrary order. The iterator
     /// element type is ``&RefState<T, V>``
-    pub fn inputs(&self) -> impl Iterator<Item = &RefState<T, V>> {
+    pub fn inputs(&self) -> impl Iterator<Item = &RefState<'a, T, V>> {
         self.inputs.iter()
     }
 
     /// An iterator visiting all outputs in arbitrary order. The iterator
     /// element type is ``&RefState<T, V>``
-    pub fn outputs(&self) -> impl Iterator<Item = &RefState<T, V>> {
+    pub fn outputs(&self) -> impl Iterator<Item = &RefState<'a, T, V>> {
         self.outputs.iter()
     }
 
@@ -78,7 +80,7 @@ where
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
-    pub fn add_state(&mut self, value: RefState<T, V>) -> bool {
+    pub fn add_state(&mut self, value: RefState<'a, T, V>) -> bool {
         self.states.insert(value)
     }
 
@@ -90,7 +92,7 @@ where
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
-    pub fn add_input(&mut self, value: RefState<T, V>) -> bool {
+    pub fn add_input(&mut self, value: RefState<'a, T, V>) -> bool {
         self.inputs.insert(value)
     }
 
@@ -102,25 +104,55 @@ where
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
-    pub fn add_output(&mut self, value: RefState<T, V>) -> bool {
+    pub fn add_output(&mut self, value: RefState<'a, T, V>) -> bool {
         self.outputs.insert(value)
     }
 
     /// Removes a state from the set of states. Returns whether the state was
     /// present in the set.
-    pub fn remove_state(&mut self, value: &RefState<T, V>) -> bool {
+    pub fn remove_state(&mut self, value: &RefState<'a, T, V>) -> bool {
         self.states.remove(value)
     }
 
     /// Removes a input from the set of states. Returns whether the input was
     /// present in the set.
-    pub fn remove_input(&mut self, value: &RefState<T, V>) -> bool {
+    pub fn remove_input(&mut self, value: &RefState<'a, T, V>) -> bool {
         self.inputs.remove(value)
     }
 
     /// Removes a output from the set of states. Returns whether the output was
     /// present in the set.
-    pub fn remove_output(&mut self, value: &RefState<T, V>) -> bool {
+    pub fn remove_output(&mut self, value: &RefState<'a, T, V>) -> bool {
         self.outputs.remove(value)
+    }
+}
+
+impl<'a, T, V> InnerAutomata<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq,
+{
+    /// Returns the state reference with the value "value".
+    pub fn get_state(&self, value: &V) -> Option<RefState<'a, T, V>> {
+        self.states
+            .iter()
+            .find(|&r| r.as_ref().borrow().get_value().eq(value))
+            .map(|r| r.clone())
+    }
+
+    /// Returns the input reference with the value "value".
+    pub fn get_input(&self, value: &V) -> Option<RefState<'a, T, V>> {
+        self.inputs
+            .iter()
+            .find(|&r| r.as_ref().borrow().get_value().eq(value))
+            .map(|r| r.clone())
+    }
+
+    /// Returns the output reference with the value "value".
+    pub fn get_output(&self, value: &V) -> Option<RefState<'a, T, V>> {
+        self.outputs
+            .iter()
+            .find(|&r| r.as_ref().borrow().get_value().eq(value))
+            .map(|r| r.clone())
     }
 }
