@@ -1,5 +1,6 @@
-use glushkovizer::automata::Automata;
+use glushkovizer::automata::{Automata, Mirror, DFS};
 use glushkovizer::prelude::*;
+use glushkovizer::regexp::RegExp;
 
 #[allow(unused_must_use)]
 
@@ -18,4 +19,10 @@ fn main() {
     dbg!(a.remove_transition(&'b', &'b', &1usize));
     dbg!(&a);
     dbg!(a.cloned());
+    dbg!(a.add_initial(&'b'));
+    dbg!(a.mirror());
+    dbg!(a.dfs(vec!['b'], false));
+    let reg = dbg!(RegExp::try_from("(a+b).a*.b*.(a+b)*")).unwrap();
+    let auto = dbg!(Automata::from(reg));
+    dbg!(auto.accept(['a', 'b'].iter()));
 }

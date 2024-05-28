@@ -1,13 +1,14 @@
 //! Non-secure internal module for automata management
 #![allow(dead_code)]
 
+pub mod dfs;
 pub mod state;
 
 use state::RefState;
 use std::{collections::HashSet, hash::Hash};
 
 /// Internal data structure for automaton management
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct InnerAutomata<'a, T, V>
 where
     T: Eq + Hash + Clone,
@@ -30,6 +31,49 @@ where
     }
 }
 
+impl<'a, T, V> Clone for InnerAutomata<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    fn clone(&self) -> Self {
+        let mut auto = Self {
+            states: self.states.iter().map(|rs| rs.cloned()).collect(),
+            inputs: HashSet::with_capacity(self.inputs.len()),
+            outputs: HashSet::with_capacity(self.outputs.len()),
+        };
+        self.inputs.iter().for_each(|rs| unsafe {
+            auto.inputs.insert(
+                auto.get_state(rs.as_ref().borrow().get_value())
+                    .unwrap_unchecked(),
+            );
+        });
+        self.outputs.iter().for_each(|rs| unsafe {
+            auto.outputs.insert(
+                auto.get_state(rs.as_ref().borrow().get_value())
+                    .unwrap_unchecked(),
+            );
+        });
+        self.states.iter().for_each(|from| {
+            from.as_ref()
+                .borrow()
+                .get_follows()
+                .for_each(|(symbol, set)| {
+                    set.into_iter().for_each(|to| unsafe {
+                        let sto = auto
+                            .get_state(to.as_ref().borrow().get_value())
+                            .unwrap_unchecked();
+                        let sfrom = auto
+                            .get_state(from.as_ref().borrow().get_value())
+                            .unwrap_unchecked();
+                        sfrom.add_follow(sto, symbol.clone());
+                    })
+                })
+        });
+        auto
+    }
+}
+
 impl<'a, T, V> InnerAutomata<'a, T, V>
 where
     T: Eq + Hash + Clone,
@@ -49,9 +93,19 @@ where
         self.inputs.len()
     }
 
+    /// Returns if the state referenced by "value" is an input
+    pub fn is_input(&self, value: &RefState<'a, T, V>) -> bool {
+        self.inputs.contains(value)
+    }
+
     /// Returns the number of outputs
     pub fn outputs_count(&self) -> usize {
         self.outputs.len()
+    }
+
+    /// Returns if the state referenced by "value" is an output
+    pub fn is_output(&self, value: &RefState<'a, T, V>) -> bool {
+        self.outputs.contains(value)
     }
 
     /// An iterator visiting all states in arbitrary order. The iterator
@@ -76,7 +130,8 @@ where
     ///
     /// Returns whether the value was newly inserted. That is:
     ///
-    /// - If the set did not previously contain this state, ``true`` is returned
+    /// - If the set did not previously contain this state, ``true`` is
+    ///     returned
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
@@ -88,7 +143,8 @@ where
     ///
     /// Returns whether the value was newly inserted. That is:
     ///
-    /// - If the set did not previously contain this state, ``true`` is returned
+    /// - If the set did not previously contain this state, ``true`` is
+    ///     returned
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
@@ -100,7 +156,8 @@ where
     ///
     /// Returns whether the value was newly inserted. That is:
     ///
-    /// - If the set did not previously contain this state, ``true`` is returned
+    /// - If the set did not previously contain this state, ``true`` is
+    ///     returned
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
@@ -124,6 +181,20 @@ where
     /// present in the set.
     pub fn remove_output(&mut self, value: &RefState<'a, T, V>) -> bool {
         self.outputs.remove(value)
+    }
+
+    /// Transform the automaton into its mirror
+    pub fn mirror(&mut self) {
+        std::mem::swap(&mut self.inputs, &mut self.outputs);
+        self.states = self
+            .states
+            .drain()
+            .into_iter()
+            .map(|rs| {
+                rs.reverse();
+                rs
+            })
+            .collect();
     }
 }
 

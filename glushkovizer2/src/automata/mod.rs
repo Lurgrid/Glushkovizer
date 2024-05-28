@@ -3,193 +3,54 @@
 //! be converted into dot format
 
 pub mod error;
+mod glushkov;
+mod r#impl;
 mod inner_automata;
 
 use self::inner_automata::state::RefState;
 use error::{AutomataError, Result};
-use inner::Inner;
+pub use inner_automata::dfs::DFSInfo;
 use inner_automata::InnerAutomata;
-use std::hash::Hash;
+use r#impl::Inner;
+use std::collections::HashSet;
+use std::rc::{Rc, Weak};
+use std::{cell::RefCell, hash::Hash};
 
 /// Data structure for automata management
 #[derive(Debug)]
-pub struct Automata<'a, T: Eq + Hash + Clone, V: Eq + Clone>(InnerAutomata<'a, T, V>);
-
-impl<'a, T, V> Default for Automata<'a, T, V>
+pub struct Automata<'a, T, V>
 where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
 {
-    fn default() -> Self {
-        Self(InnerAutomata::default())
-    }
-}
-
-impl<'a, T, V> Automata<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
-    /// Creates an initially empty automaton
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
-impl<'a, T, V> States<'a, T, V> for Automata<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
-    fn remove_state(&mut self, value: &V) -> Result<bool> {
-        self.inner()
-            .get_state(value)
-            .map(|ref r| {
-                if !self.inner_mut().remove_state(r) {
-                    return false;
-                }
-                self.inner().states().for_each(|state| {
-                    state.get_symbols().into_iter().for_each(|ref symbol| {
-                        state.remove_follow(r, symbol);
-                    })
-                });
-                true
-            })
-            .ok_or(AutomataError::UnknowState)
-    }
-}
-
-impl<'a, T, V> Automata<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
-    /// Alias for [States::inputs_count()]
-    pub fn initals_count(&self) -> usize {
-        self.inputs_count()
-    }
-
-    /// Alias for [States::outputs_count()]
-    pub fn finals_count(&self) -> usize {
-        self.outputs_count()
-    }
-
-    /// Alias for [States::inputs()]
-    pub fn initials(&self) -> Vec<V> {
-        self.inputs()
-    }
-
-    /// Alias for [States::outputs()]
-    pub fn finals(&self) -> Vec<V> {
-        self.outputs()
-    }
-
-    /// Alias for [States::add_input()]
-    pub fn add_initial(&mut self, value: &V) -> Result<bool> {
-        self.add_input(value)
-    }
-
-    /// Alias for [States::add_output()]
-    pub fn add_final(&mut self, value: &V) -> Result<bool> {
-        self.add_output(value)
-    }
-
-    /// Alias for [States::remove_input()]
-    pub fn remove_initial(&mut self, value: &V) -> Result<bool> {
-        self.remove_input(value)
-    }
-
-    /// Alias for [States::remove_output()]
-    pub fn remove_final(&mut self, value: &V) -> Result<bool> {
-        self.remove_output(value)
-    }
-}
-
-impl<'a, T, V> TransitionInfo<'a, T, V> for Automata<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
-}
-
-impl<'a, T, V> MutTransition<'a, T, V> for Automata<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
-}
-
-impl<'a, T, V> Cloned<'a, T, V> for Automata<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
+    inner: Rc<RefCell<InnerAutomata<'a, T, V>>>,
+    childs: Vec<Weak<RefCell<InnerAutomata<'a, T, V>>>>,
 }
 
 /// Data structure for managing a sub-automata
 #[derive(Debug)]
-pub struct SubAutomata<'a, T: Eq + Hash + Clone, V: Eq>(InnerAutomata<'a, T, V>);
-
-impl<'a, T, V> States<'a, T, V> for SubAutomata<'a, T, V>
+pub struct SubAutomata<'a, T, V>
 where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
 {
+    inner: Rc<RefCell<InnerAutomata<'a, T, V>>>,
+    parent: Weak<RefCell<InnerAutomata<'a, T, V>>>,
 }
 
-impl<'a, T, V> TransitionInfo<'a, T, V> for SubAutomata<'a, T, V>
+/// Data structure for managing a orbit
+#[derive(Debug)]
+pub struct Orbit<'a, T, V>
 where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
 {
+    inner: Rc<RefCell<InnerAutomata<'a, T, V>>>,
+    parent: Weak<RefCell<InnerAutomata<'a, T, V>>>,
 }
 
-impl<'a, T, V> Cloned<'a, T, V> for SubAutomata<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
-}
-
-mod inner {
-    use super::inner_automata::InnerAutomata;
-    use std::hash::Hash;
-    /// Feature for internal automaton recupperation
-    pub trait Inner<'a, T, V>
-    where
-        T: Eq + Hash + Clone,
-    {
-        /// Returns a reference to the internal automaton
-        fn inner(&self) -> &InnerAutomata<'a, T, V>;
-
-        /// Returns a mutable reference to the internal automaton
-        fn inner_mut(&mut self) -> &mut InnerAutomata<'a, T, V>;
-    }
-}
-
-macro_rules! automata {
-    ($t:ident) => {
-        impl<'a, T, V> Inner<'a, T, V> for $t<'a, T, V>
-        where
-            T: Eq + Hash + Clone,
-            V: Eq + Clone,
-        {
-            fn inner(&self) -> &InnerAutomata<'a, T, V> {
-                &self.0
-            }
-
-            fn inner_mut(&mut self) -> &mut InnerAutomata<'a, T, V> {
-                &mut self.0
-            }
-        }
-    };
-}
-
-automata!(Automata);
-automata!(SubAutomata);
-
-/// Trait for all state methods
-pub trait States<'a, T, V>: Inner<'a, T, V>
+/// Trait for retrieving state information
+pub trait StatesInfo<'a, T, V>: Inner<'a, T, V>
 where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
@@ -199,6 +60,71 @@ where
         self.inner().states_count()
     }
 
+    /// Returns a list of all states
+    fn states(&self) -> Vec<V> {
+        self.inner()
+            .states()
+            .map(|r| Clone::clone(r.as_ref().borrow().get_value()))
+            .collect()
+    }
+}
+
+/// Trait for adding state to automaton
+pub trait AddStates<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    /// Adds a state to the set of states.
+    ///
+    /// Returns whether the value was newly inserted. That is:
+    ///
+    /// - If the set did not previously contain this state, ``true`` is returned
+    /// - If the set already contained this state, ``false`` is returned, and
+    ///     the set is not modified: original state is not replaced, and the
+    ///     state passed as argument is dropped
+    fn add_state(&mut self, value: V) -> bool {
+        let inner = self.inner();
+        match inner.get_state(&value) {
+            None => {
+                drop(inner);
+                self.inner_mut().add_state(RefState::new(value))
+            }
+            Some(_) => false,
+        }
+    }
+}
+
+/// Trait for automaton state suppression
+pub trait RemoveStates<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    /// Removes a state from the set of states.
+    ///
+    /// Returns whether the state was present in the set.
+    fn remove_state(&mut self, value: &V) -> Result<bool> {
+        let inner = self.inner();
+        match inner.get_state(value) {
+            None => Err(AutomataError::UnknowState),
+            Some(r) => Ok({
+                drop(inner);
+                let mut inner = self.inner_mut();
+                inner.remove_input(&r);
+                inner.remove_output(&r);
+                inner.remove_state(&r)
+            }),
+        }
+    }
+}
+
+/// Trait for handling inputs/outputs
+pub trait InOut<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
     /// Returns the number of inputs
     fn inputs_count(&self) -> usize {
         self.inner().inputs_count()
@@ -207,14 +133,6 @@ where
     /// Returns the number of outputs
     fn outputs_count(&self) -> usize {
         self.inner().outputs_count()
-    }
-
-    /// Returns a list of all states
-    fn states(&self) -> Vec<V> {
-        self.inner()
-            .states()
-            .map(|r| Clone::clone(r.as_ref().borrow().get_value()))
-            .collect()
     }
 
     /// Returns a list of all inputs states
@@ -233,21 +151,6 @@ where
             .collect()
     }
 
-    /// Adds a state to the set of states.
-    ///
-    /// Returns whether the value was newly inserted. That is:
-    ///
-    /// - If the set did not previously contain this state, ``true`` is returned
-    /// - If the set already contained this state, ``false`` is returned, and
-    ///     the set is not modified: original state is not replaced, and the
-    ///     state passed as argument is dropped
-    fn add_state(&mut self, value: V) -> bool {
-        match self.inner().get_state(&value) {
-            None => self.inner_mut().add_state(RefState::new(value)),
-            Some(_) => false,
-        }
-    }
-
     /// Adds a state to the set of inputs.
     ///
     /// Returns whether the value was newly inserted. That is:
@@ -257,10 +160,14 @@ where
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
     fn add_input(&mut self, value: &V) -> Result<bool> {
-        self.inner()
-            .get_state(value)
-            .map(|s| self.inner_mut().add_input(s))
-            .ok_or(AutomataError::UnknowState)
+        let inner = self.inner();
+        match inner.get_state(value) {
+            None => Err(AutomataError::UnknowState),
+            Some(s) => Ok({
+                drop(inner);
+                self.inner_mut().add_input(s)
+            }),
+        }
     }
 
     /// Adds a state to the set of outputs.
@@ -272,40 +179,42 @@ where
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
     fn add_output(&mut self, value: &V) -> Result<bool> {
-        self.inner()
-            .get_state(value)
-            .map(|s| self.inner_mut().add_output(s))
-            .ok_or(AutomataError::UnknowState)
-    }
-
-    /// Removes a state from the set of states.
-    ///
-    /// Returns whether the state was present in the set.
-    fn remove_state(&mut self, value: &V) -> Result<bool> {
-        self.inner()
-            .get_state(value)
-            .map(|r| self.inner_mut().remove_state(&r))
-            .ok_or(AutomataError::UnknowState)
+        let inner = self.inner();
+        match inner.get_state(value) {
+            None => Err(AutomataError::UnknowState),
+            Some(s) => Ok({
+                drop(inner);
+                self.inner_mut().add_output(s)
+            }),
+        }
     }
 
     /// Removes a input from the set of states.
     ///
     /// Returns whether the input was present in the set.
     fn remove_input(&mut self, value: &V) -> Result<bool> {
-        self.inner()
-            .get_state(value)
-            .map(|r| self.inner_mut().remove_input(&r))
-            .ok_or(AutomataError::UnknowState)
+        let inner = self.inner();
+        match inner.get_state(value) {
+            None => Err(AutomataError::UnknowState),
+            Some(s) => Ok({
+                drop(inner);
+                self.inner_mut().remove_input(&s)
+            }),
+        }
     }
 
     /// Removes a output from the set of states.
     ///
     /// Returns whether the output was present in the set.
     fn remove_output(&mut self, value: &V) -> Result<bool> {
-        self.inner()
-            .get_state(value)
-            .map(|r| self.inner_mut().remove_output(&r))
-            .ok_or(AutomataError::UnknowState)
+        let inner = self.inner();
+        match inner.get_state(value) {
+            None => Err(AutomataError::UnknowState),
+            Some(s) => Ok({
+                drop(inner);
+                self.inner_mut().remove_output(&s)
+            }),
+        }
     }
 }
 
@@ -340,6 +249,20 @@ where
             .ok_or(AutomataError::UnknowState)
     }
 
+    /// Returns, the states with an incoming transition from "state" to them and
+    /// with "symbol" as symbol
+    fn get_follow(&self, state: &V, symbol: &T) -> Result<Vec<V>> {
+        self.inner()
+            .get_state(state)
+            .map(|s| match s.as_ref().borrow().get_follow(symbol) {
+                None => Vec::new(),
+                Some(iterator) => iterator
+                    .map(|res| res.as_ref().borrow().get_value().clone())
+                    .collect(),
+            })
+            .ok_or(AutomataError::UnknowState)
+    }
+
     /// Returns the list: symbol and state list representing transitions
     /// "state" outgoing
     fn get_follows(&self, state: &V) -> Result<Vec<(T, Vec<V>)>> {
@@ -356,6 +279,20 @@ where
             .get_state(state)
             .map(|s| s.get_previous_count(symbol))
             .ok_or(AutomataError::NotEnoughState)
+    }
+
+    /// Returns, the states with an incoming transition from them to "state"
+    /// and with "symbol" as symbol
+    fn get_previou(&self, state: &V, symbol: &T) -> Result<Vec<V>> {
+        self.inner()
+            .get_state(state)
+            .map(|s| match s.as_ref().borrow().get_previou(symbol) {
+                None => Vec::new(),
+                Some(iterator) => iterator
+                    .map(|res| res.as_ref().borrow().get_value().clone())
+                    .collect(),
+            })
+            .ok_or(AutomataError::UnknowState)
     }
 
     /// Returns the list: symbol and state list representing transitions
@@ -438,8 +375,42 @@ where
     }
 }
 
+///
+pub trait Accept<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    /// Returns ```true``` if the word is recognized by the automaton and
+    /// ```false``` otherwise
+    fn accept<'b>(&self, mut word: impl Iterator<Item = &'b T>) -> bool
+    where
+        'a: 'b,
+        T: 'b,
+    {
+        match word.try_fold(
+            self.inner().inputs().cloned().collect(),
+            |start: Vec<RefState<T, V>>, symbol| {
+                let mut temp: Vec<RefState<T, V>> = Vec::new();
+                start.into_iter().for_each(|rs| {
+                    if let Some(it) = rs.as_ref().borrow().get_follow(symbol) {
+                        it.for_each(|rs| temp.push(rs.clone()));
+                    }
+                });
+                if temp.is_empty() {
+                    return Err(());
+                }
+                Ok(temp)
+            },
+        ) {
+            Err(()) => false,
+            Ok(it) => it.into_iter().any(|rs| self.inner().is_output(&rs)),
+        }
+    }
+}
+
 /// Trait allowing the copy of an automaton
-pub trait Cloned<'a, T, V>: Inner<'a, T, V> + TransitionInfo<'a, T, V> + States<'a, T, V>
+pub trait Cloned<'a, T, V>: Inner<'a, T, V>
 where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
@@ -447,23 +418,110 @@ where
     /// Makes a copy of the automaton, removing transitions that are not in the
     /// automaton
     fn cloned(&self) -> Automata<'a, T, V> {
-        let mut automata: Automata<T, V> = Automata::new();
+        Automata {
+            inner: Rc::new(RefCell::new(self.inner().clone())),
+            childs: Vec::default(),
+        }
+    }
+}
 
-        let states = self.states();
+/// Trait for automaton mirror calculation
+pub trait Mirror<'a, T, V>: Inner<'a, T, V> + Cloned<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    /// Creates a copy of the automaton and returns the mirror of this /
+    /// automaton
+    fn mirror(&self) -> Automata<'a, T, V> {
+        let mut a = self.cloned();
+        a.inner_mut().mirror();
+        a
+    }
+}
 
-        states.iter().for_each(|state| {
-            automata.add_state(state.clone());
-        });
-
-        states.into_iter().for_each(|from| {
-            automata.get_follows(&from).into_iter().for_each(|list| {
-                list.into_iter().for_each(|(symbol, s)| {
-                    s.into_iter().for_each(|to| {
-                        let _ = automata.add_transition(&from, &to, symbol.clone());
-                    })
+/// Line defining the depth first search
+pub trait DFS<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Hash + Clone,
+{
+    /// Returns the depth first search information. This route is done with the
+    /// follows if "backward" is ```false``` and otherwise with the previous
+    fn dfs(&self, order: Vec<V>, backward: bool) -> Result<DFSInfo<V>> {
+        let order = order
+            .into_iter()
+            .try_fold(HashSet::new(), |mut acc, state| {
+                match self.inner().get_state(&state) {
+                    None => Err(AutomataError::UnknowState),
+                    Some(rs) => {
+                        if !acc.insert(rs) {
+                            return Err(AutomataError::DuplicateState);
+                        }
+                        Ok(acc)
+                    }
+                }
+            })?;
+        let DFSInfo {
+            prefix,
+            suffix,
+            predecessor,
+        } = self.inner().dfs(order.into_iter().collect(), backward);
+        Ok(DFSInfo {
+            prefix: prefix
+                .into_iter()
+                .map(|rs| rs.as_ref().borrow().get_value().clone())
+                .collect(),
+            suffix: suffix
+                .into_iter()
+                .map(|rs| rs.as_ref().borrow().get_value().clone())
+                .collect(),
+            predecessor: predecessor
+                .into_iter()
+                .map(|(k, v)| {
+                    (
+                        k.as_ref().borrow().get_value().clone(),
+                        v.as_ref().borrow().get_value().clone(),
+                    )
                 })
-            })
-        });
-        automata
+                .collect(),
+        })
+    }
+}
+
+/// kosaraju algorithm definition trait - WIP
+pub trait Kosaraju<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    /// Returns the result of the kosaraju algorithm on the graph, the set of
+    /// strongly connected components.
+    fn kosaraju(&self) -> Vec<Vec<V>> {
+        let inner = self.inner();
+        let DFSInfo {
+            prefix: _,
+            suffix: order,
+            predecessor: _,
+        } = inner.dfs(inner.states().map(|rs| rs.cloned()).collect(), false);
+        let DFSInfo {
+            prefix,
+            suffix: _,
+            predecessor: res,
+        } = inner.dfs(order, true);
+        let mut r = Vec::new();
+        let mut cur = Vec::new();
+        for pos in prefix {
+            if res.get(&pos).is_none() {
+                if cur.len() != 0 {
+                    r.push(cur);
+                }
+                cur = vec![pos.as_ref().borrow().get_value().clone()];
+            } else {
+                cur.push(pos.as_ref().borrow().get_value().clone());
+            }
+        }
+        r.push(cur);
+        r
     }
 }

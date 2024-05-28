@@ -162,7 +162,7 @@ where
 
 /// Data structure containing the information required to manage a automata
 /// state
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct State<'a, T, V>
 where
     T: Eq + Hash,
@@ -195,9 +195,24 @@ where
         self.follow.get(symbol).map(|s| s.iter())
     }
 
+    /// Returns the previous of the current state with the transition "symbol"
+    pub fn get_previou(&self, symbol: &T) -> Option<impl Iterator<Item = &RefState<'a, T, V>>> {
+        self.previous.get(symbol).map(|s| s.iter())
+    }
+
     /// Returns the set of symbol and follow pairs
     pub fn get_follows(&self) -> impl Iterator<Item = (&T, &HashSet<RefState<'a, T, V>>)> {
         self.follow.iter()
+    }
+
+    /// Returns the set of symbol and previous pairs
+    pub fn get_previous(&self) -> impl Iterator<Item = (&T, &HashSet<RefState<'a, T, V>>)> {
+        self.previous.iter()
+    }
+
+    /// Reverses state transitions
+    pub fn reverse(&mut self) {
+        std::mem::swap(&mut self.follow, &mut self.previous);
     }
 }
 
@@ -299,5 +314,10 @@ where
             tmut.previous.remove(&symbol);
         }
         res
+    }
+
+    /// Reverses referenced state transitions
+    pub fn reverse(&self) {
+        self.as_ref().borrow_mut().reverse()
     }
 }
