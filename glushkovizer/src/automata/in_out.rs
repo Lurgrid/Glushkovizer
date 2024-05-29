@@ -47,8 +47,8 @@ where
     pub(crate) fn get_states_type_ind(&self) -> HashMap<usize, DoorType> {
         let k = self.kosaraju_ind();
         let mut stype = HashMap::new();
-        (0..self.get_nb_states()).for_each(|_| {
-            stype.insert(0, DoorType::None);
+        (0..self.get_nb_states()).for_each(|i| {
+            stype.insert(i, DoorType::None);
         });
         (0..self.get_nb_states()).for_each(|ind| {
             if self.initials.contains(&ind) {
