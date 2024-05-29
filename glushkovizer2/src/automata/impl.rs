@@ -131,8 +131,8 @@ macro_rules! child {
     };
 }
 
-inner!(Automata, SubAutomata, Orbit);
-child!(SubAutomata, Orbit);
+inner!(Automata, SubAutomata);
+child!(SubAutomata);
 
 macro_rules! fimpl {
     ($type:ident => $($trait:ident { $($code:item)* }),+) => {
@@ -162,12 +162,12 @@ macro_rules! derive {
     };
 }
 
-derive!(Automata, SubAutomata, Orbit => StatesInfo, TransitionInfo, InOut, MutTransition, Accept, Cloned, Mirror);
+derive!(Automata, SubAutomata => StatesInfo, TransitionInfo, InOut, MutTransition, Accept, Cloned, Mirror, Kosaraju);
 derive!(Automata => AddStates);
-derive!(SubAutomata, Orbit => RemoveStates);
+derive!(SubAutomata => RemoveStates);
 
 fimpl!(
-    SubAutomata, Orbit => AddStates {
+    SubAutomata => AddStates {
         fn add_state(&mut self, value: V) -> bool {
             let inner = self.parent().borrow();
             match inner.get_state(&value) {
@@ -227,6 +227,14 @@ impl<'a, T, V, U> DFS<'a, T, V> for U
 where
     T: Eq + Hash + Clone,
     V: Eq + Hash + Clone,
+    U: Inner<'a, T, V>,
+{
+}
+
+impl<'a, T, V, U> ToDot<'a, T, V> for U
+where
+    T: Eq + Hash + Clone + Display,
+    V: Eq + Clone + Display,
     U: Inner<'a, T, V>,
 {
 }

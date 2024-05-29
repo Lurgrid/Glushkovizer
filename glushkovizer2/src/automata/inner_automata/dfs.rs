@@ -43,7 +43,7 @@ where
         let mut color: HashMap<&RefState<'a, T, V>, bool> =
             order.iter().map(|rs| (rs, true)).collect();
         for rs in order.iter() {
-            if unsafe { *color.get(&rs).unwrap_unchecked() } {
+            if unsafe { *color.get(rs).unwrap_unchecked() } {
                 self.visit_in_depth(&order, rs, &mut color, &mut info, backward)
             }
         }
@@ -74,7 +74,7 @@ where
         let mut p: Vec<&RefState<'a, T, V>> = p.into_iter().collect();
         p.sort_by_key(|&ind| order.iter().position(|x| x == ind));
         p.into_iter().for_each(|rs2| {
-            if unsafe { *color.get(&rs2).unwrap_unchecked() } {
+            if order.contains(rs2) && unsafe { *color.get(&rs2).unwrap_unchecked() } {
                 info.predecessor.insert(rs2.clone(), rs.clone());
                 self.visit_in_depth(order, rs2, color, info, backward)
             }

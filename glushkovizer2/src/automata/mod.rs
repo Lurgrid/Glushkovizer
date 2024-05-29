@@ -9,10 +9,10 @@ mod inner_automata;
 
 use self::inner_automata::state::RefState;
 use error::{AutomataError, Result};
-pub use inner_automata::dfs::DFSInfo;
 use inner_automata::InnerAutomata;
+pub use inner_automata::{dfs::DFSInfo, door::DoorType};
 use r#impl::Inner;
-use std::collections::HashSet;
+use std::fmt::{Debug, Display};
 use std::rc::{Rc, Weak};
 use std::{cell::RefCell, hash::Hash};
 
@@ -30,17 +30,6 @@ where
 /// Data structure for managing a sub-automata
 #[derive(Debug)]
 pub struct SubAutomata<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
-    inner: Rc<RefCell<InnerAutomata<'a, T, V>>>,
-    parent: Weak<RefCell<InnerAutomata<'a, T, V>>>,
-}
-
-/// Data structure for managing a orbit
-#[derive(Debug)]
-pub struct Orbit<'a, T, V>
 where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
@@ -449,24 +438,23 @@ where
     /// Returns the depth first search information. This route is done with the
     /// follows if "backward" is ```false``` and otherwise with the previous
     fn dfs(&self, order: Vec<V>, backward: bool) -> Result<DFSInfo<V>> {
-        let order = order
-            .into_iter()
-            .try_fold(HashSet::new(), |mut acc, state| {
-                match self.inner().get_state(&state) {
-                    None => Err(AutomataError::UnknowState),
-                    Some(rs) => {
-                        if !acc.insert(rs) {
-                            return Err(AutomataError::DuplicateState);
-                        }
-                        Ok(acc)
+        let order = order.into_iter().try_fold(Vec::new(), |mut acc, state| {
+            match self.inner().get_state(&state) {
+                None => Err(AutomataError::UnknowState),
+                Some(rs) => {
+                    if acc.contains(&rs) {
+                        return Err(AutomataError::DuplicateState);
                     }
+                    acc.push(rs);
+                    Ok(acc)
                 }
-            })?;
+            }
+        })?;
         let DFSInfo {
             prefix,
             suffix,
             predecessor,
-        } = self.inner().dfs(order.into_iter().collect(), backward);
+        } = self.inner().dfs(order, backward);
         Ok(DFSInfo {
             prefix: prefix
                 .into_iter()
@@ -489,39 +477,51 @@ where
     }
 }
 
-/// kosaraju algorithm definition trait - WIP
+/// kosaraju algorithm definition trait
 pub trait Kosaraju<'a, T, V>: Inner<'a, T, V>
 where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
 {
-    /// Returns the result of the kosaraju algorithm on the graph, the set of
-    /// strongly connected components.
+    /// Returns the result of the kosaraju algorithm on the automaton, i.e. the
+    /// set of strongly connected components.
     fn kosaraju(&self) -> Vec<Vec<V>> {
-        let inner = self.inner();
-        let DFSInfo {
-            prefix: _,
-            suffix: order,
-            predecessor: _,
-        } = inner.dfs(inner.states().map(|rs| rs.cloned()).collect(), false);
-        let DFSInfo {
-            prefix,
-            suffix: _,
-            predecessor: res,
-        } = inner.dfs(order, true);
-        let mut r = Vec::new();
-        let mut cur = Vec::new();
-        for pos in prefix {
-            if res.get(&pos).is_none() {
-                if cur.len() != 0 {
-                    r.push(cur);
-                }
-                cur = vec![pos.as_ref().borrow().get_value().clone()];
-            } else {
-                cur.push(pos.as_ref().borrow().get_value().clone());
-            }
-        }
-        r.push(cur);
-        r
+        self.inner()
+            .kosaraju()
+            .into_iter()
+            .map(|l| {
+                l.into_iter()
+                    .map(|rs| rs.as_ref().borrow().get_value().clone())
+                    .collect()
+            })
+            .collect()
+    }
+
+    /// Returns the result of the kosaraju algorithm on the automaton, i.e. the
+    /// set of strongly connected components. Where each element of the strongly
+    /// connected components is a pair between the value of the state and the
+    /// type of gate it is.
+    fn kosaraju_type(&self) -> Vec<Vec<(V, DoorType)>> {
+        self.inner()
+            .get_door()
+            .into_iter()
+            .map(|l| {
+                l.into_iter()
+                    .map(|(rs, t)| (rs.as_ref().borrow().get_value().clone(), t))
+                    .collect()
+            })
+            .collect()
+    }
+}
+
+/// Line for DOT representation of the automaton
+pub trait ToDot<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone + Display,
+    V: Eq + Clone + Display,
+{
+    /// Returns the DOT representation of the automaton
+    fn to_dot(&self) -> std::result::Result<String, std::fmt::Error> {
+        self.inner().to_dot()
     }
 }

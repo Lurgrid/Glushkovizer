@@ -2,6 +2,9 @@
 #![allow(dead_code)]
 
 pub mod dfs;
+pub mod door;
+pub mod dot;
+pub mod scc;
 pub mod state;
 
 use state::RefState;

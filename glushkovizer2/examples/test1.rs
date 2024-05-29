@@ -1,4 +1,3 @@
-use glushkovizer::automata::{Automata, Mirror, DFS};
 use glushkovizer::prelude::*;
 use glushkovizer::regexp::RegExp;
 
@@ -25,4 +24,10 @@ fn main() {
     let reg = dbg!(RegExp::try_from("(a+b).a*.b*.(a+b)*")).unwrap();
     let auto = dbg!(Automata::from(reg));
     dbg!(auto.accept(['a', 'b'].iter()));
+    dbg!(auto.dfs(vec![0, 1, 2, 3, 4, 5, 6], false));
+    dbg!(auto.dfs(vec![6, 5, 4, 3, 1, 2, 0], false));
+    dbg!(auto.kosaraju_type());
+    let reg = dbg!(RegExp::try_from("(a.b.c.d)*")).unwrap();
+    let auto = dbg!(Automata::from(reg));
+    println!("{}", auto.to_dot().unwrap());
 }
