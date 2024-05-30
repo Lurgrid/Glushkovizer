@@ -50,6 +50,7 @@ where
         info
     }
 
+    /// Auxiliary function of [dfs]
     fn visit_in_depth(
         &self,
         order: &Vec<RefState<'a, T, V>>,

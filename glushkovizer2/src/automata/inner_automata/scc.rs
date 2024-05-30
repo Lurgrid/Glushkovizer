@@ -1,7 +1,7 @@
 //! Module for kosaraju implementation and strongly connected component
 //! extraction
 
-use super::{dfs::DFSInfo, state::RefState, InnerAutomata};
+use super::{dfs::DFSInfo, door::DoorType, state::RefState, InnerAutomata};
 use std::hash::Hash;
 
 impl<'a, T, V> InnerAutomata<'a, T, V>
@@ -36,5 +36,32 @@ where
         }
         r.push(cur);
         r
+    }
+
+    /// Returns the automata representing the strongly connected components
+    /// of the automaton
+    pub fn extract_scc(&self) -> Vec<InnerAutomata<'a, T, V>> {
+        self.get_door()
+            .into_iter()
+            .fold(Vec::default(), move |mut acc, l| {
+                acc.push(Self {
+                    inputs: l
+                        .iter()
+                        .filter_map(|(rs, dt)| match dt {
+                            DoorType::In | DoorType::Both => Some(rs.clone()),
+                            _ => None,
+                        })
+                        .collect(),
+                    outputs: l
+                        .iter()
+                        .filter_map(|(rs, dt)| match dt {
+                            DoorType::Out | DoorType::Both => Some(rs.clone()),
+                            _ => None,
+                        })
+                        .collect(),
+                    states: l.into_iter().map(|(rs, _)| rs).collect(),
+                });
+                acc
+            })
     }
 }

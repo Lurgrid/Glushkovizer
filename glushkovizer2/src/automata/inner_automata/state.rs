@@ -121,12 +121,14 @@ where
     T: Eq + Hash + Clone,
     V: Clone,
 {
-    /// Makes a deep copy of the referenced state and returns a strong reference
-    /// to it
+    /// Makes a deep copy of the referenced state and returns a strong
+    /// reference to it
     pub fn cloned(&self) -> Self {
         Self::new(self.as_ref().borrow().value.clone())
     }
 
+    /// Returns the list of symbol and [HashSet] pairs representing the
+    /// follows of this state
     pub fn get_follows(&self) -> Vec<(T, Vec<V>)> {
         self.as_ref()
             .borrow()
@@ -143,6 +145,8 @@ where
             .collect()
     }
 
+    /// Returns the list of symbol and [HashSet] pairs representing the
+    /// previous of this state
     pub fn get_previous(&self) -> Vec<(T, Vec<V>)> {
         self.as_ref()
             .borrow()
@@ -168,8 +172,8 @@ where
     T: Eq + Hash,
 {
     value: V,
-    previous: HashMap<T, HashSet<RefState<'a, T, V>>>,
-    follow: HashMap<T, HashSet<RefState<'a, T, V>>>,
+    pub(crate) previous: HashMap<T, HashSet<RefState<'a, T, V>>>,
+    pub(crate) follow: HashMap<T, HashSet<RefState<'a, T, V>>>,
 }
 
 impl<'a, T, V> State<'a, T, V>

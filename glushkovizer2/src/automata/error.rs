@@ -20,6 +20,12 @@ pub enum AutomataError {
     #[error("Duplicate state")]
     /// Error representing the fact that a state has a duplicate
     DuplicateState,
+    #[error("The input state is not in the states")]
+    /// Error representing the fact that the input state is not in the states
+    InputStateIsNotInStates,
+    #[error("The output state is not in the states")]
+    /// Error representing the fact that the output state is not in the states
+    OutputStateIsNotInStates,
 }
 
 /// Result alias type for automaton manipulation functions

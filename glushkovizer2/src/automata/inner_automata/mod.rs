@@ -86,6 +86,20 @@ where
         Self::default()
     }
 
+    /// Return the automate composed of "state"" states with "inputs"" and
+    /// "outputs" as inputs and outputs, respectively
+    pub fn create(
+        states: HashSet<RefState<'a, T, V>>,
+        inputs: HashSet<RefState<'a, T, V>>,
+        outputs: HashSet<RefState<'a, T, V>>,
+    ) -> Self {
+        Self {
+            states,
+            inputs,
+            outputs,
+        }
+    }
+
     /// Returns the number of states
     pub fn states_count(&self) -> usize {
         self.states.len()

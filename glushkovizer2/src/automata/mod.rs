@@ -12,9 +12,21 @@ use error::{AutomataError, Result};
 use inner_automata::InnerAutomata;
 pub use inner_automata::{dfs::DFSInfo, door::DoorType};
 use r#impl::Inner;
+use std::collections::HashSet;
 use std::fmt::{Debug, Display};
 use std::rc::{Rc, Weak};
 use std::{cell::RefCell, hash::Hash};
+
+/// Data structure for parent automaton management
+#[derive(Debug)]
+struct InnerParent<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    inner: Rc<RefCell<InnerAutomata<'a, T, V>>>,
+    childs: Vec<Weak<RefCell<InnerAutomata<'a, T, V>>>>,
+}
 
 /// Data structure for automata management
 #[derive(Debug)]
@@ -23,8 +35,7 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
 {
-    inner: Rc<RefCell<InnerAutomata<'a, T, V>>>,
-    childs: Vec<Weak<RefCell<InnerAutomata<'a, T, V>>>>,
+    himself: Rc<RefCell<InnerParent<'a, T, V>>>,
 }
 
 /// Data structure for managing a sub-automata
@@ -35,7 +46,7 @@ where
     V: Eq + Clone,
 {
     inner: Rc<RefCell<InnerAutomata<'a, T, V>>>,
-    parent: Weak<RefCell<InnerAutomata<'a, T, V>>>,
+    parent: Weak<RefCell<InnerParent<'a, T, V>>>,
 }
 
 /// Trait for retrieving state information
@@ -72,11 +83,11 @@ where
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
-    fn add_state(&mut self, value: V) -> bool {
+    fn add_state(&self, value: V) -> bool {
         let inner = self.inner();
         match inner.get_state(&value) {
             None => {
-                drop(inner);
+                let _ = inner;
                 self.inner_mut().add_state(RefState::new(value))
             }
             Some(_) => false,
@@ -93,13 +104,13 @@ where
     /// Removes a state from the set of states.
     ///
     /// Returns whether the state was present in the set.
-    fn remove_state(&mut self, value: &V) -> Result<bool> {
+    fn remove_state(&self, value: &V) -> Result<bool> {
         let inner = self.inner();
         match inner.get_state(value) {
             None => Err(AutomataError::UnknowState),
             Some(r) => Ok({
-                drop(inner);
-                let mut inner = self.inner_mut();
+                let _ = inner;
+                let inner = self.inner_mut();
                 inner.remove_input(&r);
                 inner.remove_output(&r);
                 inner.remove_state(&r)
@@ -148,12 +159,12 @@ where
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
-    fn add_input(&mut self, value: &V) -> Result<bool> {
+    fn add_input(&self, value: &V) -> Result<bool> {
         let inner = self.inner();
         match inner.get_state(value) {
             None => Err(AutomataError::UnknowState),
             Some(s) => Ok({
-                drop(inner);
+                let _ = inner;
                 self.inner_mut().add_input(s)
             }),
         }
@@ -167,12 +178,12 @@ where
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
-    fn add_output(&mut self, value: &V) -> Result<bool> {
+    fn add_output(&self, value: &V) -> Result<bool> {
         let inner = self.inner();
         match inner.get_state(value) {
             None => Err(AutomataError::UnknowState),
             Some(s) => Ok({
-                drop(inner);
+                let _ = inner;
                 self.inner_mut().add_output(s)
             }),
         }
@@ -181,12 +192,12 @@ where
     /// Removes a input from the set of states.
     ///
     /// Returns whether the input was present in the set.
-    fn remove_input(&mut self, value: &V) -> Result<bool> {
+    fn remove_input(&self, value: &V) -> Result<bool> {
         let inner = self.inner();
         match inner.get_state(value) {
             None => Err(AutomataError::UnknowState),
             Some(s) => Ok({
-                drop(inner);
+                let _ = inner;
                 self.inner_mut().remove_input(&s)
             }),
         }
@@ -195,12 +206,12 @@ where
     /// Removes a output from the set of states.
     ///
     /// Returns whether the output was present in the set.
-    fn remove_output(&mut self, value: &V) -> Result<bool> {
+    fn remove_output(&self, value: &V) -> Result<bool> {
         let inner = self.inner();
         match inner.get_state(value) {
             None => Err(AutomataError::UnknowState),
             Some(s) => Ok({
-                drop(inner);
+                let _ = inner;
                 self.inner_mut().remove_output(&s)
             }),
         }
@@ -331,7 +342,7 @@ where
     /// - If it didn't exist before, ```true``` is returned
     /// - If it already existed, ```false``` is returned, and the transition is
     ///     not modified: and the symbol passed as an argument is dropped.
-    fn add_transition(&mut self, from: &V, to: &V, symbol: T) -> Result<bool> {
+    fn add_transition(&self, from: &V, to: &V, symbol: T) -> Result<bool> {
         let sto = self
             .inner()
             .get_state(to)
@@ -349,7 +360,7 @@ where
     /// transition
     ///
     /// Returns if the transition existed before
-    fn remove_transition(&mut self, from: &V, to: &V, symbol: &T) -> Result<bool> {
+    fn remove_transition(&self, from: &V, to: &V, symbol: &T) -> Result<bool> {
         let sto = self
             .inner()
             .get_state(to)
@@ -408,8 +419,10 @@ where
     /// automaton
     fn cloned(&self) -> Automata<'a, T, V> {
         Automata {
-            inner: Rc::new(RefCell::new(self.inner().clone())),
-            childs: Vec::default(),
+            himself: Rc::new(RefCell::new(InnerParent {
+                inner: Rc::new(RefCell::new(self.inner().clone())),
+                childs: Vec::default(),
+            })),
         }
     }
 }
@@ -423,7 +436,7 @@ where
     /// Creates a copy of the automaton and returns the mirror of this /
     /// automaton
     fn mirror(&self) -> Automata<'a, T, V> {
-        let mut a = self.cloned();
+        let a = self.cloned();
         a.inner_mut().mirror();
         a
     }
@@ -498,9 +511,9 @@ where
     }
 
     /// Returns the result of the kosaraju algorithm on the automaton, i.e. the
-    /// set of strongly connected components. Where each element of the strongly
-    /// connected components is a pair between the value of the state and the
-    /// type of gate it is.
+    /// set of strongly connected components. Where each element of the
+    /// strongly connected components is a pair between the value of the state
+    /// and the type of gate it is.
     fn kosaraju_type(&self) -> Vec<Vec<(V, DoorType)>> {
         self.inner()
             .get_door()
@@ -524,4 +537,32 @@ where
     fn to_dot(&self) -> std::result::Result<String, std::fmt::Error> {
         self.inner().to_dot()
     }
+}
+
+/// Trait to define a method for extracting a sub-automaton from an automaton
+pub trait ExtractSubAutomata<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    /// Return the sub-automate composed of "state"" states with "inputs"" and
+    /// "outputs" as inputs and outputs, respectively
+    fn subautomata(
+        &'a self,
+        states: Vec<&V>,
+        inputs: Vec<&V>,
+        outputs: Vec<&V>,
+    ) -> Result<SubAutomata<'a, T, V>>;
+}
+
+/// Trait for defining a method for extracting the sub-automata representing
+/// the strongly connected components of an automaton
+pub trait ExtractStronglyConnectedComponent<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    /// Returns the sub-automata representing the strongly connected components
+    /// of the automaton
+    fn extract_scc(&'a self) -> Vec<SubAutomata<'a, T, V>>;
 }

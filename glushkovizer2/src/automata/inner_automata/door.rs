@@ -34,6 +34,10 @@ impl<'a, T, V> InnerAutomata<'a, T, V>
 where
     T: Eq + Hash + Clone,
 {
+    /// Returns the result of the kosaraju algorithm on the automaton, i.e. the
+    /// set of strongly connected components. Where each element of the
+    /// strongly connected components is a pair between the reference of the
+    ///  state and the type of gate it is.
     pub fn get_door(&self) -> Vec<Vec<(RefState<'a, T, V>, DoorType)>> {
         self.kosaraju()
             .into_iter()

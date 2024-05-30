@@ -4,7 +4,7 @@ use glushkovizer::regexp::RegExp;
 #[allow(unused_must_use)]
 
 fn main() {
-    let mut a: Automata<usize, char> = Automata::new();
+    let a: Automata<usize, char> = Automata::new();
     dbg!(a.add_state('a'));
     dbg!(a.add_initial(&'a'));
     dbg!(a.add_final(&'b'));
@@ -29,5 +29,12 @@ fn main() {
     dbg!(auto.kosaraju_type());
     let reg = dbg!(RegExp::try_from("(a.b.c.d)*")).unwrap();
     let auto = dbg!(Automata::from(reg));
+    println!("{}", auto.to_dot().unwrap());
+    let s1_auto = dbg!(auto.subautomata(vec![&0, &1], vec![&0], vec![&1]).unwrap());
+    drop(auto);
+    println!("{}", s1_auto.to_dot().unwrap());
+    dbg!(auto.remove_state(&1));
+    println!("{}", s1_auto.to_dot().unwrap());
+    drop(s1_auto);
     println!("{}", auto.to_dot().unwrap());
 }

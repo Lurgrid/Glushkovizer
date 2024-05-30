@@ -1,5 +1,5 @@
-//! Module for Glushkov automaton management, with a conversion of [RegExp] into
-//! a Glushkov automaton
+//! Module for Glushkov automaton management, with a conversion of [RegExp]
+//! into a Glushkov automaton
 
 use super::{AddStates, Automata, MutTransition};
 use crate::regexp::RegExp;
@@ -12,7 +12,7 @@ where
     fn from(reg: RegExp<T>) -> Self {
         let (a, end) = reg.linearization_start(1);
         let info = a.get_flnf();
-        let mut g = Automata::new();
+        let g = Automata::new();
         for i in 0..end {
             g.add_state(i);
         }
