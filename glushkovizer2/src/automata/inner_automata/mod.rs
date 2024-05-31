@@ -5,6 +5,7 @@ pub mod dfs;
 pub mod door;
 pub mod dot;
 pub mod scc;
+pub mod serde;
 pub mod state;
 
 use state::RefState;
@@ -46,32 +47,21 @@ where
             outputs: HashSet::with_capacity(self.outputs.len()),
         };
         self.inputs.iter().for_each(|rs| unsafe {
-            auto.inputs.insert(
-                auto.get_state(rs.as_ref().borrow().get_value())
-                    .unwrap_unchecked(),
-            );
+            auto.inputs
+                .insert(auto.get_state(rs.as_ref().get_value()).unwrap_unchecked());
         });
         self.outputs.iter().for_each(|rs| unsafe {
-            auto.outputs.insert(
-                auto.get_state(rs.as_ref().borrow().get_value())
-                    .unwrap_unchecked(),
-            );
+            auto.outputs
+                .insert(auto.get_state(rs.as_ref().get_value()).unwrap_unchecked());
         });
         self.states.iter().for_each(|from| {
-            from.as_ref()
-                .borrow()
-                .get_follows()
-                .for_each(|(symbol, set)| {
-                    set.into_iter().for_each(|to| unsafe {
-                        let sto = auto
-                            .get_state(to.as_ref().borrow().get_value())
-                            .unwrap_unchecked();
-                        let sfrom = auto
-                            .get_state(from.as_ref().borrow().get_value())
-                            .unwrap_unchecked();
-                        sfrom.add_follow(sto, symbol.clone());
-                    })
+            from.as_ref().get_follows().for_each(|(symbol, set)| {
+                set.into_iter().for_each(|to| unsafe {
+                    let sto = auto.get_state(to.as_ref().get_value()).unwrap_unchecked();
+                    let sfrom = auto.get_state(from.as_ref().get_value()).unwrap_unchecked();
+                    sfrom.add_follow(sto, symbol.clone());
                 })
+            })
         });
         auto
     }
@@ -224,7 +214,7 @@ where
     pub fn get_state(&self, value: &V) -> Option<RefState<'a, T, V>> {
         self.states
             .iter()
-            .find(|&r| r.as_ref().borrow().get_value().eq(value))
+            .find(|&r| r.as_ref().get_value().eq(value))
             .map(|r| r.clone())
     }
 
@@ -232,7 +222,7 @@ where
     pub fn get_input(&self, value: &V) -> Option<RefState<'a, T, V>> {
         self.inputs
             .iter()
-            .find(|&r| r.as_ref().borrow().get_value().eq(value))
+            .find(|&r| r.as_ref().get_value().eq(value))
             .map(|r| r.clone())
     }
 
@@ -240,7 +230,7 @@ where
     pub fn get_output(&self, value: &V) -> Option<RefState<'a, T, V>> {
         self.outputs
             .iter()
-            .find(|&r| r.as_ref().borrow().get_value().eq(value))
+            .find(|&r| r.as_ref().get_value().eq(value))
             .map(|r| r.clone())
     }
 }

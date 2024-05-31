@@ -45,14 +45,14 @@ where
                 l.into_iter()
                     .map(|rs| {
                         let mut dt = DoorType::None;
-                        rs.as_ref().borrow().get_follows().for_each(|(_, set)| {
+                        rs.as_ref().get_follows().for_each(|(_, set)| {
                             set.iter().for_each(|rs| {
                                 if !l.contains(rs) {
                                     dt += DoorType::Out;
                                 }
                             });
                         });
-                        rs.as_ref().borrow().get_previous().for_each(|(_, set)| {
+                        rs.as_ref().get_previous().for_each(|(_, set)| {
                             set.iter().for_each(|rs| {
                                 if !l.contains(rs) {
                                     dt += DoorType::In;

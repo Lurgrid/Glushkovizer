@@ -62,7 +62,7 @@ where
         unsafe { *color.get_mut(rs).unwrap_unchecked() = false };
         info.prefix.push(rs.clone());
         let mut p: HashSet<&RefState<'a, T, V>> = HashSet::new();
-        let rmut = rs.as_ref().borrow();
+        let rmut = rs.as_ref();
         if backward {
             rmut.get_previous().for_each(|(_, set)| {
                 p.extend(set);

@@ -15,7 +15,10 @@ use r#impl::Inner;
 use std::collections::HashSet;
 use std::fmt::{Debug, Display};
 use std::rc::{Rc, Weak};
-use std::{cell::RefCell, hash::Hash};
+use std::{
+    cell::{RefCell, UnsafeCell},
+    hash::Hash,
+};
 
 /// Data structure for parent automaton management
 #[derive(Debug)]
@@ -24,7 +27,7 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
 {
-    inner: Rc<RefCell<InnerAutomata<'a, T, V>>>,
+    inner: InnerAutomata<'a, T, V>,
     childs: Vec<Weak<RefCell<InnerAutomata<'a, T, V>>>>,
 }
 
@@ -35,7 +38,7 @@ where
     T: Eq + Hash + Clone,
     V: Eq + Clone,
 {
-    himself: Rc<RefCell<InnerParent<'a, T, V>>>,
+    himself: UnsafeCell<InnerParent<'a, T, V>>,
 }
 
 /// Data structure for managing a sub-automata
@@ -46,7 +49,7 @@ where
     V: Eq + Clone,
 {
     inner: Rc<RefCell<InnerAutomata<'a, T, V>>>,
-    parent: Weak<RefCell<InnerParent<'a, T, V>>>,
+    parent: *mut InnerParent<'a, T, V>,
 }
 
 /// Trait for retrieving state information
@@ -64,7 +67,7 @@ where
     fn states(&self) -> Vec<V> {
         self.inner()
             .states()
-            .map(|r| Clone::clone(r.as_ref().borrow().get_value()))
+            .map(|r| Clone::clone(r.as_ref().get_value()))
             .collect()
     }
 }
@@ -139,7 +142,7 @@ where
     fn inputs(&self) -> Vec<V> {
         self.inner()
             .inputs()
-            .map(|r| Clone::clone(r.as_ref().borrow().get_value()))
+            .map(|r| Clone::clone(r.as_ref().get_value()))
             .collect()
     }
 
@@ -147,7 +150,7 @@ where
     fn outputs(&self) -> Vec<V> {
         self.inner()
             .outputs()
-            .map(|r| Clone::clone(r.as_ref().borrow().get_value()))
+            .map(|r| Clone::clone(r.as_ref().get_value()))
             .collect()
     }
 
@@ -155,7 +158,8 @@ where
     ///
     /// Returns whether the value was newly inserted. That is:
     ///
-    /// - If the set did not previously contain this state, ``true`` is returned
+    /// - If the set did not previously contain this state, ``true`` is
+    ///     returned
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
@@ -174,7 +178,8 @@ where
     ///
     /// Returns whether the value was newly inserted. That is:
     ///
-    /// - If the set did not previously contain this state, ``true`` is returned
+    /// - If the set did not previously contain this state, ``true`` is
+    ///     returned
     /// - If the set already contained this state, ``false`` is returned, and
     ///     the set is not modified: original state is not replaced, and the
     ///     state passed as argument is dropped
@@ -254,10 +259,10 @@ where
     fn get_follow(&self, state: &V, symbol: &T) -> Result<Vec<V>> {
         self.inner()
             .get_state(state)
-            .map(|s| match s.as_ref().borrow().get_follow(symbol) {
+            .map(|s| match s.as_ref().get_follow(symbol) {
                 None => Vec::new(),
                 Some(iterator) => iterator
-                    .map(|res| res.as_ref().borrow().get_value().clone())
+                    .map(|res| res.as_ref().get_value().clone())
                     .collect(),
             })
             .ok_or(AutomataError::UnknowState)
@@ -286,10 +291,10 @@ where
     fn get_previou(&self, state: &V, symbol: &T) -> Result<Vec<V>> {
         self.inner()
             .get_state(state)
-            .map(|s| match s.as_ref().borrow().get_previou(symbol) {
+            .map(|s| match s.as_ref().get_previou(symbol) {
                 None => Vec::new(),
                 Some(iterator) => iterator
-                    .map(|res| res.as_ref().borrow().get_value().clone())
+                    .map(|res| res.as_ref().get_value().clone())
                     .collect(),
             })
             .ok_or(AutomataError::UnknowState)
@@ -316,7 +321,6 @@ where
             .map(|state| {
                 state
                     .as_ref()
-                    .borrow()
                     .get_follows()
                     .filter_map(|(k, v)| match v.contains(&sto) {
                         true => Some(k.clone()),
@@ -393,7 +397,7 @@ where
             |start: Vec<RefState<T, V>>, symbol| {
                 let mut temp: Vec<RefState<T, V>> = Vec::new();
                 start.into_iter().for_each(|rs| {
-                    if let Some(it) = rs.as_ref().borrow().get_follow(symbol) {
+                    if let Some(it) = rs.as_ref().get_follow(symbol) {
                         it.for_each(|rs| temp.push(rs.clone()));
                     }
                 });
@@ -419,10 +423,10 @@ where
     /// automaton
     fn cloned(&self) -> Automata<'a, T, V> {
         Automata {
-            himself: Rc::new(RefCell::new(InnerParent {
-                inner: Rc::new(RefCell::new(self.inner().clone())),
+            himself: UnsafeCell::new(InnerParent {
+                inner: self.inner().clone(),
                 childs: Vec::default(),
-            })),
+            }),
         }
     }
 }
@@ -471,18 +475,18 @@ where
         Ok(DFSInfo {
             prefix: prefix
                 .into_iter()
-                .map(|rs| rs.as_ref().borrow().get_value().clone())
+                .map(|rs| rs.as_ref().get_value().clone())
                 .collect(),
             suffix: suffix
                 .into_iter()
-                .map(|rs| rs.as_ref().borrow().get_value().clone())
+                .map(|rs| rs.as_ref().get_value().clone())
                 .collect(),
             predecessor: predecessor
                 .into_iter()
                 .map(|(k, v)| {
                     (
-                        k.as_ref().borrow().get_value().clone(),
-                        v.as_ref().borrow().get_value().clone(),
+                        k.as_ref().get_value().clone(),
+                        v.as_ref().get_value().clone(),
                     )
                 })
                 .collect(),
@@ -504,7 +508,7 @@ where
             .into_iter()
             .map(|l| {
                 l.into_iter()
-                    .map(|rs| rs.as_ref().borrow().get_value().clone())
+                    .map(|rs| rs.as_ref().get_value().clone())
                     .collect()
             })
             .collect()
@@ -520,7 +524,7 @@ where
             .into_iter()
             .map(|l| {
                 l.into_iter()
-                    .map(|(rs, t)| (rs.as_ref().borrow().get_value().clone(), t))
+                    .map(|(rs, t)| (rs.as_ref().get_value().clone(), t))
                     .collect()
             })
             .collect()

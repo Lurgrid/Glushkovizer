@@ -1,14 +1,11 @@
 //! Insecure internal module allowing the management of states and their
 //! reference
-//!
+
 use std::{
-    cell::RefCell,
     collections::{HashMap, HashSet},
     hash::Hash,
-    rc::{Rc, Weak},
+    pin::Pin,
 };
-
-const WEAK_DEAD: &str = "The state died before the end of the use of this reference";
 
 /// Creates a HashSet with the given list of values
 macro_rules! set {
@@ -31,9 +28,9 @@ where
     T: Eq + Hash,
 {
     /// Represents strong state references
-    StrongRefState(Rc<RefCell<State<'a, T, V>>>),
+    StrongRefState(Pin<Box<State<'a, T, V>>>),
     /// Represents weak state references
-    WeakRefState(Weak<RefCell<State<'a, T, V>>>),
+    WeakRefState(*mut State<'a, T, V>),
 }
 
 impl<'a, T, V> PartialEq for RefState<'a, T, V>
@@ -56,45 +53,24 @@ where
     }
 }
 
-impl<'a, T, V> AsRef<RefCell<State<'a, T, V>>> for RefState<'a, T, V>
+impl<'a, T, V> AsRef<State<'a, T, V>> for RefState<'a, T, V>
 where
     T: Eq + Hash + Clone,
 {
-    fn as_ref(&self) -> &RefCell<State<'a, T, V>> {
+    fn as_ref(&self) -> &State<'a, T, V> {
         unsafe { &*self.as_ptr() }
     }
 }
 
 impl<'a, T, V> Clone for RefState<'a, T, V>
 where
-    T: Eq + Hash,
+    T: Eq + Hash + Clone,
 {
     /// Returns a copy of the value
     ///
     /// Attention copy not deep, just copy the reference
     fn clone(&self) -> Self {
-        match self {
-            Self::StrongRefState(r) => Self::WeakRefState(Rc::downgrade(r)),
-            Self::WeakRefState(w) => Self::WeakRefState(Weak::clone(w)),
-        }
-    }
-}
-
-impl<'a, T, V> From<Rc<RefCell<State<'a, T, V>>>> for RefState<'a, T, V>
-where
-    T: Eq + Hash,
-{
-    fn from(value: Rc<RefCell<State<'a, T, V>>>) -> Self {
-        Self::StrongRefState(value)
-    }
-}
-
-impl<'a, T, V> From<Weak<RefCell<State<'a, T, V>>>> for RefState<'a, T, V>
-where
-    T: Eq + Hash,
-{
-    fn from(value: Weak<RefCell<State<'a, T, V>>>) -> Self {
-        Self::WeakRefState(value)
+        Self::WeakRefState(self.as_ptr())
     }
 }
 
@@ -104,15 +80,21 @@ where
 {
     /// Creates a state reference with value "value"
     pub fn new(value: V) -> Self {
-        Self::StrongRefState(Rc::new(RefCell::new(State::new(value))))
+        Self::StrongRefState(Box::pin(State::new(value)))
     }
 
-    /// Returns a raw pointer to the reference's internal [RefCell]
-    pub fn as_ptr(&self) -> *const RefCell<State<'a, T, V>> {
+    /// Returns a raw pointer to the state [State]
+    pub fn as_ptr(&self) -> *mut State<'a, T, V> {
         match self {
-            Self::StrongRefState(r) => Rc::as_ptr(r),
-            Self::WeakRefState(r) => Rc::as_ptr(&r.upgrade().expect(WEAK_DEAD)),
+            Self::StrongRefState(r) => {
+                (Pin::as_ref(r).get_ref() as *const State<'a, T, V>) as *mut State<'a, T, V>
+            }
+            Self::WeakRefState(r) => *r,
         }
+    }
+
+    fn as_mut(&self) -> &mut State<'a, T, V> {
+        unsafe { &mut *self.as_ptr() }
     }
 }
 
@@ -124,22 +106,19 @@ where
     /// Makes a deep copy of the referenced state and returns a strong
     /// reference to it
     pub fn cloned(&self) -> Self {
-        Self::new(self.as_ref().borrow().value.clone())
+        Self::new(self.as_ref().value.clone())
     }
 
     /// Returns the list of symbol and [HashSet] pairs representing the
     /// follows of this state
     pub fn get_follows(&self) -> Vec<(T, Vec<V>)> {
         self.as_ref()
-            .borrow()
             .follow
             .iter()
             .map(|(k, v)| {
                 (
                     k.clone(),
-                    v.into_iter()
-                        .map(|r| r.as_ref().borrow().value.clone())
-                        .collect(),
+                    v.into_iter().map(|r| r.as_ref().value.clone()).collect(),
                 )
             })
             .collect()
@@ -149,15 +128,12 @@ where
     /// previous of this state
     pub fn get_previous(&self) -> Vec<(T, Vec<V>)> {
         self.as_ref()
-            .borrow()
             .previous
             .iter()
             .map(|(k, v)| {
                 (
                     k.clone(),
-                    v.into_iter()
-                        .map(|r| r.as_ref().borrow().value.clone())
-                        .collect(),
+                    v.into_iter().map(|r| r.as_ref().value.clone()).collect(),
                 )
             })
             .collect()
@@ -172,8 +148,8 @@ where
     T: Eq + Hash,
 {
     value: V,
-    pub(crate) previous: HashMap<T, HashSet<RefState<'a, T, V>>>,
-    pub(crate) follow: HashMap<T, HashSet<RefState<'a, T, V>>>,
+    previous: HashMap<T, HashSet<RefState<'a, T, V>>>,
+    follow: HashMap<T, HashSet<RefState<'a, T, V>>>,
 }
 
 impl<'a, T, V> State<'a, T, V>
@@ -228,7 +204,6 @@ where
     /// "symbol"
     pub fn get_follow_count(&self, symbol: &T) -> usize {
         self.as_ref()
-            .borrow()
             .follow
             .get(symbol)
             .map(|s| s.len())
@@ -239,7 +214,6 @@ where
     /// transition "symbol"
     pub fn get_previous_count(&self, symbol: &T) -> usize {
         self.as_ref()
-            .borrow()
             .previous
             .get(symbol)
             .map(|s| s.len())
@@ -248,17 +222,17 @@ where
 
     /// Returns the number of transitions out of state
     pub fn get_transition_out_count(&self) -> usize {
-        self.as_ref().borrow().follow.len()
+        self.as_ref().follow.len()
     }
 
     /// Returns the number of transitions in of state
     pub fn get_transition_in_count(&self) -> usize {
-        self.as_ref().borrow().previous.len()
+        self.as_ref().previous.len()
     }
 
     /// Returns current state transition symbols
     pub fn get_symbols(&self) -> Vec<T> {
-        self.as_ref().borrow().follow.keys().cloned().collect()
+        self.as_ref().follow.keys().cloned().collect()
     }
 
     /// Adds the successor "to" to the current state with the transition value
@@ -270,7 +244,7 @@ where
     /// - If it already existed, ```false``` is returned, and the transition is
     ///     not modified: and the symbol passed as an argument is dropped.
     pub fn add_follow(&self, to: RefState<'a, T, V>, symbol: T) -> bool {
-        let mut fmut = self.as_ref().borrow_mut();
+        let fmut = self.as_mut();
         match fmut.follow.get_mut(&symbol) {
             None => {
                 fmut.follow.insert(symbol.clone(), set![to.clone()]);
@@ -279,8 +253,7 @@ where
                 set.insert(to.clone());
             }
         }
-        drop(fmut);
-        let mut tmut = to.as_ref().borrow_mut();
+        let tmut = to.as_mut();
         match tmut.previous.get_mut(&symbol) {
             None => {
                 tmut.previous.insert(symbol, set![self.clone()]);
@@ -293,12 +266,12 @@ where
         }
     }
 
-    /// Deletes the "to" successor of the current state which had the "symbol"
-    /// transition
+    /// Deletes the "to" successor of the current state which had the
+    /// "symbol" transition
     ///
     /// Returns if the transition existed before
     pub fn remove_follow(&self, to: &RefState<'a, T, V>, symbol: &T) -> bool {
-        let mut fmut = self.as_ref().borrow_mut();
+        let fmut = self.as_mut();
         match fmut.follow.get_mut(&symbol) {
             None => {
                 return false;
@@ -310,8 +283,7 @@ where
                 }
             }
         }
-        drop(fmut);
-        let mut tmut = to.as_ref().borrow_mut();
+        let tmut = to.as_mut();
         let set = unsafe { tmut.previous.get_mut(&symbol).unwrap_unchecked() };
         let res = set.remove(self);
         if set.is_empty() {
@@ -322,6 +294,6 @@ where
 
     /// Reverses referenced state transitions
     pub fn reverse(&self) {
-        self.as_ref().borrow_mut().reverse()
+        self.as_mut().reverse()
     }
 }

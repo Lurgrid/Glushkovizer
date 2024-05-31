@@ -1,7 +1,6 @@
 use super::*;
-use std::hash::Hash;
-
-const PARENT_DEAD: &'static str = "The parent died before the child";
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::{cell::UnsafeCell, hash::Hash};
 
 /// Feature for internal automaton recupperation
 pub trait Inner<'a, T, V>
@@ -15,14 +14,6 @@ where
     fn inner_mut(&self) -> &mut InnerAutomata<'a, T, V>;
 }
 
-pub trait Child<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
-    fn parent(&self) -> &RefCell<InnerParent<'a, T, V>>;
-}
-
 impl<'a, T, V> Default for Automata<'a, T, V>
 where
     T: Eq + Hash + Clone,
@@ -30,10 +21,10 @@ where
 {
     fn default() -> Self {
         Self {
-            himself: Rc::new(RefCell::new(InnerParent {
-                inner: Rc::new(RefCell::new(InnerAutomata::default())),
+            himself: UnsafeCell::new(InnerParent {
+                inner: InnerAutomata::default(),
                 childs: Vec::default(),
-            })),
+            }),
         }
     }
 }
@@ -101,13 +92,11 @@ where
     V: Eq + Clone,
 {
     fn inner(&self) -> &InnerAutomata<'a, T, V> {
-        let inner_parent = unsafe { &*self.himself.as_ptr() };
-        unsafe { &*inner_parent.inner.as_ptr() }
+        &unsafe { &*self.himself.get() }.inner
     }
 
     fn inner_mut(&self) -> &mut InnerAutomata<'a, T, V> {
-        let inner_parent = unsafe { &mut *self.himself.as_ptr() };
-        unsafe { &mut *inner_parent.inner.as_ptr() }
+        &mut unsafe { &mut *self.himself.get() }.inner
     }
 }
 
@@ -124,24 +113,6 @@ where
         unsafe { &mut *self.inner.as_ptr() }
     }
 }
-
-macro_rules! child {
-    ($($t:ident),+) => {
-        $(
-            impl<'a, T, V> Child<'a, T, V> for $t<'a, T, V>
-            where
-                T: Eq + Hash + Clone,
-                V: Eq + Clone,
-            {
-                fn parent(&self) -> &RefCell<InnerParent<'a, T, V>> {
-                    unsafe { &*Rc::as_ptr(&self.parent.upgrade().expect(PARENT_DEAD)) }
-                }
-            }
-        )+
-    };
-}
-
-child!(SubAutomata);
 
 macro_rules! fimpl {
     ($type:ident => $($trait:ident { $($code:item)* }),+) => {
@@ -178,20 +149,15 @@ derive!(SubAutomata => RemoveStates);
 fimpl!(
     SubAutomata => AddStates {
         fn add_state(&self, value: V) -> bool {
-            let inner_parent = self.parent().borrow();
-            let inner = inner_parent.inner.as_ref().borrow();
+            let inner = &unsafe { & *self.parent }.inner;
             match inner.get_state(&value) {
                 None => {
-                    drop(inner);
-                    drop(inner_parent);
                     let rs = RefState::new(value);
                     let rs2 = rs.clone();
-                    self.parent().borrow_mut().inner.as_ref().borrow_mut().add_state(rs);
+                    unsafe { &mut *self.parent }.inner.add_state(rs);
                     self.inner_mut().add_state(rs2)
                 }
                 Some(rs) => {
-                    drop(inner);
-                    drop(inner_parent);
                     self.inner_mut().add_state(rs)
                 },
             }
@@ -206,10 +172,9 @@ fimpl!(
             match inner.get_state(value) {
                 None => Err(AutomataError::UnknowState),
                 Some(r) => Ok({
-                    let rb = r.as_ref().borrow();
-                    let previous = rb.previous.clone();
-                    let follows = rb.follow.clone();
-                    drop(rb);
+                    let rb = r.as_ref();
+                    let previous = rb.get_previous();
+                    let follows = rb.get_follows();
                     previous.into_iter().for_each(|(symbol, set)| {
                         set.into_iter().for_each(|rs| {
                             rs.remove_follow(&r, &symbol);
@@ -220,8 +185,7 @@ fimpl!(
                             r.remove_follow(&rs, &symbol);
                         });
                     });
-                    let _ = inner;
-                    self.himself.as_ref().borrow_mut().childs.retain(|c| {
+                    unsafe { &mut *self.himself.get() }.childs.retain(|c| {
                         if let Some(rc) = c.upgrade() {
                             let mut rcb = rc.as_ref().borrow_mut();
                             rcb.remove_input(&r);
@@ -309,12 +273,11 @@ fimpl!(
                     }
                     Ok(acc)
                 })?;
-            let _ = inner;
             let r = Rc::new(RefCell::new(InnerAutomata::create(states, inputs, outputs)));
-            self.himself.as_ref().borrow_mut().childs.push(Rc::downgrade(&r));
+            unsafe { &mut *self.himself.get() }.childs.push(Rc::downgrade(&r));
             Ok(SubAutomata::<'a, T, V> {
                 inner: r,
-                parent: Rc::downgrade(&self.himself),
+                parent: self.himself.get() as *mut InnerParent<'a, T, V>,
             })
         }
     }
@@ -371,13 +334,11 @@ fimpl!(
                     }
                     Ok(acc)
                 })?;
-            let _ = inner;
             let r = Rc::new(RefCell::new(InnerAutomata::create(states, inputs, outputs)));
-            let parent = self.parent();
-            parent.borrow_mut().childs.push(Rc::downgrade(&r));
+            unsafe {&mut *self.parent }.childs.push(Rc::downgrade(&r));
             Ok(SubAutomata::<'a, T, V> {
                 inner: r,
-                parent: Rc::downgrade(&self.parent.upgrade().expect(PARENT_DEAD)),
+                parent: self.parent
             })
         }
     }
@@ -387,39 +348,108 @@ fimpl!(
     Automata => ExtractStronglyConnectedComponent {
         fn extract_scc(&'a self) -> Vec<SubAutomata<'a, T, V>>
         {
-            let childs = &mut self.himself.borrow_mut().childs;
+            let childs = &mut unsafe {&mut *self.himself.get()}.childs;
             self.inner().extract_scc().into_iter().map(|inner| {
                 let r = Rc::new(RefCell::new(inner));
                 childs.push(Rc::downgrade(&r));
                 SubAutomata::<'a, T, V> {
                     inner: r,
-                    parent: Rc::downgrade(&self.himself)
+                    parent: self.himself.get() as *mut InnerParent<'a, T, V>
                 }
             }).collect()
         }
     }
 );
 
-impl<'a, T, V> ExtractStronglyConnectedComponent<'a, T, V> for SubAutomata<'a, T, V>
-where
-    T: Eq + Hash + Clone,
-    V: Eq + Clone,
-{
-    fn extract_scc(&'a self) -> Vec<SubAutomata<'a, T, V>> {
-        let parent = self.parent.upgrade().expect(PARENT_DEAD);
-        let childs = &mut parent.borrow_mut().childs;
+fimpl!(
+    SubAutomata => ExtractStronglyConnectedComponent {
+        fn extract_scc(&'a self) -> Vec<SubAutomata<'a, T, V>> {
+            let childs = &mut unsafe { &mut *self.parent }.childs;
 
-        self.inner()
-            .extract_scc()
-            .into_iter()
-            .map(|inner| {
-                let r = Rc::new(RefCell::new(inner));
-                childs.push(Rc::downgrade(&r));
-                SubAutomata::<'a, T, V> {
-                    inner: r,
-                    parent: Rc::downgrade(&parent),
-                }
-            })
-            .collect()
+            self.inner()
+                .extract_scc()
+                .into_iter()
+                .map(|inner| {
+                    let r = Rc::new(RefCell::new(inner));
+                    childs.push(Rc::downgrade(&r));
+                    SubAutomata::<'a, T, V> {
+                        inner: r,
+                        parent: self.parent,
+                    }
+                })
+                .collect()
+        }
+    }
+);
+
+impl<'a, T, V> Serialize for Automata<'a, T, V>
+where
+    T: Serialize + Eq + Hash + Clone,
+    V: Serialize + Eq + Clone,
+{
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        unsafe { &*self.himself.get() }.serialize(serializer)
+    }
+}
+
+impl<'de, 'a, T, V> Deserialize<'de> for Automata<'a, T, V>
+where
+    T: Deserialize<'de> + Eq + Hash + Clone + 'a,
+    V: Deserialize<'de> + Eq + Clone + 'a,
+{
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let himself = InnerParent::deserialize(deserializer)?;
+        Ok(Automata {
+            himself: UnsafeCell::new(himself),
+        })
+    }
+}
+
+impl<'a, T, V> Serialize for InnerParent<'a, T, V>
+where
+    T: Serialize + Eq + Hash + Clone,
+    V: Serialize + Eq + Clone,
+{
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.inner.serialize(serializer)
+    }
+}
+
+impl<'de, 'a, T, V> Deserialize<'de> for InnerParent<'a, T, V>
+where
+    T: Deserialize<'de> + Eq + Hash + Clone + 'a,
+    V: Deserialize<'de> + Eq + Clone + 'a,
+{
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let himself = InnerAutomata::deserialize(deserializer)?;
+        Ok(InnerParent {
+            inner: himself,
+            childs: Vec::new(),
+        })
+    }
+}
+
+impl<'a, T, V> Serialize for SubAutomata<'a, T, V>
+where
+    T: Serialize + Eq + Hash + Clone,
+    V: Serialize + Eq + Clone,
+{
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.inner.borrow().serialize(serializer)
     }
 }

@@ -45,7 +45,7 @@ where
                     f,
                     "\t{} [label = \"{}\" {}]\n",
                     rs.as_ptr() as usize,
-                    rs.as_ref().borrow().get_value(),
+                    rs.as_ref().get_value(),
                     attr.join(" ")
                 )
             })
@@ -57,20 +57,17 @@ where
             write!(f, "\t}}\n")
         })?;
         self.states.iter().try_for_each(|from| {
-            from.as_ref()
-                .borrow()
-                .get_follows()
-                .try_for_each(|(symbol, set)| {
-                    set.into_iter().try_for_each(|to| {
-                        write!(
-                            f,
-                            "\t{} -> {} [label = \"{}\"]\n",
-                            from.as_ptr() as usize,
-                            to.as_ptr() as usize,
-                            symbol
-                        )
-                    })
+            from.as_ref().get_follows().try_for_each(|(symbol, set)| {
+                set.into_iter().try_for_each(|to| {
+                    write!(
+                        f,
+                        "\t{} -> {} [label = \"{}\"]\n",
+                        from.as_ptr() as usize,
+                        to.as_ptr() as usize,
+                        symbol
+                    )
                 })
+            })
         })?;
         write!(f, "}}\n")?;
         Ok(f)
