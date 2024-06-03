@@ -1,8 +1,8 @@
 use cfgrammar::yacc::YaccKind;
 use lrlex::CTLexerBuilder;
 
-const YACC_F: &'static str = "reg.y";
-const LEX_F: &'static str = "reg.l";
+const YACC_F: &'static str = "regexp/reg.y";
+const LEX_F: &'static str = "regexp/reg.l";
 
 fn main() {
     CTLexerBuilder::new()

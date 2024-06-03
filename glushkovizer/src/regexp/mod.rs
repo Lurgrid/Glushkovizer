@@ -1,5 +1,6 @@
-//! Module for managing regular expressions. You can create a regular expression
-//! "by hand" or "parse" it from a string containing the following operations:
+//! Module for managing regular expressions. You can create a regular
+//! expression "by hand" or "parse" it from a string containing the following
+//! operations:
 //!
 //! - ```a```: Where "a" is a letter of the alphabet between 'a' and 'z' or 'A'
 //!     and 'Z'
@@ -39,8 +40,8 @@ use std::{
     hash::Hash,
 };
 
-lrlex_mod!("reg.l");
-lrpar_mod!("reg.y");
+lrlex_mod!("regexp/reg.l");
+lrpar_mod!("regexp/reg.y");
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 /// Name of an enum whose purpose is to represent a regular expression using a

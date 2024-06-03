@@ -1,3 +1,4 @@
+use glushkovizer::prelude::*;
 use glushkovizer::{automata::Automata, regexp::RegExp};
 use rand::Rng;
 use std::{array, usize};
@@ -15,7 +16,7 @@ fn automata() {
         let a = Automata::from(r);
         for word in w {
             if !a.accept(word.chars().collect::<Vec<char>>().iter()) {
-                panic!("Error on {}:\n{}\n{}", i, word, a);
+                panic!("Error on {}:\n{}\n{}", i, word, a.to_dot(false).unwrap());
             }
         }
     }
