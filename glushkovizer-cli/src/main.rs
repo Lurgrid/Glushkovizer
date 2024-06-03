@@ -1,4 +1,5 @@
-use glushkovizer::automata::Automata;
+use glushkovizer::automata::{Automata, SubAutomata};
+use glushkovizer::prelude::*;
 use glushkovizer::regexp::RegExp;
 use std::fmt::Display;
 use std::fs::File;
@@ -30,13 +31,12 @@ fn main() -> ExitCode {
         let a = a.unwrap();
         println!("{:?}", a);
         let g = Automata::from(a);
-        let mut scc = g
+        let scc: Vec<SubAutomata<char, usize>> = g
             .extract_scc()
             .into_iter()
             .filter(|a| a.is_orbit())
-            .collect::<Vec<_>>();
-        scc.push(g);
-        loop {
+            .collect();
+        'save: loop {
             println!(
                 "Enter a filename to save the automata - Press Ctrl + D to \
                 not save"
@@ -48,17 +48,40 @@ fn main() -> ExitCode {
                     return ExitCode::FAILURE;
                 }
                 Ok(0) => {
-                    println!("{}", scc.last().unwrap());
+                    println!("{}", g.to_dot(false).unwrap());
                     continue 'main;
                 }
                 Ok(_) => {
                     m.pop().unwrap();
+                    let path = Path::new(m.as_str());
+                    if path.exists() {
+                        eprintln!("Error ! File already existing");
+                        continue 'save;
+                    }
+                    let svg = get_svg(&g);
+                    if let Err(s) = svg {
+                        eprintln!("Error ! {}", s);
+                        return ExitCode::FAILURE;
+                    }
+                    let svg = svg.unwrap();
+                    let f = File::create(m.trim_end());
+                    if let Err(s) = f {
+                        eprintln!("Error ! {}", s);
+                        return ExitCode::FAILURE;
+                    }
+                    let mut f = f.unwrap();
+                    if let Err(s) = f.write_all(svg.as_bytes()) {
+                        eprintln!("Error ! {}", s);
+                        return ExitCode::FAILURE;
+                    }
+                    drop(f);
+                    println!("Saved !");
                     for i in 0..(scc.len()) {
                         m.push_str(i.to_string().as_str());
                         let path = Path::new(m.as_str());
                         if path.exists() {
                             eprintln!("Error ! File already existing");
-                            continue;
+                            continue 'save;
                         }
                         let svg = get_svg(&scc[i]);
                         if let Err(s) = svg {
@@ -90,7 +113,7 @@ fn main() -> ExitCode {
 
 /// Renvoie la représentation de "g" en SVG en cas de succès, sinon en cas
 /// d'erreur renvoie cette erreur.
-fn get_svg<T, V>(g: &Automata<T, V>) -> Result<String>
+fn get_svg<'a, T, V>(g: &impl ToDot<'a, T, V>) -> Result<String>
 where
     T: Eq + Hash + Display + Clone,
     V: Eq + Hash + Display + Clone,
@@ -103,7 +126,7 @@ where
         .spawn()?;
 
     if let Some(ref mut inp) = c.stdin {
-        inp.write_all(g.to_string().as_bytes())?;
+        inp.write_all(g.to_dot(false).unwrap().as_bytes())?;
     } else {
         return Err(Error::new(ErrorKind::Other, "No input"));
     }

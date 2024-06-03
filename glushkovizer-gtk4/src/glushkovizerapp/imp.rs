@@ -1,5 +1,6 @@
 use glib::subclass::InitializingObject;
 use glushkovizer::automata::Automata;
+use glushkovizer::prelude::*;
 use glushkovizer::regexp::RegExp;
 use gtk::gdk::Texture;
 use gtk::gdk_pixbuf::PixbufLoader;
@@ -9,7 +10,7 @@ use gtk::{
     Image, Label,
 };
 use gtk::{prelude::*, TextView};
-use std::cell::RefCell;
+use std::cell::Cell;
 use std::fmt::Display;
 use std::fs::File;
 use std::hash::Hash;
@@ -30,7 +31,7 @@ macro_rules! error {
 #[derive(CompositeTemplate, Default)]
 #[template(resource = "/com/sagbot/GlushkovApp/glushkovizer.ui")]
 pub struct GlushkovizerApp {
-    automata: RefCell<Automata<char, usize>>,
+    automata: Cell<Automata<'static, char, usize>>,
     #[template_child]
     pub content: TemplateChild<gtk::Box>,
     #[template_child]
@@ -98,7 +99,7 @@ impl GlushkovizerApp {
             }
             Ok(r) => r,
         };
-        *self.automata.borrow_mut() = Automata::from(r);
+        self.automata.set(Automata::from(r));
         self.update();
     }
 
@@ -109,7 +110,7 @@ impl GlushkovizerApp {
             Err(s) => error!(self.error, s),
             Ok(r) => r,
         };
-        *self.automata.borrow_mut() = Automata::from(r);
+        self.automata.set(Automata::from(r));
         self.update();
     }
 
@@ -137,10 +138,10 @@ impl GlushkovizerApp {
                 .sync_create()
                 .build();
         }
-        let a = self.automata.borrow();
+        let a = unsafe { &*self.automata.as_ptr() };
         let width = self.obj().width() - IMAGE_MARG;
         let height = self.obj().height() - IMAGE_MARG;
-        let texture = match get_automata_texture(&a, width, height) {
+        let texture = match get_automata_texture(a, width, height) {
             Err(e) => error!(self.error, e),
             Ok(t) => t,
         };
@@ -197,7 +198,7 @@ impl GlushkovizerApp {
                     Err(e) => error!(self.error, e),
                     Ok(f) => f,
                 };
-                match serde_json::to_string(&*self.automata.borrow()) {
+                match serde_json::to_string(unsafe { &*self.automata.as_ptr() }) {
                     Err(e) => error!(self.error, e),
                     Ok(json) => match file.write_all(json.as_bytes()) {
                         Err(e) => error!(self.error, e),
@@ -225,10 +226,11 @@ impl GlushkovizerApp {
                     Err(e) => error!(self.error, e),
                     Ok(f) => f,
                 };
-                *self.automata.borrow_mut() = match serde_json::from_reader(BufReader::new(file)) {
-                    Err(e) => error!(self.error, e),
-                    Ok(a) => a,
-                }
+                self.automata
+                    .set(match serde_json::from_reader(BufReader::new(file)) {
+                        Err(e) => error!(self.error, e),
+                        Ok(a) => a,
+                    })
             }
         };
         self.update();
@@ -237,13 +239,17 @@ impl GlushkovizerApp {
 
 /// Renvoie une Texture représentant le graph, en cas d'erreur renvoie cette
 /// erreur
-fn get_automata_texture<T, V>(a: &Automata<T, V>, width: i32, height: i32) -> Result<Texture>
+fn get_automata_texture<'a, T, V>(
+    a: &impl ToDot<'a, T, V>,
+    width: i32,
+    height: i32,
+) -> Result<Texture>
 where
     T: Eq + Hash + Display + Clone,
     V: Eq + Hash + Display + Clone,
 {
     let svg = get_svg(
-        &a,
+        a,
         gtk::Settings::default()
             .map(|s| s.is_gtk_application_prefer_dark_theme())
             .unwrap_or(false),
@@ -263,7 +269,7 @@ where
 
 /// Renvoie la représentation de "g" en SVG en cas de succès, sinon en cas
 /// d'erreur renvoie cette erreur.
-fn get_svg<T, V>(g: &Automata<T, V>, inverse: bool) -> Result<String>
+fn get_svg<'a, T, V>(g: &impl ToDot<'a, T, V>, inverse: bool) -> Result<String>
 where
     T: Eq + Hash + Display + Clone,
     V: Eq + Hash + Display + Clone,
@@ -276,13 +282,20 @@ where
         .spawn()?;
 
     if let Some(ref mut inp) = c.stdin {
-        inp.write_all(g.to_dot(inverse).as_bytes())?;
+        inp.write_all(g.to_dot(inverse).unwrap().as_bytes())?;
     } else {
         return Err(Error::new(ErrorKind::Other, "No input"));
     }
     let output = c.wait_with_output()?;
-    Ok(String::from_utf8(output.stdout)
-        .map_err(|_| Error::new(ErrorKind::Other, "Not a valid utf-8 output"))?)
+    String::from_utf8(output.stdout)
+        .map_err(|_| Error::new(ErrorKind::Other, "Not a valid utf-8 output"))
+        .map(|s| {
+            if inverse {
+                s.replace("black", "white")
+            } else {
+                s
+            }
+        })
 }
 
 impl WidgetImpl for GlushkovizerApp {}
