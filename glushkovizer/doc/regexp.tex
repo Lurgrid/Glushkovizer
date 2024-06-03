@@ -122,62 +122,61 @@ récursivement de cette manière~:
     régulière (ici représenté par les ensembles à c\^{o}té de chaque arbre).
 \end{example}
 
-\vphantom{}
+% \vphantom{}
 
-\begin{example}
+% \begin{example}
 
-    On comprendra aussi que l'expression \(E' = \varepsilon + b^* \cdot a\), dénote
-    le langage \(L(E') = \{\varepsilon, b^* \cdot a\}\).
+%     On comprendra aussi que l'expression \(E' = \varepsilon + b^* \cdot a\), dénote
+%     le langage \(L(E') = \{\varepsilon, b^* \cdot a\}\).
 
-    \begin{figure}[H]
-        \centering
-        \captionsetup{type=figure,justification=centering}
-        \begin{tikzpicture}[
-                mycircle/.style={
-                        draw,
-                        circle,
-                        minimum height=.75cm,
-                        minimum width=.75cm
-                    },
-                mysquare/.style={
-                        draw,
-                        rectangle,
-                        minimum height=.5cm,
-                        minimum width=.5cm,
-                    }
-            ]
-            \node[mysquare] (plus) {+}
-            child {node[mycircle] (epsilon) {\(\varepsilon\)}}
-            child {
-                    node[mysquare] (point) {\(\cdot \)}
-                    child {
-                            node[mysquare] (etoile) {*}
-                            child {
-                                    node[mycircle] (b) {b}
-                                }
-                        }
-                    child {node[mycircle] (a) {a}}
-                };
+%     \begin{figure}[H]
+%         \centering
+%         \captionsetup{type=figure,justification=centering}
+%         \begin{tikzpicture}[
+%                 mycircle/.style={
+%                         draw,
+%                         circle,
+%                         minimum height=.75cm,
+%                         minimum width=.75cm
+%                     },
+%                 mysquare/.style={
+%                         draw,
+%                         rectangle,
+%                         minimum height=.5cm,
+%                         minimum width=.5cm,
+%                     }
+%             ]
+%             \node[mysquare] (plus) {+}
+%             child {node[mycircle] (epsilon) {\(\varepsilon\)}}
+%             child {
+%                     node[mysquare] (point) {\(\cdot \)}
+%                     child {
+%                             node[mysquare] (etoile) {*}
+%                             child {
+%                                     node[mycircle] (b) {b}
+%                                 }
+%                         }
+%                     child {node[mycircle] (a) {a}}
+%                 };
 
-            \node[right=3mm of a] {\(\{a\}\)};
-            \node[left=3mm of b] {\(\{b\}\)};
-            \node[left=3mm of etoile] {\(\{b^*\}\)};
-            \node[right=3mm of point] {\(\{b^* \cdot a\}\)};
-            \node[left=3mm of epsilon] {\(\{\varepsilon\}\)};
-            \node[above=3mm of plus] {\(\{\varepsilon, b^* \cdot a\}\)};
-        \end{tikzpicture}
-        \caption{
-            Représentation de l'expression régulière à l'aide d'un arbre syntaxique
-        }
-    \end{figure}
+%             \node[right=3mm of a] {\(\{a\}\)};
+%             \node[left=3mm of b] {\(\{b\}\)};
+%             \node[left=3mm of etoile] {\(\{b^*\}\)};
+%             \node[right=3mm of point] {\(\{b^* \cdot a\}\)};
+%             \node[left=3mm of epsilon] {\(\{\varepsilon\}\)};
+%             \node[above=3mm of plus] {\(\{\varepsilon, b^* \cdot a\}\)};
+%         \end{tikzpicture}
+%         \caption{
+%             Représentation de l'expression régulière à l'aide d'un arbre syntaxique
+%         }
+%     \end{figure}
 
-\end{example}
+% \end{example}
 
 \subsection{Fonction sur les \textit{ER}}
 
-Une des fonctions les plus importantes sur les expressions régulières est
-\(flnf\) permettant de calculer \(FLNF(Exp(\Sigma))\) qui est un tuple défini
-comme ceci~:
+Une des fonctions sur les expressions régulières est \(flnf\) permettant de
+calculer \(FLNF(Exp(\Sigma))\) qui est un tuple défini comme ceci~:
 
 \vphantom{}
 
@@ -198,15 +197,14 @@ comme ceci~:
         \item[\textbullet] \(\Theta\) =
             \(
             \begin{cases}
-                \varepsilon, & \text{si } \varepsilon \in L(E) \\
-                \varnothing  & \text{sinon}
+                \{ \varepsilon \}, & \text{si } \varepsilon \in L(E) \\
+                \varnothing        & \text{sinon}
             \end{cases}
             \)
 
             \vphantom{}
 
-        \item[\textbullet] \(\delta\)~: \(\Sigma \to S\) avec \(S \subseteq
-            \Sigma\). \\
+        \item[\textbullet] \(\delta\)~: \(\Sigma \to 2^{\Sigma}\). \\
             Fonction renvoyant les symboles suivant du symbole passer en argument.
     \end{itemize}
 \end{center}

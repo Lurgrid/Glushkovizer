@@ -74,54 +74,54 @@ Dans la Figure~\ref{fig:automata}, on peut voir que les états initiaux (ici que
 un double contour. Et que les transitions sont symbolisées par des flèches
 entre les états et que ces flèches sont labellisées.
 
-\vphantom{}
+% \vphantom{}
 
-On parlera de l'inverse de l'automate \(M\) noté \(\overleftarrow{M}\) qui peut
-être défini de cette façon~:
+% On parlera de l'inverse de l'automate \(M\) noté \(\overleftarrow{M}\) qui peut
+% être défini de cette façon~:
 
-\begin{gather*}
-    \overleftarrow{M} = (Q, F, I, \delta') \quad \text{avec} \\
-    M = (Q, I, F, \delta) \notag \\
-    \forall (p, q) \in Q^2 ~|~ q \in \delta(p, a) \Rightarrow p \in \delta'(q, a) \notag
-\end{gather*}
+% \begin{gather*}
+%     \overleftarrow{M} = (Q, F, I, \delta') \quad \text{avec} \\
+%     M = (Q, I, F, \delta) \notag \\
+%     \forall (p, q) \in Q^2 ~|~ q \in \delta(p, a) \Rightarrow p \in \delta'(q, a) \notag
+% \end{gather*}
 
-Donc si on veut représenter l'inverse de l'automate représenté dans la
-Figure~\ref{fig:automata}, ça nous donnerait ceci~:
+% Donc si on veut représenter l'inverse de l'automate représenté dans la
+% Figure~\ref{fig:automata}, ça nous donnerait ceci~:
 
-\begin{figure}[H]
-    \centering
-    \captionsetup{type=figure,justification=centering}
-    \begin{tikzpicture}
-        \tikzset{
-            ->,
-            >=stealth',
-            node distance=3cm,
-            every state/.style={thick},
-            initial text=$ $,
-        }
-        \node[state, accepting] (q1) {$q_1$};
-        \node[state, initial below, right of=q1] (q2) {$q_2$};
-        \node[state, above of=q2] (q4) {$q_4$};
-        \node[state, initial below, right of=q2] (q3) {$q_3$};
-        \node[state, right of=q4] (q5) {$q_5$};
+% \begin{figure}[H]
+%     \centering
+%     \captionsetup{type=figure,justification=centering}
+%     \begin{tikzpicture}
+%         \tikzset{
+%             ->,
+%             >=stealth',
+%             node distance=3cm,
+%             every state/.style={thick},
+%             initial text=$ $,
+%         }
+%         \node[state, accepting] (q1) {$q_1$};
+%         \node[state, initial below, right of=q1] (q2) {$q_2$};
+%         \node[state, above of=q2] (q4) {$q_4$};
+%         \node[state, initial below, right of=q2] (q3) {$q_3$};
+%         \node[state, right of=q4] (q5) {$q_5$};
 
-        \draw   (q4) edge[above] node{0} (q1)
-        (q2) edge[below] node{0} (q1)
-        (q3) edge[bend left, below] node{1} (q4)
-        (q5) edge[above] node{0} (q4)
-        (q4) edge[above] node{1} (q3)
-        (q3) edge[loop right] node{0} (q3)
-        (q4) edge[bend left, above] node{0} (q5)
-        (q5) edge[loop right] node{1} (q5);
-    \end{tikzpicture}
-    \caption{
-        Exemple de représentation graphique de l'inverse de l'automate de la
-        Figure~\ref{fig:automata}.
-    }\label{fig:automata_invserse}
-\end{figure}
+%         \draw   (q4) edge[above] node{0} (q1)
+%         (q2) edge[below] node{0} (q1)
+%         (q3) edge[bend left, below] node{1} (q4)
+%         (q5) edge[above] node{0} (q4)
+%         (q4) edge[above] node{1} (q3)
+%         (q3) edge[loop right] node{0} (q3)
+%         (q4) edge[bend left, above] node{0} (q5)
+%         (q5) edge[loop right] node{1} (q5);
+%     \end{tikzpicture}
+%     \caption{
+%         Exemple de représentation graphique de l'inverse de l'automate de la
+%         Figure~\ref{fig:automata}.
+%     }\label{fig:automata_invserse}
+% \end{figure}
 
-On voit bien que l'apparence de l'automate ne change pas les transitions sont
-juste inversées et les états initiaux sont devenus finaux et inversement.
+% On voit bien que l'apparence de l'automate ne change pas les transitions sont
+% juste inversées et les états initiaux sont devenus finaux et inversement.
 
 \vphantom{}
 
@@ -145,10 +145,10 @@ En la définissant récursivement de telle sorte~:
     (Figure~\ref{fig:automata})~:
 
     \begin{gather*}
-        \delta_w(q_1, 00) = \varnothing \\
-        \delta_w(q_1, 11) = \{q_3\} \\
-        \delta_w(q_1, \varepsilon) = \{q_1\} \\
-        \delta_w(q_1, 10 \cdot 1^*) = \{q_5\}
+        \delta(q_1, 00) = \varnothing \\
+        \delta(q_1, 11) = \{q_3\} \\
+        \delta(q_1, \varepsilon) = \{q_1\} \\
+        \delta(q_1, 10 \cdot 1^*) = \{q_5\}
     \end{gather*}
 \end{example}
 
@@ -172,7 +172,7 @@ En la définissant récursivement de telle sorte~:
 
     \begin{gather*}
         M = (Q, I, F, \delta) \quad \text{avec} \\
-        \forall (p, q, r) \in Q^3 ~|~ \exists (a, b) \in \Sigma^2 \land q \in \delta(p, a) \land q \in \delta(r, b) \Longrightarrow a = b \notag \\
+        \forall (p, q, r) \in Q^3, \exists (a, b) \in \Sigma^2 ~|~ q \in \delta(p, a) \land q \in \delta(r, b) \Longrightarrow a = b \notag \\
         M \in AFN(\Sigma, \eta) \notag
     \end{gather*}
 \end{definition}
@@ -189,17 +189,17 @@ En la définissant récursivement de telle sorte~:
     \end{gather*}
 \end{definition}
 
-\begin{lemma}
+\begin{definition}
     Un automate est considéré comme \textit{coaccessible} au moment où l'inverse de
     cette automate est accessible. Ceci veut dire qu'il atteste de cette
     particularité~:
 
     \begin{gather*}
         M = (Q, I, F, \delta) \quad \text{avec} \\
-        accessible(\overleftarrow{M}) \notag \\
+        \forall p \in Q, \exists w \in \Sigma^* ~|~ F \cap \delta(p, w) \neq \varnothing \notag \\
         M \in AFN(\Sigma, \eta) \notag
     \end{gather*}
-\end{lemma}
+\end{definition}
 
 \begin{definition}
     Un automate est dit \textit{déterministe} quand tous ses états vont au
@@ -207,7 +207,7 @@ En la définissant récursivement de telle sorte~:
 
     \begin{gather*}
         M = (Q, I, F, \delta) \quad \text{avec} \\
-        |I| = 1 \land \forall q \in Q, \forall a \in \Sigma ~|~ | \delta(q, a) | \leq 1\\
+        |I| = 1 \land \forall q \in Q, \forall a \in \Sigma, | \delta(q, a) | \leq 1\\
         M \in AFN(\Sigma, \eta) \notag
     \end{gather*}
 
@@ -216,34 +216,33 @@ En la définissant récursivement de telle sorte~:
 
     \begin{gather*}
         M = (Q, I, F, \delta) \quad \text{avec} \\
-        |I| = 1 \land \forall q \in Q, \forall a \in \Sigma ~|~ | \delta(q, a) | = 1\\
+        |I| = 1 \land \forall q \in Q, \forall a \in \Sigma, | \delta(q, a) | = 1\\
         M \in AFN(\Sigma, \eta) \notag
     \end{gather*}
 \end{definition}
 
-\begin{lemma}
-    Un automate est qualifié de \textit{hamac} à l'instant où il est standard,
-    accessible et coaccessible. Ceci veut dire qu'il peut être décrit comme
-    ceci~:
+\begin{example}
+    Donc l'automate représenté sur la Figure~\ref{fig:automata} est standard, non
+    homogène, accessible et coaccessible. Car il possède bien un unique état
+    initial (\(q_1\)), mais \(q_3\), \(q_4\) et \(q_5\) ne respecte pas la
+    propriété pour être homogène, parce qu'ils ont des transitions allant vers eux
+    avec des valeurs différentes. De plus tous ses états sont par accessible depuis
+    l'état initial et son inverse est, lui-même aussi, accessible. Et bien sûr, il
+    n'est pas déterministe.
+\end{example}
+
+\begin{definition}
+    Nous parlerons de sous-automate pour parler d'une \og{}région\fg{} d'un
+    automate. \(N\) est un sous automate de \(M\) qu'on notera
+    \(N \subseteq M\), s'il vérifie cette propriété~:
 
     \begin{gather*}
-        M = (Q, I, F, \delta) \quad \text{avec} \\
-        standard(M) \land accessible(M) \land coaccessible(M) \\
-        M \in AFN(\Sigma, \eta) \notag
+        N = (Q', I', F', \delta') \quad \text{avec} \\
+        Q' \subseteq Q \land I' \subseteq I \land F' \subseteq F \\
+        \delta' \text{ est une restriction de } \delta \\
+        M = (Q, I, F, \delta) \land (M, N) \in (AFN(\Sigma, \eta))^2 \notag
     \end{gather*}
-\end{lemma}
-
-\vphantom{}
-
-Donc l'automate représenté sur la Figure~\ref{fig:automata} est standard, non
-homogène, accessible et coaccessible. Car il possède bien un unique état
-initial (\(q_1\)), mais \(q_3\), \(q_4\) et \(q_5\) ne respecte pas la
-propriété pour être homogène, parce qu'ils ont des transitions allant vers eux
-avec des valeurs différentes. De plus tous ses états sont par accessible depuis
-l'état initial et son inverse est, lui-même aussi, accessible. Et bien sûr, il
-n'est pas déterministe.
-
-\vphantom{}
+\end{definition}
 
 Les automates pouvant être représentés à l'aide de graphe, on peut étendre les
 propriétés sur les graphes aux automates. Par exemple, on pourra parler des
@@ -253,16 +252,106 @@ dire qu'un automate fortement connexe vérifierait ceci~:
 
 \begin{gather*}
     M = (Q, I, F, \delta) \quad \text{avec} \\
-    \forall (p, q) \in Q^2, \exists w \in \Sigma^* ~|~ q \in \delta_w(p, w) \notag \\
+    \forall (p, q) \in Q^2, \exists w \in \Sigma^* ~|~ q \in \delta(p, w) \notag \\
     M \in AFN(\Sigma, \eta) \notag
 \end{gather*}
 
+\begin{definition}
+    Une autre notion qui est présente sur les graphes que nous allons adapter
+    sur les automates est la notion de \textit{hamac}. Nous dirons qu'un
+    automate est un \textit{hamac} à l'instant où il est standard, accessible et
+    coaccessible (nous gardons le nom \textit{hamac} pour une raison de
+    compréhension). Ceci veut dire qu'il peut être décrit comme ceci~:
+
+    \begin{gather*}
+        M = (Q, I, F, \delta) \quad \text{avec} \\
+        standard(M) \land accessible(M) \land coaccessible(M) \\
+        M \in AFN(\Sigma, \eta) \notag
+    \end{gather*}
+\end{definition}
+
+\begin{conjecture}
+    La représentation d'un automate \textit{hamac} en graphe. C'est-à-dire en
+    enlevant le concept d'états initiaux, finaux et en ajoutant un nouvel état
+    où tous les finaux ont une transition vers lui. Et en retirant les valeurs
+    de transition. Le graphe résultant est lui-même un \textit{hamac} avec comme
+    \textit{racine} l'état initiaux et l'\textit{anti-racine} l'état ajouté lors
+    de la transformation.
+\end{conjecture}
+
+\begin{definition}
+    Une autre idée empruntée au graphe est la notion d'\textit{orbite}. Nous
+    dirons qu'un sous-automate est une \textit{orbite}, si pour tout couple
+    d'état \(i\) et \(t\), il existe un mot non vide permettant d'aller de \(i\)
+    à \(t\). Aussi défini comme ceci~:
+
+    \begin{gather*}
+        \mathcal{O} = (Q, I, F, \delta) \quad \text{avec} \\
+        \forall (p, q) \in Q^2, \exists w \in \Sigma^* \setminus \{\varepsilon\} ~|~ q \in \Sigma(p, w) \\
+        \mathcal{O} \subseteq M \land M \in AFN(\Sigma, \eta)
+    \end{gather*}
+
+    \noindent Dans la même idée, nous parlerons d'\textit{orbite maximale}
+    lorsque l'orbite n'est inclus dans aucune autre orbite. En d'autres termes
+    que l'orbite est fortement connexe sans prendre les chemins triviaux
+    (mot vide).
+\end{definition}
+
+\begin{definition}
+    Nous noterons \(In(\mathcal{O})\) et \(Out(\mathcal{O})\) respectivement
+    l'ensemble des portes d'entrées et l'ensemble des portes de sortie de
+    l'orbite \(\mathcal{O}\). Qui peuvent être défini de cette façon~:
+
+    \begin{gather*}
+        In(\mathcal{O}) = \{p \in Q' ~|~ \exists a \in \Sigma, \exists q \in Q, p \in \delta(q, a)\} \\
+        Out(\mathcal{O}) = \{p \in Q' ~|~ \exists a \in \Sigma, \exists q \in Q, q \in
+        \delta(p, a)\} \\
+        \text{avec} \\
+        \mathcal{O} = (Q', I', F', \delta') \land M = (Q, I, F, \delta) \\
+        \mathcal{O} \subseteq M \land M \in AFN(\Sigma, \eta)
+    \end{gather*}
+\end{definition}
+
+\begin{definition}
+    Avec ceci, on peut définir ce qu'est une \textit{orbite stable}. Une orbite
+    est dite \textit{stable} quand pour toutes les sorties, il existe une
+    transition vers toutes les entrées. C'est-à-dire que l'orbite vérifie ceci~:
+
+    \begin{gather*}
+        \forall q \in Out(\mathcal{O}), \exists a \in \Sigma ~|~ \delta(q, a) \cap In(\mathcal{O}) \neq \varnothing \\
+        \text{avec} \\
+        \mathcal{O} = (Q, I, F, \delta) \subseteq M \land M \in AFN(\Sigma, \eta)
+    \end{gather*}
+
+    \noindent On la qualifiera même de \textit{fortement stable} lorsqu'en
+    supprimant toutes les transitions de portes de sorties vers les portes
+    d'entrée, les orbites maximales de l'orbite sont \textit{fortement stables}.
+\end{definition}
+
+\begin{definition}
+    De même, on dira qu'une orbite est \textit{transversale} si toutes les
+    entrées viennent des mêmes états et que toutes les sorties vont aux mêmes
+    états. Autrement dit que l'orbite valide cette propriété~:
+
+    \begin{gather*}
+        \forall (p, q) \in (Out(\mathcal{O}))^2, \bigcup_{a \in \Sigma} \delta(p, a) = \bigcup_{a \in \Sigma} \delta(q, a) \\
+        \forall (p, q) \in (In(\mathcal{O}))^2, \{r \in Q ~|~ \exists a \in \Sigma, p \in \delta(r, a)\} = \{r \in Q ~|~ \exists a \in \Sigma, q \in \delta(r, a)\} \\
+        \text{avec} \\
+        \mathcal{O} \subseteq M = (Q, I, F, \delta) \land M \in AFN(\Sigma, \eta)
+    \end{gather*}
+
+    \noindent Elle sera même \textit{fortement transversale} lorsqu'en
+    supprimant toutes les transitions de portes de sorties vers les portes
+    d'entrée, les orbites maximales de l'orbite sont
+    \textit{fortement transversales}.
+\end{definition}
+
 \subsection{Fonction sur les automates}
 
-Une des fonctions la plus importante sur les automates est \(accept\) qui test
-si le mot est reconnu par l'automate. C'est-à-dire que si on prend le chemin
-décrit par le mot donner en argument, on arrive sur un ou plusieurs états
-finaux. Elle a alors pour signature~:
+Une des fonctions sur les automates est \(accept\) qui test si le mot est
+reconnu par l'automate. C'est-à-dire que si on prend le chemin décrit par le
+mot donner en argument, on arrive sur un ou plusieurs états finaux. Elle a
+alors pour signature~:
 
 \[
     accept: AFN(\Sigma, \eta) \times \Sigma^* \to \mathbb{B}
@@ -271,7 +360,7 @@ finaux. Elle a alors pour signature~:
 Elle peut être définie simplement comme ceci~:
 
 \begin{align*}
-    accept(M, w) = \exists q \in \bigcup_{p \in I} \delta_w(p, w) ~|~ q \in F
+    accept(M, w) = \exists q \in \bigcup_{p \in I} \delta(p, w) ~|~ q \in F
 \end{align*}
 
 \subsection{Conclusion}

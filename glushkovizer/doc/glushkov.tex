@@ -115,17 +115,25 @@ document~\cite{DBLP:journals/tcs/CaronZ00}).
 
           \vphantom{}
 
-    \item La dernière propriété est que l'automate de Glushkov est homogène. Cela résulte
-          de sa construction, car pour qu'un état aille sur un autre état, il faut qu'il
-          ait dans ses \textit{Follow} \((a, n)\) avec \(a\) le symbole de la transition
-          et \(n\) la valeur de l'état. Et étant donné que pour chaque couple \((b, m)\)
-          il ne peut n'avoir que ce couple avec comme seconde valeur \(m\) alors la
-          transition vers cet état sera toujours la même.
+    \item La quatrième propriété est que l'automate de Glushkov est homogène. Cela
+          résulte de sa construction, car pour qu'un état aille sur un autre état, il
+          faut qu'il ait dans ses \textit{Follow} \((a, n)\) avec \(a\) le symbole de la
+          transition et \(n\) la valeur de l'état. Et étant donné que pour chaque couple
+          \((b, m)\) il ne peut n'avoir que ce couple avec comme seconde valeur \(m\)
+          alors la transition vers cet état sera toujours la même.
+
+          \vphantom{}
+
+    \item La cinquième propriété est que l'automate de Glushkov est un hamac. Car il est
+          standard, accessible et coaccessible. Et que toutes ces orbites maximales sont
+          fortement stables et transversales.
+
+          \vphantom{}
 \end{itemize}
 
 \subsection{Conclusion}
 
-L'algorithme de Glushkov est très puissants, car permet de convertir une
+L'algorithme de Glushkov est très puissants, puisqu'il permet de convertir une
 expression régulière en automate ce qui fait qu'on gagne les avantages des deux
 structures. Avec les expressions régulières, on peut simplement décrire un
 langage et avec les automates, on peut simplement savoir si un mot est reconnu.

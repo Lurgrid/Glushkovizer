@@ -24,15 +24,16 @@ quelles opérations sont munis sur les langages.
 
 \begin{definition}
     On parlera de la \textit{longueur d'un mot} \(w\) noté \(|w|\) pour désigner le
-    nombre de symboles qui le compose. De même, on notera \({|w|}_a\) pour parler
-    du nombre de \(a\) dans le mot \(w\).
+    nombre de symboles qui le compose.
+    % De même, on notera \({|w|}_a\) pour parler du nombre de \(a\) dans le mot
+    % \(w\).
 \end{definition}
 
 \begin{example}
     \begin{gather*}
         w = abbcdda \notag \\
         |w| = 7 \\
-        {|w|}_d = 2
+        % {|w|}_d = 2
     \end{gather*}
 \end{example}
 
@@ -61,57 +62,57 @@ quelles opérations sont munis sur les langages.
     \end{gather*}
 \end{example}
 
-\begin{definition}
-    Grâce à cette opération sur les mots, on peut définir ce qu'est un
-    \textit{facteur}. Un facteur \(u\) d'un mot \(w\) est une suite extraite de la
-    suite de lettre qui composent le mot \(w\). Autrement dit \(u\) est un sous mot
-    de \(w\) si \(\exists (v, x) \in (\Sigma ^ *)^2 ~|~ w = v \cdot u \cdot x\), de
-    plus~:
+% \begin{definition}
+%     Grâce à cette opération sur les mots, on peut définir ce qu'est un
+%     \textit{facteur}. Un facteur \(u\) d'un mot \(w\) est une suite extraite de la
+%     suite de lettre qui composent le mot \(w\). Autrement dit \(u\) est un sous mot
+%     de \(w\) si \(\exists (v, x) \in (\Sigma ^ *)^2 ~|~ w = v \cdot u \cdot x\), de
+%     plus~:
 
-    \begin{itemize}[label=\textbullet]
-        \item On parlera de \textit{préfixe} quand \(v = \varepsilon\).
-        \item On parlera de \textit{suffixe} quand \(x = \varepsilon\).
-        \item Enfin, on parlera de \textit{facteur propre} quand \(v \neq \varepsilon \land x
-              \neq \varepsilon\).
-    \end{itemize}
+%     \begin{itemize}[label=\textbullet]
+%         \item On parlera de \textit{préfixe} quand \(v = \varepsilon\).
+%         \item On parlera de \textit{suffixe} quand \(x = \varepsilon\).
+%         \item Enfin, on parlera de \textit{facteur propre} quand \(v \neq \varepsilon \land x
+%               \neq \varepsilon\).
+%     \end{itemize}
 
-    \noindent On remarquera que \(\varepsilon\) est~: \textit{préfixe}, \textit{suffixe} et
-    \textit{facteur} de tout mot.
-\end{definition}
+%     \noindent On remarquera que \(\varepsilon\) est~: \textit{préfixe}, \textit{suffixe} et
+%     \textit{facteur} de tout mot.
+% \end{definition}
 
-\begin{example}
-    \begin{gather*}
-        w = abbcdda \\
-        u = bcd \\
-        y = abb \\
-        w = ab \cdot u \cdot da\\
-        u \text{ est donc un facteur propre} \notag \\
-        w = y \cdot cdda \quad \\
-        y \text{ est un facteur et un préfixe} \notag
-    \end{gather*}
-\end{example}
+% \begin{example}
+%     \begin{gather*}
+%         w = abbcdda \\
+%         u = bcd \\
+%         y = abb \\
+%         w = ab \cdot u \cdot da\\
+%         u \text{ est donc un facteur propre} \notag \\
+%         w = y \cdot cdda \quad \\
+%         y \text{ est un facteur et un préfixe} \notag
+%     \end{gather*}
+% \end{example}
 
-\begin{definition}
-    De plus aussi grâce à la concaténation, nous pouvons définir le \textit{miroir}
-    d'un mot \(w\) noté \(\overleftarrow{w}\). Qui est ainsi défini récursivement
-    comme ceci~:
+% \begin{definition}
+%     De plus aussi grâce à la concaténation, nous pouvons définir le \textit{miroir}
+%     d'un mot \(w\) noté \(\overleftarrow{w}\). Qui est ainsi défini récursivement
+%     comme ceci~:
 
-    \begin{gather*}
-        \overleftarrow{\varepsilon} = \varepsilon \\
-        \overleftarrow{a} = a \\
-        \overleftarrow{u \cdot a} = a \cdot \overleftarrow{u} \\
-        \text{Avec } a \in \Sigma \text{ et } u \in \Sigma ^ * \notag
-    \end{gather*}
+%     \begin{gather*}
+%         \overleftarrow{\varepsilon} = \varepsilon \\
+%         \overleftarrow{a} = a \\
+%         \overleftarrow{u \cdot a} = a \cdot \overleftarrow{u} \\
+%         \text{Avec } a \in \Sigma \text{ et } u \in \Sigma ^ * \notag
+%     \end{gather*}
 
-    \noindent On remarquera qu'un mot est un palindrome si \(u = \overleftarrow{u}\).
-\end{definition}
+%     \noindent On remarquera qu'un mot est un palindrome si \(u = \overleftarrow{u}\).
+% \end{definition}
 
-\begin{example}
-    \begin{gather*}
-        w = abbcdda \\
-        \overleftarrow{w} = addcbba
-    \end{gather*}
-\end{example}
+% \begin{example}
+%     \begin{gather*}
+%         w = abbcdda \\
+%         \overleftarrow{w} = addcbba
+%     \end{gather*}
+% \end{example}
 
 \subsection{Les langages}
 
@@ -129,26 +130,25 @@ quelles opérations sont munis sur les langages.
     \end{gather*}
 \end{example}
 
-\begin{definition}
-    L'équivalant de la longueur d'un mot sur les langages est donc le
-    \textit{cardinal} du langage. On remarquera qu'un langage n'est pas forcément
-    fini et qu'alors son \textit{cardinal} peut être infini.
-\end{definition}
+% \begin{definition}
+%     L'équivalant de la longueur d'un mot sur les langages est donc le
+%     \textit{cardinal} du langage. On remarquera qu'un langage n'est pas forcément
+%     fini et qu'alors son \textit{cardinal} peut être infini.
+% \end{definition}
 
-\begin{example}
-    \begin{gather*}
-        \Sigma = \{a, b, c, d\} \\
-        L_1 = \{a, aa, bc, da, \varepsilon\} \\
-        L_2 = \varnothing \\
-        | L_1 | = 5 \\
-        | L_2 | = 0
-    \end{gather*}
-\end{example}
+% \begin{example}
+%     \begin{gather*}
+%         \Sigma = \{a, b, c, d\} \\
+%         L_1 = \{a, aa, bc, da, \varepsilon\} \\
+%         L_2 = \varnothing \\
+%         | L_1 | = 5 \\
+%         | L_2 | = 0
+%     \end{gather*}
+% \end{example}
 
 \begin{definition}
-    L'une des opérations les plus importantes sur les langages est
-    l'\textit{union}. On parlera de l'union de langage noté \(L_1 \cup L_2\) et
-    défini comme ceci~:
+    L'une des opérations sur les langages est l'\textit{union}. On parlera de
+    l'union de langage noté \(L_1 \cup L_2\) et défini comme ceci~:
 
     \begin{gather*}
         L_1 \cup L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \lor w \in L_2\}
@@ -158,18 +158,18 @@ quelles opérations sont munis sur les langages.
     élément neutre (\(\varnothing\)).
 \end{definition}
 
-\begin{definition}
-    À l'image de l'union de langages, nous avons aussi l'\textit{intersection} de
-    langage noté \(L_1 \cap L_2\) et donc défini comme cela~:
+% \begin{definition}
+%     À l'image de l'union de langages, nous avons aussi l'\textit{intersection} de
+%     langage noté \(L_1 \cap L_2\) et donc défini comme cela~:
 
-    \begin{gather*}
-        L_1 \cap L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \land w \in L_2\}
-    \end{gather*}
+%     \begin{gather*}
+%         L_1 \cap L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \land w \in L_2\}
+%     \end{gather*}
 
-    \noindent On notera qu'elle aussi est associative, commutative et admet
-    aussi un élément neutre (\(\Sigma ^ *\)). On remarquera que \(\varnothing\) est
-    un élément absorbant.
-\end{definition}
+%     \noindent On notera qu'elle aussi est associative, commutative et admet
+%     aussi un élément neutre (\(\Sigma ^ *\)). On remarquera que \(\varnothing\) est
+%     un élément absorbant.
+% \end{definition}
 
 \begin{example}
     \begin{gather*}
@@ -177,14 +177,14 @@ quelles opérations sont munis sur les langages.
         L_1 = \{\varepsilon, a, aa, bc, da\} \\
         L_2 = \{d, aa, cd\} \\
         L_1 \cup L_2 = \{\varepsilon, a, d, aa, cd, bc, da\} \\
-        L_1 \cap L_2 = \{aa\}
+        % L_1 \cap L_2 = \{aa\}
     \end{gather*}
 \end{example}
 
 \begin{definition}
-    Un autre opération importante sur les langages est la \textit{concaténation}.
-    Elle est bien sûr définie en utilisant la concaténation des mots qui compose
-    les langages. Cette opération est ainsi définie comme ceci~:
+    Un autre opération sur les langages est la \textit{concaténation}. Elle est
+    bien sûr définie en utilisant la concaténation des mots qui compose les
+    langages. Cette opération est ainsi définie comme ceci~:
 
     \begin{gather*}
         L_1 \cdot L_2 = \{u \cdot v ~|~ u \in L_1, v \in L_2\}
@@ -246,4 +246,5 @@ Nous avons défini les concepts de \textit{mot}, de \textit{langage} et
 l'ensemble des opérations applicables à ces objets. Bien que nous n'ayons
 couvert qu'une partie des opérations possibles, nous vous encourageons à
 consulter un cours de théorie des langages pour obtenir des informations plus
-détaillées.
+détaillées. Nous vous conseillons ces
+ressources~:~\cite{Harrison1978},~\cite{Autebert1994} et~\cite{Hopcroft2007}.
