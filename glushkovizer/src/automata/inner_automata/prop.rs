@@ -106,6 +106,9 @@ where
 
     /// Returns whether the orbit is stable
     pub fn is_stable(&self) -> bool {
+        if !self.is_orbit() {
+            return false;
+        }
         let mut inp = HashSet::new();
         let mut out = HashSet::new();
         let door = self.get_door();
@@ -133,8 +136,64 @@ where
         })
     }
 
+    /// Returns whether the orbit is strongly stable
+    pub fn is_strongly_stable(&self) -> bool
+    where
+        V: Clone + Eq,
+    {
+        if !self.is_orbit() {
+            return false;
+        }
+        let copy = InnerAutomata::clone(self);
+        let mut inp = HashSet::new();
+        let mut out = HashSet::new();
+        let door = copy.get_door();
+        door.into_iter().for_each(|l| {
+            l.into_iter().for_each(|(rs, dtype)| match dtype {
+                DoorType::None => (),
+                DoorType::In => {
+                    inp.insert(rs);
+                }
+                DoorType::Out => {
+                    out.insert(rs);
+                }
+                DoorType::Both => {
+                    out.insert(rs.clone());
+                    inp.insert(rs);
+                }
+            })
+        });
+
+        if !out.iter().all(|output| {
+            output
+                .as_ref()
+                .get_follows()
+                .any(|(_, set)| set.intersection(&inp).count() != 0)
+        }) {
+            return false;
+        }
+
+        out.into_iter().for_each(|output| {
+            output.as_ref().get_follows().for_each(|(symbol, set)| {
+                set.into_iter().for_each(|to| {
+                    if inp.contains(to) {
+                        output.remove_follow(to, symbol);
+                    }
+                });
+            });
+        });
+
+        copy.extract_scc()
+            .into_iter()
+            .filter(|inner| inner.is_orbit())
+            .all(|subinner| subinner.is_strongly_stable())
+    }
+
     /// Returns whether the orbit is transverse
     pub fn is_transverse(&self) -> bool {
+        if !self.is_orbit() {
+            return false;
+        }
         let mut inp = HashSet::new();
         let mut out = HashSet::new();
         let mut fin = false;
@@ -229,5 +288,129 @@ where
                 })
             })
             .is_ok()
+    }
+
+    /// Returns whether the orbit is strongly transverse
+    pub fn is_strongly_transverse(&self) -> bool
+    where
+        V: Clone + Eq,
+    {
+        if !self.is_orbit() {
+            return false;
+        }
+        let copy = InnerAutomata::clone(self);
+        let mut inp = HashSet::new();
+        let mut out = HashSet::new();
+        let mut fin = false;
+        let mut fout = false;
+        let door = copy.get_door();
+        if door
+            .into_iter()
+            .try_for_each(|l| {
+                l.into_iter().try_for_each(|(rs, dtype)| match dtype {
+                    DoorType::None => Ok(()),
+                    DoorType::In => {
+                        if !fin {
+                            rs.as_ref().get_previous().for_each(|(_, set)| {
+                                set.into_iter().for_each(|rs| {
+                                    inp.insert(rs.clone());
+                                })
+                            });
+                            fin = true;
+                            return Ok(());
+                        }
+                        fin = true;
+                        rs.as_ref().get_previous().try_for_each(|(_, set)| {
+                            set.into_iter().try_for_each(|rs| {
+                                if inp.contains(rs) {
+                                    Ok(())
+                                } else {
+                                    Err(())
+                                }
+                            })
+                        })
+                    }
+                    DoorType::Out => {
+                        if out.is_empty() {
+                            rs.as_ref().get_follows().for_each(|(_, set)| {
+                                set.into_iter().for_each(|rs| {
+                                    out.insert(rs.clone());
+                                })
+                            });
+                            fout = true;
+                            return Ok(());
+                        }
+                        fout = true;
+                        rs.as_ref().get_follows().try_for_each(|(_, set)| {
+                            set.into_iter().try_for_each(|rs| {
+                                if out.contains(rs) {
+                                    Ok(())
+                                } else {
+                                    Err(())
+                                }
+                            })
+                        })
+                    }
+                    DoorType::Both => {
+                        if inp.is_empty() {
+                            rs.as_ref().get_previous().for_each(|(_, set)| {
+                                set.into_iter().for_each(|rs| {
+                                    inp.insert(rs.clone());
+                                })
+                            });
+                            fin = true;
+                            return Ok(());
+                        }
+                        fin = true;
+                        rs.as_ref().get_previous().try_for_each(|(_, set)| {
+                            set.into_iter().try_for_each(|rs| {
+                                if inp.contains(rs) {
+                                    Ok(())
+                                } else {
+                                    Err(())
+                                }
+                            })
+                        })?;
+                        if out.is_empty() {
+                            rs.as_ref().get_follows().for_each(|(_, set)| {
+                                set.into_iter().for_each(|rs| {
+                                    out.insert(rs.clone());
+                                })
+                            });
+                            fout = true;
+                            return Ok(());
+                        }
+                        fout = true;
+                        rs.as_ref().get_follows().try_for_each(|(_, set)| {
+                            set.into_iter().try_for_each(|rs| {
+                                if out.contains(rs) {
+                                    Ok(())
+                                } else {
+                                    Err(())
+                                }
+                            })
+                        })
+                    }
+                })
+            })
+            .is_err()
+        {
+            return false;
+        }
+
+        out.into_iter().for_each(|output| {
+            output.as_ref().get_follows().for_each(|(symbol, set)| {
+                set.into_iter().for_each(|to| {
+                    if inp.contains(to) {
+                        output.remove_follow(to, symbol);
+                    }
+                });
+            });
+        });
+
+        copy.extract_scc()
+            .into_iter()
+            .filter(|inner| inner.is_orbit())
+            .all(|subinner| subinner.is_strongly_transverse())
     }
 }

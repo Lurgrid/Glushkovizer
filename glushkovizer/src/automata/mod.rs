@@ -623,8 +623,18 @@ where
         self.inner().is_stable()
     }
 
+    /// Returns whether the orbit is strongly stable
+    fn is_strongly_stable(&self) -> bool {
+        self.inner().is_strongly_stable()
+    }
+
     /// Returns whether the orbit is transverse
     fn is_transverse(&self) -> bool {
         self.inner().is_transverse()
+    }
+
+    /// Returns whether the orbit is strongly transverse
+    fn is_strongly_transverse(&self) -> bool {
+        self.inner().is_strongly_transverse()
     }
 }
