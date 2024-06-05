@@ -7,8 +7,8 @@ l'informaticien soviétique \textit{Victor Glushkov} qui est son créateur.
 
 \subsection{Définition}
 
-Nous appliquerons cet algorithme à l'aide la fonction \(glushkov\) qui a donc
-pour signature~:
+Nous appliquerons cet algorithme à l'aide de la fonction \(glushkov\) qui a
+donc pour signature~:
 
 \[
     glushkov: Exp(\Sigma) \to AFN(\Sigma, \mathbb{N})
@@ -17,9 +17,9 @@ pour signature~:
 Et a ainsi, on peut définir cette fonction de cette façon~:
 
 \begin{align*}
-    glushkov     (E)                              & = (Q, \{0\}, F, \delta) \quad \text{avec}                                                                      \\
-    Q                                             & \leftarrow \{n ~|~ n \in \mathbb{N} \land 0 \leq n < m\}                                                       \\
-    F                                             & \leftarrow \{n ~|~ (a, n) \in Last\} \cup (\{0\} \cdot Null)                                                   \\
+    glushkov (E) & = (Q, \{0\}, F, \delta) \quad \text{avec}                                                                      \\
+    Q & \leftarrow \{n ~|~ n \in \mathbb{N} \land 0 \leq n < m\}                                                       \\
+    F & \leftarrow \{n ~|~ (a, n) \in Last\} \cup (\{0\} \cdot Null)                                                   \\
     \forall q                    \in \delta(p, a) & ~|~ \begin{cases} (a, q) \in First, & \text{si } p = 0 \\ (a, q) \in Follow((b, p)) & \text{sinon} \end{cases} \\
     (E', m)                                       & \leftarrow linearization(E)                                                                                    \\
     (First, Last, Null, Follow)                   & \leftarrow flnl(E')
@@ -27,8 +27,8 @@ Et a ainsi, on peut définir cette fonction de cette façon~:
 
 \begin{example}
     Vu qu'un dessin vaut toujours mieux que mile mots, voici un exemple de
-    l'automate résultant de la transformation de cette expression \(E =
-    (a+b) \cdot a^* \cdot b^* \cdot (a+b)^*\).
+    l'automate résultant de la transformation de cette expression \(E = (a+b)
+    \cdot a^* \cdot b^* \cdot (a+b)^*\).
 
     \begin{figure}[H]
         \centering
@@ -81,9 +81,9 @@ Et a ainsi, on peut définir cette fonction de cette façon~:
 \vphantom{}
 
 Comme on peut voir sur la Figure~\ref{fig:automata_glushkov} les automates
-produits sont bien souvent gros et peuvent être difficile à comprendre, mais
+produits sont bien souvent gros et peuvent être difficiles à comprendre, mais
 une machine peut gérer ça très simplement. Outre sa taille, on peut remarquer
-qu'il y a des propriétés intéressant sur cette automate. C'est ce que l'on va
+qu'il y a des propriétés intéressantes sur cet automate. C'est ce que l'on va
 étudier maintenant.
 
 \subsection{Propriétés~:}
@@ -96,49 +96,50 @@ document~\cite{DBLP:journals/tcs/CaronZ00}).
 \vphantom{}
 
 \begin{itemize}[label=\textbullet]
-    \item La première propriété plut\^{o}t évidente, est que les automates de Glushkov
-          sont \textit{standards}, car par constructions, il ne peut avoir qu'un seul
-          état initial (0).
+    \item La première propriété, plut\^{o}t évidente, est que les automates de
+          Glushkov sont \textit{standards}, car par construction, il ne peut
+          avoir qu'un seul état initial (0).
 
           \vphantom{}
 
-    \item La deuxième est que l'automate à \(n + 1\) avec \(n\) le nombre de symboles de
-          l'expression régulière. Le \(+ 1\) vient dû fait que nous ajoutons un état
-          \(0\) qui a des transitions vers les \(First\).
+    \item La deuxième est que l'automate a \(n + 1\) avec \(n\) le nombre de
+      symboles de l'expression régulière. Le \(+ 1\) vient du fait que nous
+      ajoutons un état \(0\) qui a des transitions vers les \(First\).
 
           \vphantom{}
 
-    \item La troisième propriété un peu moins flagrante est que les automates de Glushkov
-          sont accessibles et coaccessibles. C'est dû au fait que chaque symbole dans
-          l'expression régulière est accessible et coaccessible et que cette propriété ne
-          se perd pas lors de la transformation.
+    \item La troisième propriété un peu moins flagrante est que les automates de
+      Glushkov sont accessibles et coaccessibles. C'est dû au fait que chaque
+      symbole dans l'expression régulière est accessible et coaccessible et que
+      cette propriété ne se perd pas lors de la transformation.
 
           \vphantom{}
 
     \item La quatrième propriété est que l'automate de Glushkov est homogène. Cela
-          résulte de sa construction, car pour qu'un état aille sur un autre état, il
-          faut qu'il ait dans ses \textit{Follow} \((a, n)\) avec \(a\) le symbole de la
-          transition et \(n\) la valeur de l'état. Et étant donné que pour chaque couple
-          \((b, m)\) il ne peut n'avoir que ce couple avec comme seconde valeur \(m\)
-          alors la transition vers cet état sera toujours la même.
+      résulte de sa construction, car pour qu'un état aille sur un autre état,
+      il faut qu'il ait dans ses \textit{Follow} \((a, n)\) avec \(a\) le
+      symbole de la transition et \(n\) la valeur de l'état. Et étant donné que
+      pour chaque couple \((b, m)\) il ne peut n'avoir que ce couple avec comme
+      seconde valeur \(m\) alors la transition vers cet état sera toujours la
+      même.
 
           \vphantom{}
 
-    \item La cinquième propriété est que l'automate de Glushkov est un hamac. Car il est
-          standard, accessible et coaccessible. Et que toutes ces orbites maximales sont
-          fortement stables et transversales.
+    \item La cinquième propriété est que l'automate de Glushkov est un hamac. Car
+      il est standard, accessible et coaccessible. Et que toutes ces orbites
+      maximales sont fortement stables et transversales.
 
           \vphantom{}
 \end{itemize}
 
 \subsection{Conclusion}
 
-L'algorithme de Glushkov est très puissants, puisqu'il permet de convertir une
-expression régulière en automate ce qui fait qu'on gagne les avantages des deux
-structures. Avec les expressions régulières, on peut simplement décrire un
+L’algorithme de Glushkov est très puissant, puisqu’il permet de convertir une
+expression régulière en automate, ce qui fait qu’on gagne les avantages des
+deux structures. Avec les expressions régulières, on peut simplement décrire un
 langage et avec les automates, on peut simplement savoir si un mot est reconnu.
 Il est très utilisé en \textit{informatique}, parce que pour les humains, il
 est plus simple de décrire un langage avec une expression régulière. Et les
-machine comprennent très facilement les automates. Ce qui fait qu'il est
-possible de faire des \textit{programmes informatiques} qui reconnait un
-langage et exécute des tâches à chaque mot.
+machines comprennent très facilement les automates. Ce qui fait qu’il est
+possible de faire des \textit{programmes informatiques} qui reconnaissent un
+langage et exécutent des tâches à chaque mot.

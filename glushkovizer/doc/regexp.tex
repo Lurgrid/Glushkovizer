@@ -15,12 +15,12 @@ Cette expression reconnait un langage qu'on pourra appeler \(L(E)\). Nous
 pouvons définir une expression régulière récursivement de cette manière~:
 
 \begin{align}
-    E                      & = \varepsilon                             \\
-    E                      & = a                                       \\
-    E                      & = F + G                                   \\
-    E                      & = F \cdot G                               \\
-    E                      & = F^*                                     \\
-    E                      & = (F)\label{align:parenthese}             \\
+    E & = \varepsilon                             \\
+    E & = a                                       \\
+    E & = F + G                                   \\
+    E & = F \cdot G                               \\
+    E & = F^*                                     \\
+    E & = (F)\label{align:parenthese}             \\
     \text{avec } (E, F, G) & \in (Exp(\Sigma))^3,~ a \in \Sigma \notag
 \end{align}
 
@@ -52,14 +52,14 @@ calcul\label{subsec:parenthese}. On peut définir chaque équation comme ceci~:
         \vphantom{}
 
     \item[\textbullet] \textbf{\(E = F \cdot G\)~:}
-        Représente la concaténation deux des deux expressions régulières
-        \(F\) et \(G\).
+        Représente la concaténation des deux expressions régulières \(F\) et
+        \(G\).
 
         \vphantom{}
 
-    \item[\textbullet] \textbf{\(E = F^* \)~:} Représente la
-        répétition infinie de \(F\), cette répétition incluant,
-        puissance \(0\) et donc le mot vide.
+    \item[\textbullet] \textbf{\(E = F^* \)~:} Représente la répétition
+        infinie de \(F\), cette répétition incluant la puissance zéro et donc
+        le mot vide.
 \end{itemize}
 
 \vphantom{}
@@ -78,8 +78,8 @@ récursivement de cette manière~:
 
 \begin{example}
     On comprendra ainsi que l'expression \(E = a+c \cdot d\) avec \(E \in
-    Exp(\Sigma)\) et \(\Sigma = \{a, b, c, d\}\), dénote le langage
-    \(L(E) = \{a, cd\}\). Car on peut représenter \(E\) comme ceci~:
+    Exp(\Sigma)\) et \(\Sigma = \{a, b, c, d\}\), dénote le langage \(L(E) =
+    \{a, cd\}\). Car on peut représenter \(E\) comme ceci~:
 
     \begin{figure}[H]
         \centering
@@ -117,9 +117,10 @@ récursivement de cette manière~:
         }\label{fig:arbre_syn}
     \end{figure}
 
-    Comme on peut voir sur la Figure~\ref{fig:arbre_syn} grâce à cette
-    représentation, on peut calculer simplement le langage reconnu par l'expression
-    régulière (ici représenté par les ensembles à c\^{o}té de chaque arbre).
+    Comme on peut voir sur la Figure~\ref{fig:arbre_syn}, grâce à cette
+    représentation, on peut calculer simplement le langage reconnu par
+    l'expression régulière (ici représenté par les ensembles à c\^{o}té de
+    chaque arbre).
 \end{example}
 
 % \vphantom{}
@@ -205,7 +206,8 @@ calculer \(FLNF(Exp(\Sigma))\) qui est un tuple défini comme ceci~:
             \vphantom{}
 
         \item[\textbullet] \(\delta\)~: \(\Sigma \to 2^{\Sigma}\). \\
-            Fonction renvoyant les symboles suivant du symbole passer en argument.
+            Fonction renvoyant les symboles suivants du symbole passé en
+            argument.
     \end{itemize}
 \end{center}
 
@@ -219,14 +221,16 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
 (Exp(\Sigma))^2\)~:
 
 \begin{align*}
-    flnf(\varepsilon) & = (\varnothing, \varnothing, \varepsilon, \delta) ~|~ \delta(a) = \varnothing, a \in \Sigma \\
-    \vphantom{} \notag                                                                                              \\
-    flnf(a)           & = (\{a\}, \{a\}, \varnothing, \delta) ~|~ \delta(a) = \varnothing, a
-    \in \Sigma
+    flnf(\varepsilon) & = (\varnothing, \varnothing, \varepsilon, \delta) ~|~
+    \delta(a) = \varnothing, a \in \Sigma                                     \\
+    \vphantom{} \notag                                                        \\
+    flnf(a) & = (\{a\}, \{a\}, \varnothing, \delta) ~|~ \delta(a) =
+    \varnothing, a \in \Sigma
 \end{align*}
 
 \begin{gather*}
-    flnf(E + G) = (F \cup F', L \cup L', \Theta \cup \Theta', \delta'')~ \text{avec} \\
+    flnf(E + G) = (F \cup F', L \cup L', \Theta \cup \Theta', \delta'')~
+    \text{avec} \\
     \delta''(a) = \delta(a) \cup \delta'(a) ~|~ \forall a \in \Sigma \notag \\
     (F, L, \Theta, \delta) = flnf(E) \land (F', L', \Theta', \delta') = flnf(G) \notag
 \end{gather*}
@@ -246,9 +250,9 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
 \end{gather*}
 
 \begin{example}
-    Prenons par exemple l'expression régulière suivante \(E = a \cdot b
-    + c \cdot d\), avec \(E \in Exp(\Sigma)\) et \(\Sigma = \{a, b, c,
-    d\}\). Toujours à l'aide d'un arbre syntaxique, on peut calculer ce que
+    Prenons par exemple l'expression régulière suivante \(E = a \cdot b + c
+    \cdot d\), avec \(E \in Exp(\Sigma)\) et \(\Sigma = \{a, b, c, d\}\).
+    Toujours à l'aide d'un arbre syntaxique, on peut calculer ce que
     \(flnf(E)\) donnerait.
 
     \begin{figure}[H]
@@ -297,14 +301,14 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
             \node[above=3mm of plus] {\((\{a, c\}, \{b, d\}, \varnothing, \{(a, b),(c, d)\})\)};
         \end{tikzpicture}
         \caption{
-            Représentation de l'expression régulière à l'aide d'un arbre syntaxique.
-            Pour des raisons de compréhension \(\delta\) est représenté à l'aide
-            d'un ensemble de couple.
+            Représentation de l'expression régulière à l'aide d'un arbre
+            syntaxique. Pour des raisons de compréhension, \(\delta\) est
+            représentée à l'aide d'un ensemble de couples.
         }
     \end{figure}
 
-    Il advient que \(flnf(E) = \{\{a, c\}, \{b, d\}, \varnothing, \delta\}\) avec
-    \(\delta\) qui est défini comme ceci~:
+    Il advient que \(flnf(E) = \{\{a, c\}, \{b, d\}, \varnothing, \delta\}\)
+    avec \(\delta\) qui est défini comme ceci~:
 
     \begin{align*}
         \delta(a) & = \{b\}       \\
@@ -319,8 +323,9 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
 \begin{example}
     Un autre exemple pourrait être \(E' = (a + b) \cdot c^*\), avec cet
     exemple, on voit l'utilité de la parenthèse, car sans elle la concaténation
-    aurait été sur \(b \cdot c^*\) et comme dit précédemment
-    (\ref{subsec:parenthese}) son calcul reste le même que si c'était une union.
+    aurait été sur \(b \cdot c^*\). Et comme dit précédemment
+    (\ref{subsec:parenthese}), son calcul reste le même que si c'était une
+    union.
 
     \begin{figure}[H]
         \centering
@@ -366,14 +371,14 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
             \node[above=3mm of point] {\((\{a, b\}, \{a, b, c\}, \varnothing, \{(a, c), (b, c), (c, c)\})\)};
         \end{tikzpicture}
         \caption{
-            Représentation de l'expression régulière à l'aide d'un arbre syntaxique.
-            Pour des raisons de compréhension \(\delta\) est représenté à l'aide
-            d'un ensemble de couple.
+            Représentation de l'expression régulière à l'aide d'un arbre
+            syntaxique. Pour des raisons de compréhension, \(\delta\) est
+            représentée à l'aide d'un ensemble de couples.
         }
     \end{figure}
 
-    Ce qui fait que \(flnf(E') = (\{a, b\}, \{a, b, c\}, \varnothing, \delta')\)
-    avec \(\delta'\) qui est défini comme décrit après~:
+    Ce qui fait que \(flnf(E') = (\{a, b\}, \{a, b, c\}, \varnothing,
+    \delta')\) avec \(\delta'\) qui est défini comme décrit après~:
 
     \begin{align*}
         \delta'(a) & = \{c\}       \\
@@ -386,7 +391,7 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
 
 \vphantom{}
 
-Une autre fonction qui s'applique sur les expressions régulières est
+Une autre fonction qui s'applique aux expressions régulières est
 \(linearization\)~; (elle peut paraitre inutile, mais) elle nous servira dans
 la Section~\ref{sec:glushkov}. Sa signature est~:
 
@@ -402,7 +407,7 @@ Elle peut être définie de cette manière, pour \(a \in \Sigma\) et \((E, F) \i
 \end{gather*}
 
 \noindent Avec \(\pi_n\) la fonction de projection sur les tuples et
-\(linearization\_aux\) défini récursivement comme ceci~:
+\(linearization\_aux\) définie récursivement comme ceci~:
 
 \begin{gather*}
     linearization\_aux(\varepsilon, n) = (\varepsilon, n) \\
@@ -418,9 +423,9 @@ Elle peut être définie de cette manière, pour \(a \in \Sigma\) et \((E, F) \i
 \end{gather*}
 
 Avec cette définition, on peut voir que tous les symboles sont associés à un
-unique entier. Ce qui fait que l'expression régulière résultante ne contient
-que des symboles uniques. Et que de ce fait si deux couples partages le même
-entier cela implique qu'ils ont même valeur de symbole.
+unique entier. Ce qui fait que l’expression régulière résultante ne contient
+que des symboles uniques. Et que, de ce fait, si deux couples partagent le même
+entier, cela implique qu’ils ont la même valeur de symbole.
 
 \begin{example}
 
@@ -484,14 +489,14 @@ entier cela implique qu'ils ont même valeur de symbole.
 
 \subsection{Conclusion}
 
-On saisit aisément que ces expressions ont beau être simples (peu d'opération
-comparé aux expressions régulières d'\textit{UNIX}). Elles n'en sont rien pas
-complètes, on peut voir qu'elles permettent de décrire des langages très
+On saisit aisément que ces expressions ont beau être simples (peu d’opération
+comparé aux expressions régulières d’\textit{UNIX}). Elles n’en sont rien, pas
+complètes. On peut voir qu’elles permettent de décrire des langages très
 complexes et en quantité infinie. En revanche, il est difficile de savoir si un
-mot est reconnu par une expression régulière simplement. Par exemple est-ce-que
+mot est reconnu par une expression régulière simplement. Par exemple est-ce que
 le mot \(eipipipipipip\) est reconnu par cette expression \(((((o \cdot
 \varepsilon)+(\varepsilon \cdot e))+((g\cdot \varepsilon) \cdot \varepsilon^*))
 \cdot ((\varepsilon \cdot i)\cdot (p+\varepsilon))^*)\)~? La réponse est oui.
-C'est pour cela qu'il serait peut-être intéressant d'utiliser une autre
+C’est pour cela qu’il serait peut-être intéressant d’utiliser une autre
 structure de donnée pour reconnaitre des mots, comme les automates que nous
 allons voir maintenant.

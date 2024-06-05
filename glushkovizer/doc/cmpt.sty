@@ -1,6 +1,6 @@
 %% Copyright 2024 Lurgrid
 %
-% This document is licensed under the GNU General Public License (GPL), 
+% This document is licensed under the GNU General Public License (GPL),
 % version 3.
 % The latest version of this license is in
 %   https://www.gnu.org/licenses/gpl-3.0.txt
@@ -11,11 +11,11 @@
 % Specify the required LaTeX2e format with a minimum version of 2020/10/01.
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
 
-% Provide information about the package "cmpt," including its version (v0.1) 
+% Provide information about the package "cmpt," including its version (v0.1)
 % and a brief description.
 \ProvidesPackage{cmpt}[2024/01/17 v0.2 Style by Lurgrid]
 
-% Provide additional class information for the "cmpt" package, stating the 
+% Provide additional class information for the "cmpt" package, stating the
 % copyright notice.
 \ClassInfo{cmpt}{Copyright (c) 2024 Lurgrid}
 
@@ -55,7 +55,7 @@
 % Set the font encoding to T1.
 \RequirePackage[T1]{fontenc}
 
-% Include the tcolorbox package with the 'most' library option for advanced box 
+% Include the tcolorbox package with the 'most' library option for advanced box
 % features.
 \RequirePackage[most]{tcolorbox}
 
@@ -69,14 +69,14 @@
 % Similarly, it changes the subsection numbers to be in Arabic numerals.
 \renewcommand\thesubsection{\arabic{subsection}}
 
-% Adjusts the width allocated for section numbers in the table of contents to 
+% Adjusts the width allocated for section numbers in the table of contents to
 % accommodate Roman numerals.
 \setlength{\cftsecnumwidth}{3em}
 
 % Sets the paragraph indentation to 1cm, providing a consistent layout.
 \setlength{\parindent}{1cm}
 
-% Improves line breaks in the document to prevent overflows beyond the page 
+% Improves line breaks in the document to prevent overflows beyond the page
 % margins.
 \sloppy
 
@@ -95,22 +95,22 @@
 % Defines a custom color 'lightgray' using HTML color codes.
 \definecolor{lightgray}{HTML}{d9d9d9}
 
-% Defines a new command \code for formatting code text with a light gray 
+% Defines a new command \code for formatting code text with a light gray
 % background.
 \newcommand{\code}[1]{\colorbox{lightgray}{\ttfamily \detokenize{#1}}}
 
-% Defines a new command \type for formatting type names with a bold, light gray 
+% Defines a new command \type for formatting type names with a bold, light gray
 % background.
 \newcommand{\type}[1]{\colorbox{lightgray}{\ttfamily \bfseries \detokenize{#1}}}
 
 % Define the tab command with a default value of 1
 \def\tab{\@ifnextchar\bgroup{\@tab}{\@tab{1}}}
 
-% Defines \@tab to create horizontal space; #1 specifies the number of 0.5cm 
+% Defines \@tab to create horizontal space; #1 specifies the number of 0.5cm
 % spaces
 \def\@tab#1{\foreach \n in {1,...,#1}{\hspace{0.5cm}}}
 
-% Defines a new environment 'mcode' for displaying code blocks with specific 
+% Defines a new environment 'mcode' for displaying code blocks with specific
 % styling.
 \newenvironment{mcode}{
     \begin{tcolorbox}[enhanced jigsaw,

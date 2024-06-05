@@ -1,18 +1,19 @@
 \section{Prélude}
 
 Pour la compréhension de l'ensemble de ce document, nous avons besoin de
-plusieurs notions de théorie des langages. C'est donc pourquoi cette partie,
-nous allons étudier les différentes notions nécessaires. Dans un premier temps,
-nous allons définir ce qu'est un mot et quelles sont les opérations sur les
-mots. Enfin dans un second temps, nous définirons ce qu'est un langage et
-quelles opérations sont munis sur les langages.
+plusieurs notions de théorie des langages. C'est donc pourquoi dans cette
+partie, nous allons étudier les différentes notions nécessaires. Dans un
+premier temps, nous allons définir ce qu'est un mot et quelles sont les
+opérations sur les mots. Enfin, dans un second temps, nous définirons ce qu'est
+un langage et quelles opérations sont munies par les langages.
 
 \subsection{Les mots}
 
 \begin{definition}
-    Un \textit{alphabet} \(\Sigma\) est un ensemble fini de symbole non vide. Un
-    \textit{mot} est une suite finie de symbole sur un alphabet \(\Sigma\), le mot
-    composé de zéro symbole est appelé \textit{mot vide} est noté \(\varepsilon\).
+    Un \textit{alphabet} \(\Sigma\) est un ensemble fini de symboles non-vides.
+    Un \textit{mot} est une suite finie de symboles sur un alphabet \(\Sigma\).
+    Le mot composé de zéro symbole est appelé mot vide et est noté
+    \(\varepsilon\).
 \end{definition}
 
 \begin{example}
@@ -23,10 +24,8 @@ quelles opérations sont munis sur les langages.
 \end{example}
 
 \begin{definition}
-    On parlera de la \textit{longueur d'un mot} \(w\) noté \(|w|\) pour désigner le
-    nombre de symboles qui le compose.
-    % De même, on notera \({|w|}_a\) pour parler du nombre de \(a\) dans le mot
-    % \(w\).
+    On parlera de la \textit{longueur d'un mot} \(w\) noté \(|w|\) pour
+    désigner le nombre de symboles qui le composent. % De même, on notera \({|w|}_a\) pour parler du nombre de \(a\) dans le mot% \(w\).
 \end{definition}
 
 \begin{example}
@@ -38,16 +37,17 @@ quelles opérations sont munis sur les langages.
 \end{example}
 
 \begin{definition}
-    Une des opérations les plus essentiels sur les mots est la
-    \textit{concaténation} de mots. On notera donc la concaténation de deux mots
-    \(u = a_1 \cdots a_n\) et \(v = b_1 \cdots b_n\) par \(u \cdot v\). Qui est
-    ainsi égal à \(u \cdot v = a_1 \cdots a_n b_1 \cdots b_n\). On définit
-    l'ensemble des mots sur \(\Sigma\) par \(\Sigma ^ *\). On notera que~:
+    Une des opérations sur les mots est la concaténation de mots. On notera
+    donc la \textit{concaténation} de deux mots \(u = a_1 \cdots a_n\) et \(v =
+    b_1 \cdots b_n\) par \(u \cdot v\). Qui est ainsi égal à \(u \cdot v = a_1
+    \cdots a_n b_1 \cdots b_n\). On définit l'ensemble des mots sur \(\Sigma\)
+    par \(\Sigma ^ *\). On notera que~:
 
     \begin{itemize}[label=\textbullet]
-        \item La concaténation est associative \((w \cdot u) \cdot v = w \cdot (u \cdot v)\).
-        \item La concaténation admet un élément neutre \(u \cdot \varepsilon = \epsilon \cdot
-              u = u\).
+        \item La concaténation est associative \((w \cdot u) \cdot v = w \cdot
+              (u \cdot v)\).
+        \item La concaténation admet un élément neutre \(u \cdot \varepsilon =
+              \epsilon \cdot u = u\).
     \end{itemize}
 
     \noindent Ce qui implique que l'ensemble \(\Sigma ^ *\) muni de la concaténation
@@ -117,9 +117,9 @@ quelles opérations sont munis sur les langages.
 \subsection{Les langages}
 
 \begin{definition}
-    Un \textit{langage} \(L\) est un ensemble de mot sur un alphabet fini
-    \(\Sigma\). On appellera \textit{langage vide} le langage ne comportant aucun
-    mot, ainsi défini comme ceci~: \(L = \varnothing\).
+    Un \textit{langage} \(L\) est un ensemble de mots sur un alphabet fini
+    \(\Sigma\). On appellera \textit{langage vide} le langage ne comportant
+    aucun mot, ainsi défini comme ceci~: \(L = \varnothing\).
 \end{definition}
 
 \begin{example}
@@ -148,7 +148,7 @@ quelles opérations sont munis sur les langages.
 
 \begin{definition}
     L'une des opérations sur les langages est l'\textit{union}. On parlera de
-    l'union de langage noté \(L_1 \cup L_2\) et défini comme ceci~:
+    l'union de langage notée \(L_1 \cup L_2\) et définie comme ceci~:
 
     \begin{gather*}
         L_1 \cup L_2 = \{w \in \Sigma ^ * ~|~ w \in L_1 \lor w \in L_2\}
@@ -182,9 +182,9 @@ quelles opérations sont munis sur les langages.
 \end{example}
 
 \begin{definition}
-    Un autre opération sur les langages est la \textit{concaténation}. Elle est
-    bien sûr définie en utilisant la concaténation des mots qui compose les
-    langages. Cette opération est ainsi définie comme ceci~:
+    Une autre opération sur les langages est la \textit{concaténation}. Elle
+    est bien sûr définie en utilisant la concaténation des mots qui composent
+    les langages. Cette opération est ainsi définie comme ceci~:
 
     \begin{gather*}
         L_1 \cdot L_2 = \{u \cdot v ~|~ u \in L_1, v \in L_2\}
@@ -206,7 +206,7 @@ quelles opérations sont munis sur les langages.
 
 \begin{definition}
     Par extension, on définit la \textit{copie n-ième} d'un langage \(L\) notée
-    \(L^n\) et défini récursivement comme ceci~:
+    \(L^n\) et définit récursivement comme ceci~:
 
     \begin{gather*}
         L^0 = \{\varepsilon\} \\
@@ -225,8 +225,8 @@ quelles opérations sont munis sur les langages.
 \end{example}
 
 \begin{definition}
-    Grâce à cette opération, on peut définir l'\textit{étoile} d'un langage notée
-    \(L^*\). Qui peut être défini comme ceci~:
+    Grâce à cette opération, on peut définir l'\textit{étoile} d'un langage
+    notée \(L^*\). Qui peut être défini comme ceci~:
 
     \begin{gather*}
         L^* = \bigcup_{i \geq 0} L^i
