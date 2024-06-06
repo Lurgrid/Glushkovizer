@@ -1,4 +1,4 @@
-\section{Les expressions rationnelles}
+\section{Les expressions régulières}
 
 Dans cette section, nous parlerons d'expressions régulières (\textit{ER}). Nous
 allons nous concentrer sur un type bien particulier d'expressions régulières
@@ -15,13 +15,18 @@ Cette expression reconnait un langage qu'on pourra appeler \(L(E)\). Nous
 pouvons définir une expression régulière récursivement de cette manière~:
 
 \begin{align}
-    E & = \varepsilon                             \\
-    E & = a                                       \\
-    E & = F + G                                   \\
-    E & = F \cdot G                               \\
-    E & = F^*                                     \\
-    E & = (F)\label{align:parenthese}             \\
-    \text{avec } (E, F, G) & \in (Exp(\Sigma))^3,~ a \in \Sigma \notag
+    E & = \varepsilon                 \\
+    E & = a                           \\
+    E & = F + G                       \\
+    E & = F \cdot G                   \\
+    E & = F^*                         \\
+    E & = (F)\label{align:parenthese} \\
+    \makebox[0pt][c]{
+        \phantom{E } \text{
+            avec \(E\), \(F\) et \(G\) des expressions régulières sur \(\Sigma\) et \(a\)
+            un symbole de \(\Sigma\)
+        }
+    } \notag
 \end{align}
 
 On notera que \(*\) est prioritaire sur \(\cdot\) qui est lui-même prioritaire
@@ -34,7 +39,7 @@ calcul\label{subsec:parenthese}. On peut définir chaque équation comme ceci~:
 \vphantom{}
 
 \begin{itemize}
-    \item[\textbullet] \textbf{\(E = \varepsilon\) (epsilon)~:}
+    \item[\textbullet] \textbf{\(E = \varepsilon\)~:}
         Représente le mot vide, de ce fait un mot de longueur zéro. Il peut être
         parfois représenté par \og{}\$\fg{}.
 
@@ -57,9 +62,9 @@ calcul\label{subsec:parenthese}. On peut définir chaque équation comme ceci~:
 
         \vphantom{}
 
-    \item[\textbullet] \textbf{\(E = F^* \)~:} Représente la répétition
-        infinie de \(F\), cette répétition incluant la puissance zéro et donc
-        le mot vide.
+    \item[\textbullet] \textbf{\(E = F^* \)~:} Représente l'union infinie de
+        copie de \(F\), cette répétition incluant la puissance zéro et donc le
+        mot vide.
 \end{itemize}
 
 \vphantom{}
@@ -67,14 +72,19 @@ calcul\label{subsec:parenthese}. On peut définir chaque équation comme ceci~:
 Pour calculer le langage que dénote l'expression régulière, on peut le calculer
 récursivement de cette manière~:
 
-\begin{gather*}
-    L(\varepsilon) = \{\varepsilon\} \\
-    L(a) = \{a\} \\
-    L(F + G) = L(F) \cup L(G) \\
-    L(F \cdot G) = L(F) \cdot L(G) \\
-    L(F^*) = (L(F))^* \\
-    \text{Avec } a \in \Sigma \text{ et } (F, G) \in (Exp(\Sigma))^2 \notag
-\end{gather*}
+\begin{align*}
+    L(\varepsilon) & = \{\varepsilon\} \\
+    L(a) & = \{a\}           \\
+    L(F + G) & = L(F) \cup L(G)  \\
+    L(F \cdot G) & = L(F) \cdot L(G) \\
+    L(F^*) & = (L(F))^*        \\
+    \makebox[0pt][c]{
+        \phantom{E } \text{
+            avec \(F\) et \(G\) des expressions régulières sur \(\Sigma\) et \(a\)
+            un symbole de \(\Sigma\)
+        }
+    } \notag
+\end{align*}
 
 \begin{example}
     On comprendra ainsi que l'expression \(E = a+c \cdot d\) avec \(E \in
@@ -176,13 +186,23 @@ récursivement de cette manière~:
 
 \subsection{Fonction sur les \textit{ER}}
 
-Une des fonctions sur les expressions régulières est \(flnf\) permettant de
-calculer \(FLNF(Exp(\Sigma))\) qui est un tuple défini comme ceci~:
+Plusieurs informations sur les expressions régulières nous seront utiles, comme
+l'ensemble des premiers/derniers symboles des mots du langage décrit par
+l'expression. Il serait aussi intéressant de savoir si son langage contient le
+mot vide. Et d'avoir les successeurs des symboles, c'est-à-dire les symboles
+suivant un symbole donné.
+
+\vphantom{}
+
+On pourrait calculer individuellement chaque information, mais nous pouvons
+calculer tout d'un coup avec une fonction qu'on pourrait appeler \(flnf\). Elle
+permet de calculer \(FLNF(E)\) qui est un tuple, avec \(E\) une expression
+régulière sur \(\Sigma\) et défini comme ceci~:
 
 \vphantom{}
 
 \begin{center}
-    \(FLNF(Exp(\Sigma)) = (F, L, \Theta, \delta)\)
+    \(FLNF(E) = (F, L, \Theta, \delta)\)
 
     \begin{itemize}
         \item[\textbullet] \(F \subseteq \Sigma\)~: Ensemble des premiers
@@ -205,8 +225,7 @@ calculer \(FLNF(Exp(\Sigma))\) qui est un tuple défini comme ceci~:
 
             \vphantom{}
 
-        \item[\textbullet] \(\delta\)~: \(\Sigma \to 2^{\Sigma}\). \\
-            Fonction renvoyant les symboles suivants du symbole passé en
+        \item[\textbullet] \(\delta\)~: \(\Sigma \to 2^{\Sigma}\) fonction renvoyant les symboles suivants du symbole passé en
             argument.
     \end{itemize}
 \end{center}
@@ -423,9 +442,9 @@ Elle peut être définie de cette manière, pour \(a \in \Sigma\) et \((E, F) \i
 \end{gather*}
 
 Avec cette définition, on peut voir que tous les symboles sont associés à un
-unique entier. Ce qui fait que l’expression régulière résultante ne contient
+unique entier. Ce qui fait que l'expression régulière résultante ne contient
 que des symboles uniques. Et que, de ce fait, si deux couples partagent le même
-entier, cela implique qu’ils ont la même valeur de symbole.
+entier, cela implique qu'ils ont la même valeur de symbole.
 
 \begin{example}
 
@@ -489,14 +508,14 @@ entier, cela implique qu’ils ont la même valeur de symbole.
 
 \subsection{Conclusion}
 
-On saisit aisément que ces expressions ont beau être simples (peu d’opération
-comparé aux expressions régulières d’\textit{UNIX}). Elles n’en sont rien, pas
-complètes. On peut voir qu’elles permettent de décrire des langages très
+On saisit aisément que ces expressions ont beau être simples (peu d'opération
+comparé aux expressions régulières d'\textit{UNIX}). Elles n'en sont rien, pas
+complètes. On peut voir qu'elles permettent de décrire des langages très
 complexes et en quantité infinie. En revanche, il est difficile de savoir si un
 mot est reconnu par une expression régulière simplement. Par exemple est-ce que
 le mot \(eipipipipipip\) est reconnu par cette expression \(((((o \cdot
 \varepsilon)+(\varepsilon \cdot e))+((g\cdot \varepsilon) \cdot \varepsilon^*))
 \cdot ((\varepsilon \cdot i)\cdot (p+\varepsilon))^*)\)~? La réponse est oui.
-C’est pour cela qu’il serait peut-être intéressant d’utiliser une autre
+C'est pour cela qu'il serait peut-être intéressant d'utiliser une autre
 structure de donnée pour reconnaitre des mots, comme les automates que nous
 allons voir maintenant.

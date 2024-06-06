@@ -10,7 +10,7 @@ un langage et quelles opérations sont munies par les langages.
 \subsection{Les mots}
 
 \begin{definition}
-    Un \textit{alphabet} \(\Sigma\) est un ensemble fini de symboles non-vides.
+    Un \textit{alphabet} \(\Sigma\) est un ensemble fini non-vide de symboles.
     Un \textit{mot} est une suite finie de symboles sur un alphabet \(\Sigma\).
     Le mot composé de zéro symbole est appelé mot vide et est noté
     \(\varepsilon\).
@@ -37,9 +37,9 @@ un langage et quelles opérations sont munies par les langages.
 \end{example}
 
 \begin{definition}
-    Une des opérations sur les mots est la concaténation de mots. On notera
-    donc la \textit{concaténation} de deux mots \(u = a_1 \cdots a_n\) et \(v =
-    b_1 \cdots b_n\) par \(u \cdot v\). Qui est ainsi égal à \(u \cdot v = a_1
+    Une des opérations sur les mots est la concaténation de mots. On notera la
+    \textit{concaténation} de deux mots \(u = a_1 \cdots a_n\) et \(v = b_1
+    \cdots b_n\) par \(u \cdot v\). Qui est ainsi égal à \(u \cdot v = a_1
     \cdots a_n b_1 \cdots b_n\). On définit l'ensemble des mots sur \(\Sigma\)
     par \(\Sigma ^ *\). On notera que~:
 
@@ -47,7 +47,7 @@ un langage et quelles opérations sont munies par les langages.
         \item La concaténation est associative \((w \cdot u) \cdot v = w \cdot
               (u \cdot v)\).
         \item La concaténation admet un élément neutre \(u \cdot \varepsilon =
-              \epsilon \cdot u = u\).
+              \varepsilon \cdot u = u\).
     \end{itemize}
 
     \noindent Ce qui implique que l'ensemble \(\Sigma ^ *\) muni de la concaténation
@@ -183,8 +183,8 @@ un langage et quelles opérations sont munies par les langages.
 
 \begin{definition}
     Une autre opération sur les langages est la \textit{concaténation}. Elle
-    est bien sûr définie en utilisant la concaténation des mots qui composent
-    les langages. Cette opération est ainsi définie comme ceci~:
+    est définie en utilisant la concaténation des mots qui composent les
+    langages. Cette opération est ainsi définie comme ceci~:
 
     \begin{gather*}
         L_1 \cdot L_2 = \{u \cdot v ~|~ u \in L_1, v \in L_2\}
@@ -226,7 +226,7 @@ un langage et quelles opérations sont munies par les langages.
 
 \begin{definition}
     Grâce à cette opération, on peut définir l'\textit{étoile} d'un langage
-    notée \(L^*\). Qui peut être défini comme ceci~:
+    notée \(L^*\). Qui peut être définie comme ceci~:
 
     \begin{gather*}
         L^* = \bigcup_{i \geq 0} L^i

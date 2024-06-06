@@ -1,11 +1,11 @@
 \section{Les automates}
 
 Dans cette partie, nous parlerons des automates et plus particulièrement, nous
-allons parler des automates sans \(\varepsilon\) transition (de célèbres
-automates utilisent des \(\varepsilon\) transitions, comme ceux de
+allons parler des automates sans \(\varepsilon\)-transition (de célèbres
+automates utilisent des \(\varepsilon\)-transitions, comme ceux de
 \textit{Thompson}, qui sont utilisés par nos ordinateurs). Pour autant, les
-automates que nous verrons sont tout aussi bons que ceux avec \(\varepsilon\)
-transition.
+automates que nous verrons sont tout aussi bons que ceux avec
+\(\varepsilon\)-transition.
 
 \subsection{Définition}
 
@@ -168,8 +168,8 @@ En la définissant récursivement de telle sorte~:
 
 \begin{definition}
     Un automate est \textit{homogène} quand, pour tous les états, les
-    transitions allant vers cet état ont la même valeur. En d’autres termes,
-    quand il respecte cette propriété :
+    transitions allant vers cet état ont la même valeur. En d'autres termes,
+    quand il respecte cette propriété~:
 
     \begin{gather*}
         M = (Q, I, F, \delta) \quad \text{avec} \\
@@ -192,8 +192,8 @@ En la définissant récursivement de telle sorte~:
 
 \begin{definition}
     Un automate est considéré comme \textit{coaccessible} au moment où, de tous
-    les états, on peut arriver à un état final. Ceci veut dire qu’il atteste de
-    cette particularité :
+    les états, on peut arriver à un état final. Ceci veut dire qu'il atteste de
+    cette particularité~:
 
     \begin{gather*}
         M = (Q, I, F, \delta) \quad \text{avec} \\
@@ -228,8 +228,8 @@ En la définissant récursivement de telle sorte~:
     état initial (\(q_1\)), mais \(q_3\), \(q_4\) et \(q_5\) ne respecte pas la
     propriété pour être homogène, parce qu'ils ont des transitions allant vers
     eux avec des valeurs différentes. De plus, tous ses états sont accessibles
-    depuis l'état initial et son inverse est, lui-même aussi, accessible. Et
-    bien sûr, il n'est pas déterministe.
+    depuis l'état initial. Et son inverse est, lui-même aussi, accessible et il
+    n'est pas déterministe.
 \end{example}
 
 \begin{definition}
@@ -370,11 +370,11 @@ Elle peut être définie simplement comme ceci~:
 \subsection{Conclusion}
 
 Comme nous venons de voir, les automates sont des outils puissants pour
-reconnaitre des mots d’un langage. L’une de leurs grandes forces est leur
+reconnaitre des mots d'un langage. L'une de leurs grandes forces est leur
 simplicité. Toutes les opérations sur les automates peuvent donc être
 automatisées. Ce qui fait que cet objet est très intéressant dans le monde de
-l’informatique. En revanche, l’un de ses points faibles est sa représentation.
+l'informatique. En revanche, l'un de ses points faibles est sa représentation.
 Il est difficile de représenter des très gros automates, contrairement aux
 expressions régulières. Il serait alors intéressant de pouvoir convertir une
-expression régulière en automate. C’est ce que nous allons voir dans la
+expression régulière en automate. C'est ce que nous allons voir dans la
 prochaine section.
