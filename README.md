@@ -6,7 +6,7 @@ regular expressions into automata and analysis of automata and their orbits.
 ## Formal definition
 
 The formal definition of data types used by this library is available in French
-[here](./glushkovizer/doc/formal.pdf)
+[here](./doc/formal.pdf)
 
 ## Examples
 
