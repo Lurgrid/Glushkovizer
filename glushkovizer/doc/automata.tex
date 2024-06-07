@@ -1,11 +1,11 @@
 \section{Les automates}
 
 Dans cette partie, nous parlerons des automates et plus particulièrement, nous
-allons parler des automates sans \(\varepsilon\)-transition (de célèbres
-automates utilisent des \(\varepsilon\)-transitions, comme ceux de
-\textit{Thompson}, qui sont utilisés par nos ordinateurs). Pour autant, les
-automates que nous verrons sont tout aussi bons que ceux avec
-\(\varepsilon\)-transition.
+allons parler des automates sans \(\varepsilon\)-transition (des automates
+utilisent des \(\varepsilon\)-transitions, comme ceux de
+\textit{Thompson}~\cite{thompson1968programming}, qui sont utilisés par nos
+ordinateurs). Pour autant, les automates que nous verrons ne sont pas limités
+par le manque de ces transitions.
 
 \subsection{Définition}
 
@@ -14,8 +14,8 @@ langage. On notera \(M \in AFN(\Sigma, \eta)\) l'automate qui a pour transition
 des valeurs dans \(\Sigma\), des valeurs \og{}d'état\fg{} dans \(\eta\). Et
 \(AFN(\Sigma, \eta)\) l'ensemble des automates finis non déterministes de
 valeur de transition dans \(\Sigma\) et de valeur d'état dans \(\eta\). On
-écrira donc \(L(M)\) pour désigner le langage qu'il reconnait. Un automate est
-un tuple qu'on peut écrire de cette forme \(M = (Q, I, F, \delta)\) avec~:
+écrira \(L(M)\) pour désigner le langage qu'il reconnait. Un automate est un
+tuple qu'on peut écrire de cette forme \(M = (Q, I, F, \delta)\) avec~:
 
 \begin{align*}
     Q & \subseteq \eta \quad \text{L'ensemble des états qui constituent
@@ -70,10 +70,11 @@ défini comme ceci~:
     }\label{fig:automata}
 \end{figure}
 
-Dans la Figure~\ref{fig:automata}, on peut voir que les états initiaux (ici que
-\(q_1\)) ont une petite flèche qui pointe sur eux et que les états finaux ont
-un double contour. Et que les transitions sont symbolisées par des flèches
-entre les états et que ces flèches sont labellisées.
+Dans la Figure~\ref{fig:automata}, on peut voir que les états initiaux (dans
+cet automate n'y a qu'un seul initial~; \(q_1\)) ont une petite flèche qui
+pointe sur eux et que les états finaux ont un double contour. Et que les
+transitions sont symbolisées par des flèches entre les états et que ces flèches
+sont labellisées.
 
 % \vphantom{}
 
@@ -141,23 +142,22 @@ En la définissant récursivement de telle sorte~:
 \end{align*}
 
 \begin{example}
-    Voici donc quelques exemples de ce que ça nous donnerait si on reprend
-    l'automate utilisé pour la représentation graphique
-    (Figure~\ref{fig:automata})~:
+    Voici donc quelques exemples si on prend l'automate utilisé pour la
+    représentation graphique (Figure~\ref{fig:automata})~:
 
-    \begin{gather*}
-        \delta(q_1, 00) = \varnothing \\
-        \delta(q_1, 11) = \{q_3\} \\
-        \delta(q_1, \varepsilon) = \{q_1\} \\
-        \delta(q_1, 10 \cdot 1^*) = \{q_5\}
-    \end{gather*}
+    \begin{align*}
+        \delta(q_1, 00)           & = \{q_5\}                                \\
+        \delta(q_1, 11)           & = \varnothing                            \\
+        \delta(q_1, \varepsilon)  & = \{q_1\}                                \\
+        \delta(q_1, 00 \cdot 1^n) & = \{q_5\} \text{ avec } n \in \mathbb{N}
+    \end{align*}
 \end{example}
 
 \vphantom{}
 
 \begin{definition}
-    Un automate est dit \textit{standard} à l'instant où il ne possède qu'un
-    seul état initial non ré-entrant, aussi défini comme ceci~:
+    Un automate est dit \textit{standard} quand il ne possède qu'un seul état
+    initial non ré-entrant, aussi défini comme ceci~:
 
     \begin{gather*}
         M = (Q, \{i\}, F, \delta) \quad \text{avec} \\
@@ -167,7 +167,7 @@ En la définissant récursivement de telle sorte~:
 \end{definition}
 
 \begin{definition}
-    Un automate est \textit{homogène} quand, pour tous les états, les
+    Un automate est \textit{homogène} lorsque, pour tous les états, les
     transitions allant vers cet état ont la même valeur. En d'autres termes,
     quand il respecte cette propriété~:
 
@@ -191,8 +191,8 @@ En la définissant récursivement de telle sorte~:
 \end{definition}
 
 \begin{definition}
-    Un automate est considéré comme \textit{coaccessible} au moment où, de tous
-    les états, on peut arriver à un état final. Ceci veut dire qu'il atteste de
+    Un automate est considéré comme \textit{coaccessible} dès que, de tous les
+    états, on peut arriver à un état final. Ceci veut dire qu'il atteste de
     cette particularité~:
 
     \begin{gather*}
@@ -204,7 +204,8 @@ En la définissant récursivement de telle sorte~:
 
 \begin{definition}
     Un automate est dit \textit{déterministe} quand tous ses états vont au
-    maximum à un état par symbole. Autrement dit qu'il valide cette propriété~:
+    maximum à un état par symbole et que l'automate ne possède qu'un seul état
+    initial. Autrement dit qu'il valide cette propriété~:
 
     \begin{gather*}
         M = (Q, I, F, \delta) \quad \text{avec} \\
@@ -239,8 +240,8 @@ En la définissant récursivement de telle sorte~:
 
     \begin{gather*}
         N = (Q', I', F', \delta') \quad \text{avec} \\
-        Q' \subseteq Q \land I' \subseteq I \land F' \subseteq F \\
-        \delta' \text{ est une restriction de } \delta \\
+        Q' \subseteq Q \land I' \subseteq Q' \land F' \subseteq Q' \\
+        \delta' \text{ est une restriction de } \delta, \delta': Q' \to 2^{Q'}\\
         M = (Q, I, F, \delta) \land (M, N) \in (AFN(\Sigma, \eta))^2 \notag
     \end{gather*}
 \end{definition}
@@ -260,8 +261,8 @@ dire qu'un automate fortement connexe vérifierait ceci~:
 \begin{definition}
     Une autre notion qui est présente sur les graphes que nous allons adapter
     sur les automates est la notion de \textit{hamac}. Nous dirons qu'un
-    automate est un \textit{hamac} à l'instant où il est standard, accessible
-    et coaccessible (nous gardons le nom \textit{hamac} pour une raison de
+    automate est un \textit{hamac} lorsqu'il est standard, accessible et
+    coaccessible (nous gardons le nom \textit{hamac} pour une raison de
     compréhension). Ceci veut dire qu'il peut être décrit comme ceci~:
 
     \begin{gather*}
@@ -270,15 +271,6 @@ dire qu'un automate fortement connexe vérifierait ceci~:
         M \in AFN(\Sigma, \eta) \notag
     \end{gather*}
 \end{definition}
-
-\begin{conjecture}
-    La représentation d'un automate \textit{hamac} en graphe. C'est-à-dire en
-    enlevant le concept d'états initiaux, finaux et en ajoutant un nouvel état
-    où tous les finaux ont une transition vers lui. Et en retirant les valeurs
-    de transition. Le graphe résultant est lui-même un \textit{hamac} avec
-    comme \textit{racine} l'état initial et l'\textit{anti-racine} l'état
-    ajouté lors de la transformation.
-\end{conjecture}
 
 \begin{definition}
     Une autre idée empruntée au graphe est la notion d'\textit{orbite}. Nous
@@ -293,7 +285,7 @@ dire qu'un automate fortement connexe vérifierait ceci~:
     \end{gather*}
 
     \noindent Dans la même idée, nous parlerons d'\textit{orbite maximale}
-    lorsque l'orbite n'est incluse dans aucune autre orbite. En d'autres
+    lorsque l'orbite n'est incluse dans aucune orbite différente. En d'autres
     termes, que l'orbite est fortement connexe sans prendre les chemins
     triviaux
     (mot vide).
@@ -302,13 +294,13 @@ dire qu'un automate fortement connexe vérifierait ceci~:
 \begin{definition}
     Nous noterons \(In(\mathcal{O})\) et \(Out(\mathcal{O})\) respectivement
     l'ensemble des portes d'entrée et l'ensemble des portes de sortie de
-    l'orbite \(\mathcal{O}\). Qui peuvent être définies de cette façon~:
+    l'orbite \(\mathcal{O}\). Qui sont définies de cette façon~:
 
     \begin{gather*}
-        In(\mathcal{O}) = \{p \in Q' ~|~ \exists a \in \Sigma, \exists q \in Q,
-        p \in \delta(q, a)\} \\
-        Out(\mathcal{O}) = \{p \in Q' ~|~ \exists a \in \Sigma, \exists q \in
-        Q, q \in \delta(p, a)\} \\
+        In(\mathcal{O}) = \{p \in Q' ~|~ \exists a \in \Sigma, \exists q \in Q
+        \setminus Q', p \in \delta(q, a)\} \cup I'\\
+        Out(\mathcal{O}) = \{p \in Q' ~|~ \exists a \in \Sigma, \exists q \in Q
+        \setminus Q', q \in \delta(p, a)\} \cup F'\\
         \text{avec} \\
         \mathcal{O} = (Q', I', F', \delta') \land M = (Q, I, F, \delta) \\
         \mathcal{O} \subseteq M \land M \in AFN(\Sigma, \eta)
@@ -329,7 +321,8 @@ dire qu'un automate fortement connexe vérifierait ceci~:
 
     \noindent On la qualifiera même de \textit{fortement stable} lorsqu'en
     supprimant toutes les transitions de portes des sorties vers les portes
-    d'entrée, les orbites maximales de l'orbite sont \textit{fortement stables}.
+    d'entrée, les orbites maximales de l'orbite sont stables et
+    \textit{fortement stables}.
 \end{definition}
 
 \begin{definition}
@@ -338,24 +331,24 @@ dire qu'un automate fortement connexe vérifierait ceci~:
     états. Autrement dit, que l'orbite valide cette propriété~:
 
     \begin{gather*}
-        \forall (p, q) \in (Out(\mathcal{O}))^2, \bigcup_{a \in \Sigma} \delta(p, a) = \bigcup_{a \in \Sigma} \delta(q, a) \\
-        \forall (p, q) \in (In(\mathcal{O}))^2, \{r \in Q ~|~ \exists a \in \Sigma, p \in \delta(r, a)\} = \{r \in Q ~|~ \exists a \in \Sigma, q \in \delta(r, a)\} \\
+        \forall (p, q) \in (Out(\mathcal{O}))^2, (\bigcup_{a \in \Sigma} \delta(p, a)) \cap Q \setminus Q' = (\bigcup_{a \in \Sigma} \delta(q, a)) \cap Q \setminus Q' \\
+        \forall (p, q) \in (In(\mathcal{O}))^2, \{r \in Q \setminus Q' ~|~ \exists a \in \Sigma, p \in \delta(r, a)\} = \{r \in Q \setminus Q' ~|~ \exists a \in \Sigma, q \in \delta(r, a)\} \\
         \text{avec} \\
-        \mathcal{O} \subseteq M = (Q, I, F, \delta) \land M \in AFN(\Sigma, \eta)
+        \mathcal{O} = (Q', I', F', \delta) \subseteq M = (Q, I, F, \delta) \land M \in AFN(\Sigma, \eta)
     \end{gather*}
 
     \noindent Elle sera même \textit{fortement transversale} lorsqu'en
     supprimant toutes les transitions de portes des sorties vers les portes
-    d'entrée, les orbites maximales de l'orbite sont
+    d'entrée, les orbites maximales de l'orbite sont transversales et
     \textit{fortement transversales}.
 \end{definition}
 
 \subsection{Fonction sur les automates}
 
-Une des fonctions sur les automates est \(accept\) qui test si le mot est
+Une des fonctions sur les automates est \(accept\) qui vérifie si le mot est
 reconnu par l'automate. C'est-à-dire que si on prend le chemin décrit par le
-mot donner en argument, on arrive sur un ou plusieurs états finaux. Elle a
-alors pour signature~:
+mot donné en argument, on arrive sur un ou plusieurs états finaux. Elle a alors
+pour signature~:
 
 \[
     accept: AFN(\Sigma, \eta) \times \Sigma^* \to \mathbb{B}
@@ -364,17 +357,17 @@ alors pour signature~:
 Elle peut être définie simplement comme ceci~:
 
 \begin{align*}
-    accept(M, w) = \exists q \in \bigcup_{p \in I} \delta(p, w) ~|~ q \in F
+    accept(M, w) = (\bigcup_{p \in I} \delta(p, w)) \cap F \neq \varnothing
 \end{align*}
 
 \subsection{Conclusion}
 
-Comme nous venons de voir, les automates sont des outils puissants pour
-reconnaitre des mots d'un langage. L'une de leurs grandes forces est leur
-simplicité. Toutes les opérations sur les automates peuvent donc être
-automatisées. Ce qui fait que cet objet est très intéressant dans le monde de
-l'informatique. En revanche, l'un de ses points faibles est sa représentation.
-Il est difficile de représenter des très gros automates, contrairement aux
-expressions régulières. Il serait alors intéressant de pouvoir convertir une
-expression régulière en automate. C'est ce que nous allons voir dans la
-prochaine section.
+Comme nous venons de voir, les automates sont des outils pour reconnaitre des
+mots d'un langage. L'une de leurs grandes forces est leur simplicité. Toutes
+les opérations sur les automates peuvent donc être automatisées. Ce qui fait
+que cet objet est très intéressant dans le monde de l'informatique. En
+revanche, l'un de ses points faibles est que pour nous humain, il est difficile
+de représenter un automate autrement que par une représentation graphique.
+Contrairement aux expressions régulières. Il serait alors intéressant de
+pouvoir convertir une expression régulière en automate. C'est ce que nous
+allons voir dans la prochaine section.

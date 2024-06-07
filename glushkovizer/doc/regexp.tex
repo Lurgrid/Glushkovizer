@@ -196,13 +196,16 @@ suivant un symbole donné.
 
 On pourrait calculer individuellement chaque information, mais nous pouvons
 calculer tout d'un coup avec une fonction qu'on pourrait appeler \(flnf\). Elle
-permet de calculer \(FLNF(E)\) qui est un tuple, avec \(E\) une expression
-régulière sur \(\Sigma\) et défini comme ceci~:
+permet de calculer un tuple contenant toutes ces informations pour une
+expression régulière donné.
 
 \vphantom{}
 
+On aurait donc pour une expression régulière \(E\) sur l'alphabet \(\Sigma\),
+ceci~:
+
 \begin{center}
-    \(FLNF(E) = (F, L, \Theta, \delta)\)
+    \(flnf(E) = (F, L, \Theta, \delta)\)
 
     \begin{itemize}
         \item[\textbullet] \(F \subseteq \Sigma\)~: Ensemble des premiers
@@ -225,19 +228,20 @@ régulière sur \(\Sigma\) et défini comme ceci~:
 
             \vphantom{}
 
-        \item[\textbullet] \(\delta\)~: \(\Sigma \to 2^{\Sigma}\) fonction renvoyant les symboles suivants du symbole passé en
-            argument.
+        \item[\textbullet] \(\delta\)~: \(\Sigma \to 2^{\Sigma}\) fonction
+            renvoyant les successeurs du symbole donné
     \end{itemize}
 \end{center}
 
 La fonction \(flnf\) a donc comme signature~:
 
 \begin{align*}
-    flnf: Exp(\Sigma) \to FLNF(Exp(\Sigma))
+    flnf: Exp(\Sigma) \to (2^{\Sigma} \times 2^{\Sigma} \times
+    \{\varnothing,\{\varepsilon\}\} \times \Sigma \to 2^{\Sigma})
 \end{align*}
 
-Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
-(Exp(\Sigma))^2\)~:
+Et peut-être calculée de cette manière, pour \(E\) et \(G\) des expressions
+régulière sur l'alphabet \(\Sigma\) et \(a\) un symbole de \(\Sigma\)~:
 
 \begin{align*}
     flnf(\varepsilon) & = (\varnothing, \varnothing, \varepsilon, \delta) ~|~
@@ -263,10 +267,16 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
 \end{gather*}
 
 \begin{gather*}
-    flnf(E^*) = (F, L, \varepsilon, \delta')~ \text{avec} \\
+    flnf(E^*) = (F, L, \{\varepsilon\}, \delta')~ \text{avec} \\
     \delta'(a) = \begin{cases} \delta(a) \cup F, & \text{si}~ a \in L \\ \delta(a) & \text{sinon}\end{cases} ~|~ \forall a \in \Sigma\notag \\
     (F, L, \Theta, \delta) = flnf(E) \notag
 \end{gather*}
+
+\begin{remark}
+    Il existe un isomorphisme entre les fonctions et les couple antécédents,
+    images. Ce qui fait que la fonction des successeurs pourra être représenté
+    à l'aide d'un couple.
+\end{remark}
 
 \begin{example}
     Prenons par exemple l'expression régulière suivante \(E = a \cdot b + c
@@ -321,8 +331,7 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
         \end{tikzpicture}
         \caption{
             Représentation de l'expression régulière à l'aide d'un arbre
-            syntaxique. Pour des raisons de compréhension, \(\delta\) est
-            représentée à l'aide d'un ensemble de couples.
+            syntaxique.
         }
     \end{figure}
 
@@ -343,8 +352,8 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
     Un autre exemple pourrait être \(E' = (a + b) \cdot c^*\), avec cet
     exemple, on voit l'utilité de la parenthèse, car sans elle la concaténation
     aurait été sur \(b \cdot c^*\). Et comme dit précédemment
-    (\ref{subsec:parenthese}), son calcul reste le même que si c'était une
-    union.
+    (\ref{subsec:parenthese}), son calcul revient à calculer l'expression
+    contenue entre les parenthèses.
 
     \begin{figure}[H]
         \centering
@@ -391,8 +400,7 @@ Et peut-être calculée de cette manière, pour \(a \in \Sigma\) et \((E, G) \in
         \end{tikzpicture}
         \caption{
             Représentation de l'expression régulière à l'aide d'un arbre
-            syntaxique. Pour des raisons de compréhension, \(\delta\) est
-            représentée à l'aide d'un ensemble de couples.
+            syntaxique.
         }
     \end{figure}
 
@@ -448,8 +456,8 @@ entier, cela implique qu'ils ont la même valeur de symbole.
 
 \begin{example}
 
-    Si on reprend cette expression régulière \(E = \varepsilon + b^* \cdot b\),
-    avec \(E \in Exp(\Sigma)\) et \(\Sigma = \{a, b, c, d\}\).
+    Si on prend l'expression régulière \(E = \varepsilon + b^* \cdot b\), avec
+    \(E \in Exp(\Sigma)\) et \(\Sigma = \{a, b, c, d\}\).
 
     \begin{figure}[H]
         \centering
@@ -509,13 +517,12 @@ entier, cela implique qu'ils ont la même valeur de symbole.
 \subsection{Conclusion}
 
 On saisit aisément que ces expressions ont beau être simples (peu d'opération
-comparé aux expressions régulières d'\textit{UNIX}). Elles n'en sont rien, pas
-complètes. On peut voir qu'elles permettent de décrire des langages très
-complexes et en quantité infinie. En revanche, il est difficile de savoir si un
-mot est reconnu par une expression régulière simplement. Par exemple est-ce que
-le mot \(eipipipipipip\) est reconnu par cette expression \(((((o \cdot
-\varepsilon)+(\varepsilon \cdot e))+((g\cdot \varepsilon) \cdot \varepsilon^*))
-\cdot ((\varepsilon \cdot i)\cdot (p+\varepsilon))^*)\)~? La réponse est oui.
-C'est pour cela qu'il serait peut-être intéressant d'utiliser une autre
-structure de donnée pour reconnaitre des mots, comme les automates que nous
-allons voir maintenant.
+comparé aux expressions régulières d'\textit{UNIX}). On peut voir qu'elles
+permettent de décrire des langages très complexes et en quantité infinie. En
+revanche, il est difficile de savoir si un mot est reconnu par une expression
+régulière simplement. Par exemple est-ce que le mot \(eipipipipipip\) est
+reconnu par cette expression \(((((o \cdot \varepsilon)+(\varepsilon \cdot
+e))+((g\cdot \varepsilon) \cdot \varepsilon^*)) \cdot ((\varepsilon \cdot
+i)\cdot (p+\varepsilon))^*)\)~? La réponse est oui. C'est pour cela qu'il
+serait peut-être intéressant d'utiliser un autre objet pour reconnaitre des
+mots, comme les automates que nous allons voir maintenant.

@@ -25,14 +25,13 @@
 
 \theoremstyle{definition}
 
-\newtheorem{conjecture}{Conjecture}[section]
 \newtheorem{definition}{Définition}[section]
+\newtheorem{remark}[definition]{Remarque}
 \newtheorem{lemma}[definition]{Lemme}
 \newtheorem{example}{Example}[definition]
 
 \makeatletter
 \renewcommand{\thedefinition}{\arabic{section}.\arabic{definition}}
-\renewcommand{\theconjecture}{\arabic{section}.\arabic{conjecture}}
 \makeatother
 
 %--- begin document -----------------------------------------------------------

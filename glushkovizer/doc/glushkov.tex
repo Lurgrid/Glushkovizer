@@ -3,7 +3,8 @@
 Le terme \og{}automate de Glushkov\fg{} est un abus de langage, faisant
 référence aux automates que l'algorithme de transformation d'expression
 régulière en automate, appelé algorithme de Glushkov produit. Son nom vient de
-l'informaticien soviétique \textit{Victor Glushkov} qui est son créateur.
+l'informaticien soviétique Victor Glushkov qui est son
+créateur~\cite{V_M_Glushkov_1961}.
 
 \subsection{Définition}
 
@@ -26,7 +27,7 @@ Et a ainsi, on peut définir cette fonction de cette façon~:
 \end{align*}
 
 \begin{example}
-    Vu qu'un dessin vaut toujours mieux que mile mots, voici un exemple de
+    Vu qu'un dessin vaut toujours mieux que mille mots, voici un exemple de
     l'automate résultant de la transformation de cette expression \(E = (a+b)
     \cdot a^* \cdot b^* \cdot (a+b)^*\).
 
@@ -80,11 +81,8 @@ Et a ainsi, on peut définir cette fonction de cette façon~:
 
 \vphantom{}
 
-Comme on peut voir sur la Figure~\ref{fig:automata_glushkov} les automates
-produits sont bien souvent gros et peuvent être difficiles à comprendre, mais
-une machine peut gérer ça très simplement. Outre sa taille, on peut remarquer
-qu'il y a des propriétés intéressantes sur cet automate. C'est ce que l'on va
-étudier maintenant.
+On peut remarquer qu'il y a des propriétés intéressantes sur cet automate.
+C'est ce que l'on va étudier maintenant.
 
 \subsection{Propriétés~:}
 
@@ -95,48 +93,45 @@ document~\cite{DBLP:journals/tcs/CaronZ00}).
 
 \vphantom{}
 
-\begin{itemize}[label=\textbullet]
-    \item La première propriété, plut\^{o}t évidente, est que les automates de
-          Glushkov sont \textit{standards}, car par construction, il ne peut
-          avoir qu'un seul état initial (0).
+\begin{enumerate}
+    \item Les automates de Glushkov sont \textit{standards}, car par construction,
+      il ne peut avoir qu'un seul état initial (0) non ré-entrant.
 
           \vphantom{}
 
-    \item La deuxième est que l'automate a \(n + 1\) avec \(n\) le nombre de
-      symboles de l'expression régulière. Le \(+ 1\) vient du fait que nous
-      ajoutons un état \(0\) qui a des transitions vers les \(First\).
+    \item L'automate a \(n + 1\) avec \(n\) le nombre de symboles de l'expression
+      régulière. Le \(+ 1\) vient du fait que nous ajoutons un état \(0\) qui a
+      des transitions vers les \(First\).
 
           \vphantom{}
 
-    \item La troisième propriété un peu moins flagrante est que les automates de
-      Glushkov sont accessibles et coaccessibles. C'est dû au fait que chaque
-      symbole dans l'expression régulière est accessible et coaccessible et que
-      cette propriété ne se perd pas lors de la transformation.
+    \item Les automates de Glushkov sont accessibles et coaccessibles. C'est dû au
+      fait que chaque symbole dans l'expression régulière est accessible et
+      coaccessible et que cette propriété ne se perd pas lors de la
+      transformation.
 
           \vphantom{}
 
-    \item La quatrième propriété est que l'automate de Glushkov est homogène. Cela
-      résulte de sa construction, car pour qu'un état aille sur un autre état,
-      il faut qu'il ait dans ses \textit{Follow} \((a, n)\) avec \(a\) le
-      symbole de la transition et \(n\) la valeur de l'état. Et étant donné que
-      pour chaque couple \((b, m)\) il ne peut n'avoir que ce couple avec comme
-      seconde valeur \(m\) alors la transition vers cet état sera toujours la
-      même.
+    \item L'automate de Glushkov est homogène. Cela résulte de sa construction, car
+      pour qu'un état aille sur un autre état, il faut qu'il ait dans ses
+      \textit{Follow} \((a, n)\) avec \(a\) le symbole de la transition et
+      \(n\) la valeur de l'état. Et étant donné que pour chaque couple \((b,
+      m)\) il ne peut n'avoir que ce couple avec comme seconde valeur \(m\)
+      alors la transition vers cet état sera toujours la même.
 
           \vphantom{}
 
-    \item La cinquième propriété est que l'automate de Glushkov est un hamac. Car
-      il est standard, accessible et coaccessible. Et que toutes ces orbites
-      maximales sont fortement stables et transversales.
+    \item Les automates de Glushkov sont des hamacs. Car ils sont standard,
+      accessible et coaccessible. Et que toutes leurs orbites maximales sont
+      fortement stables et transversales.
 
           \vphantom{}
-\end{itemize}
+\end{enumerate}
 
 \subsection{Conclusion}
 
-L'algorithme de Glushkov est très puissant, puisqu'il permet de convertir une
-expression régulière en automate, ce qui fait qu'on gagne les avantages des
-deux structures. Avec les expressions régulières, on peut simplement décrire un
+L'algorithme de Glushkov permet de convertir une expression régulière en
+automate. Avec les expressions régulières, on peut simplement décrire un
 langage et avec les automates, on peut simplement savoir si un mot est reconnu.
 Il est très utilisé en \textit{informatique}, parce que pour les humains, il
 est plus simple de décrire un langage avec une expression régulière. Et les
