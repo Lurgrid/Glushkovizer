@@ -15,6 +15,8 @@ repository :
 
 > https://github.com/Lurgrid/GlushkovizerApp-GTK4
 
+&nbsp;
+
 ```bash
 $ cargo run --example simple_json
 ```
