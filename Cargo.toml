@@ -2,6 +2,9 @@
 name = "glushkovizer"
 version = "0.20.0"
 edition = "2021"
+description = "Manipulation, regular expression and automaton library. Allows conversion of regular expressions into automata and analysis of automata and their orbits"
+authors = ["Lurgrid <lurgrid@sagbot.com>"]
+repository = "https://github.com/Lurgrid/Glushkovizer"
 
 [dependencies]
 cfgrammar = "0.13"
