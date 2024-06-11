@@ -142,7 +142,7 @@ macro_rules! derive {
     };
 }
 
-derive!(Automata, SubAutomata => StatesInfo, TransitionInfo, InOut, MutTransition, Accept, Cloned, Mirror, Kosaraju, Properties);
+derive!(Automata, SubAutomata => StatesInfo, TransitionInfo, InOut, MutTransition, Accept, Cloned, Mirror, Kosaraju, Properties, Transform);
 derive!(Automata => AddStates);
 derive!(SubAutomata => RemoveStates);
 

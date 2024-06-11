@@ -8,6 +8,8 @@ pub mod prop;
 pub mod scc;
 pub mod serde;
 pub mod state;
+pub mod transform;
+pub mod utils;
 
 use state::RefState;
 use std::{collections::HashSet, hash::Hash};

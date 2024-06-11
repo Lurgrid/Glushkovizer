@@ -7,10 +7,14 @@ mod glushkov;
 mod r#impl;
 mod inner_automata;
 
-use self::inner_automata::state::RefState;
 pub use error::{AutomataError, Result};
-use inner_automata::InnerAutomata;
-pub use inner_automata::{dfs::DFSInfo, door::DoorType};
+pub use inner_automata::{
+    dfs::DFSInfo,
+    door::DoorType,
+    state::RefState,
+    utils::{Couple, Epsilon, Union},
+    InnerAutomata,
+};
 use r#impl::Inner;
 use std::collections::HashSet;
 use std::fmt::{Debug, Display};
@@ -636,5 +640,23 @@ where
     /// Returns whether the orbit is strongly transverse
     fn is_strongly_transverse(&self) -> bool {
         self.inner().is_strongly_transverse()
+    }
+}
+
+/// Trait grouping all methods for converting an automaton
+pub trait Transform<'a, T, V>: Inner<'a, T, V>
+where
+    T: Eq + Hash + Clone,
+    V: Eq + Clone,
+{
+    /// Creates a homogeneous automaton that recognizes the same language as the
+    /// current automaton
+    fn homogenized(&self) -> Automata<'a, T, Couple<Union<T, Epsilon>, V>> {
+        Automata {
+            himself: UnsafeCell::new(InnerParent {
+                inner: self.inner().homogenized(),
+                childs: Vec::default(),
+            }),
+        }
     }
 }
