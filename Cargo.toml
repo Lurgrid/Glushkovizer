@@ -1,6 +1,6 @@
 [package]
 name = "glushkovizer"
-version = "0.20.0"
+version = "0.21.0"
 edition = "2021"
 description = "Manipulation, regular expression and automaton library. Allows conversion of regular expressions into automata and analysis of automata and their orbits"
 authors = ["Lurgrid <lurgrid@sagbot.com>"]
