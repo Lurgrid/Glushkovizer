@@ -360,18 +360,18 @@ Elle peut être définie simplement comme ceci~:
     accept(M, w) = (\bigcup_{p \in I} \delta(p, w)) \cap F \neq \varnothing
 \end{align*}
 
-Une autre fonction sur les automates est \(homogenized\) qui renvoie l'automate
+Une autre fonction sur les automates est \(homogenize\) qui renvoie l'automate
 homogène qui reconnait le même langage que l'automate donné. Elle a ainsi comme
 signature~:
 
 \[
-    homogenized: AFN(\Sigma, \eta) \to AFN(\Sigma, (\Sigma \cup \{\varepsilon\} \times \eta))
+    homogenize: AFN(\Sigma, \eta) \to AFN(\Sigma, ((\Sigma \cup \{\varepsilon\}) \times \eta))
 \]
 
 Elle peut être définie de cette façon~:
 
 \begin{gather*}
-    homogenized(M) = N \quad \text{avec}                                                          \\
+    homogenize(M) = N \quad \text{avec}                                                          \\
     \forall (p, q) \in Q^2, \exists a \in \Sigma ~|~ p \in \delta(q, a) \Rightarrow (a, p) \in Q' \\
     \forall (p, q) \in Q^2, \forall a \in \Sigma ~|~ p \notin \delta(q, a)
     \Rightarrow (\varepsilon, p) \in Q' \\
@@ -379,7 +379,7 @@ Elle peut être définie de cette façon~:
     \forall p \in F, \forall a \in \Sigma \cup \{\varepsilon\} ~|~ (a, p) \in Q' \Rightarrow (a, p) \in F' \\
     \forall (p, q) \in Q, \exists a \in \Sigma, \forall b \in \Sigma \cup \{\varepsilon\} ~|~ (b, q) \in Q', p \in \delta(q, a) \Rightarrow (p, a) \in \delta'((b, q), a) \\
     M = (Q, I, F, \delta) \in AFN(\Sigma, \eta) \\
-    N = (Q', I', F', \delta') \in AFN(\Sigma, (\Sigma \cup \{\varepsilon\}
+    N = (Q', I', F', \delta') \in AFN(\Sigma, ((\Sigma \cup \{\varepsilon\})
     \times \eta))
 \end{gather*}
 

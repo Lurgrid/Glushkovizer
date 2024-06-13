@@ -651,10 +651,10 @@ where
 {
     /// Creates a homogeneous automaton that recognizes the same language as the
     /// current automaton
-    fn homogenized(&self) -> Automata<'a, T, Couple<Union<T, Epsilon>, V>> {
+    fn homogenize(&self) -> Automata<'a, T, Couple<Union<T, Epsilon>, V>> {
         Automata {
             himself: UnsafeCell::new(InnerParent {
-                inner: self.inner().homogenized(),
+                inner: self.inner().homogenize(),
                 childs: Vec::default(),
             }),
         }

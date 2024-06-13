@@ -12,7 +12,7 @@ where
 {
     /// Creates a homogeneous automaton that recognizes the same language as the
     /// current automaton
-    pub fn homogenized(&self) -> InnerAutomata<'a, T, Couple<Union<T, Epsilon>, V>> {
+    pub fn homogenize(&self) -> InnerAutomata<'a, T, Couple<Union<T, Epsilon>, V>> {
         let mut states = HashSet::default();
         let mut inputs = HashSet::default();
         let mut outputs = HashSet::default();

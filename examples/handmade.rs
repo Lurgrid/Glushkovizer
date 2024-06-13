@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     auto.add_transition(&2, &0, 'b')?;
     auto.add_transition(&1, &0, 'a')?;
     println!("{}", auto.to_dot(false)?);
-    let auto = auto.homogenized();
+    let auto = auto.homogenize();
     println!("{}", auto.to_dot(false)?);
     Ok(())
 }
