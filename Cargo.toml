@@ -3,11 +3,10 @@ name = "glushkovizer"
 version = "0.22.0"
 edition = "2021"
 description = "Manipulation, regular expression and automaton library. Allows conversion of regular expressions into automata and analysis of automata and their orbits"
-keywords = ["glushkov", "automata", "regular expression", "regexp"]
+keywords = ["glushkov", "automata", "regular-expression", "regexp"]
 authors = ["Lurgrid <lurgrid@sagbot.com>"]
 repository = "https://github.com/Lurgrid/Glushkovizer"
-license = "GPL-3"
-license-file = "LICENSE"
+license = "GPL-3.0"
 
 [dependencies]
 cfgrammar = "0.13"
